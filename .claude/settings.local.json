@@ -4,7 +4,8 @@
       "Bash(npx create-expo-app:*)",
       "Bash(mv:*)",
       "Bash(rmdir:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Read(//c/Users/pross/PROJETOS_PROSSIGA/monitora_mobile/**)"
     ],
     "deny": [],
     "ask": []

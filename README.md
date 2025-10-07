@@ -1,50 +1,178 @@
-# Welcome to your Expo app 👋
+# StoneApp - StoneUP Monitora
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo mobile para gestão de dívidas e acordos financeiros desenvolvido com React Native e Expo.
 
-## Get started
+## Sobre o Projeto
 
-1. Install dependencies
+O StoneApp (StoneUP Monitora) é uma solução mobile para ajudar usuários a monitorar e gerenciar suas dívidas, fazer acordos de pagamento e acompanhar sua saúde financeira.
 
-   ```bash
-   npm install
-   ```
+## Tecnologias
 
-2. Start the app
+- **React Native** 0.81.4
+- **Expo SDK** 54
+- **TypeScript** 5.9.2
+- **Expo Router** - Navegação baseada em arquivos
+- **React Native Gesture Handler** - Gestos e animações
+- **React Native Reanimated** - Animações performáticas
+- **Axios** - Cliente HTTP
+- **AsyncStorage** - Armazenamento local
 
-   ```bash
-   npx expo start
-   ```
+## Funcionalidades
 
-In the output, you'll find options to open the app in a
+- ✅ Autenticação de usuários (Login/Cadastro/Recuperação)
+- ✅ Visualização de dívidas e pendências
+- ✅ Ofertas de acordos personalizados
+- ✅ Geração de planos de pagamento
+- ✅ Acompanhamento de saúde financeira
+- ✅ Notificações de vencimentos
+- ✅ Chat de suporte
+- ✅ Menu lateral animado com gestos
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Pré-requisitos
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- Node.js 18+ instalado
+- npm ou yarn
+- Expo Go (para testar no dispositivo físico)
+- Android Studio ou Xcode (para emuladores)
 
-## Get a fresh project
+## Instalação
 
-When you're ready, run:
-
+1. Clone o repositório
 ```bash
-npm run reset-project
+git clone <url-do-repositorio>
+cd StoneApp
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Instale as dependências
+```bash
+npm install
+```
 
-## Learn more
+3. Configure as variáveis de ambiente
+```bash
+# Crie um arquivo .env na raiz do projeto
+API_URL=https://api.stoneup.com.br/api/v1.0
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+## Executando o Projeto
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Modo de desenvolvimento
+```bash
+npm start
+# ou
+npx expo start
+```
 
-## Join the community
+### Limpar cache e reiniciar
+```bash
+npx expo start --clear
+```
 
-Join our community of developers creating universal apps.
+### Executar em plataforma específica
+```bash
+# Android
+npm run android
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+# iOS
+npm run ios
+
+# Web
+npm run web
+```
+
+## Estrutura do Projeto
+
+```
+StoneApp/
+├── app/                      # Screens (Expo Router)
+│   ├── (tabs)/              # Telas com tab navigation
+│   │   ├── home.tsx
+│   │   ├── dividas.tsx
+│   │   ├── saude-financeira.tsx
+│   │   └── notificacoes.tsx
+│   ├── login.tsx
+│   ├── register.tsx
+│   └── _layout.tsx
+├── components/              # Componentes reutilizáveis
+│   ├── ui/                 # Componentes de interface
+│   ├── cards/              # Cards específicos
+│   └── layouts/            # Layouts e containers
+├── constants/              # Constantes e temas
+│   ├── theme.ts           # Cores, fontes, gradientes
+│   └── global-styles.ts   # Estilos globais
+├── contexts/               # Context API
+│   └── AuthContext.tsx    # Autenticação
+├── services/               # Serviços de API
+│   ├── api.config.ts      # Configuração Axios
+│   ├── auth.service.ts    # Autenticação
+│   └── dividas.service.ts # Dívidas
+├── utils/                  # Utilitários
+│   └── masks.ts           # Máscaras de input
+└── assets/                # Imagens e recursos
+```
+
+## Recursos de UI
+
+### Componentes Principais
+- **Button** - Botão padrão
+- **GradientButton** - Botão com gradiente
+- **Input/FloatingInput** - Campos de entrada
+- **Card** - Container com sombra
+- **ScreenHeader** - Cabeçalho de tela
+- **SideMenu** - Menu lateral animado
+- **WaveDecoration** - Decoração de ondas
+
+### Layout Components
+- **ScreenLayout** - Layout padrão de telas
+- **AuthLayout** - Layout para autenticação
+- **SafeContainer** - Container com SafeArea
+- **ResponsiveContainer** - Container responsivo
+
+### Tema
+- **Cores** - Paleta de cores do app
+- **Fontes** - Montserrat (Regular, Medium, SemiBold, Bold)
+- **Gradientes** - Gradientes pré-configurados
+- **Espaçamentos** - Sistema de espaçamento consistente
+
+## API Integration
+
+O app se comunica com a API StoneUP através de serviços configurados com Axios:
+
+```typescript
+// Exemplo de uso
+import { AuthService } from '@/services';
+
+const login = await AuthService.login(email, password);
+```
+
+### Endpoints Principais
+- `POST /login_monitora` - Login
+- `POST /pre_register` - Pré-cadastro
+- `GET /dividas` - Listar dívidas
+- `GET /ofertas` - Listar ofertas
+
+## Máscaras de Input
+
+O projeto inclui máscaras para formatação de dados:
+
+```typescript
+import { cpfMask, phoneMask, dateMask, moneyMask } from '@/utils/masks';
+
+const formatted = cpfMask('12345678900'); // 123.456.789-00
+```
+
+## Contribuindo
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## Licença
+
+Este projeto é proprietário da StoneUP.
+
+## Contato
+
+StoneUP - [https://stoneup.com.br](https://stoneup.com.br)

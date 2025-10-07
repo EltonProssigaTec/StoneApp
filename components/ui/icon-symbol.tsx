@@ -14,10 +14,57 @@ type IconSymbolName = keyof typeof MAPPING;
  * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
  */
 const MAPPING = {
+  // Navigation
   'house.fill': 'home',
-  'paperplane.fill': 'send',
-  'chevron.left.forwardslash.chevron.right': 'code',
+  'chevron.left': 'chevron-left',
   'chevron.right': 'chevron-right',
+  'chevron.left.forwardslash.chevron.right': 'code',
+  'arrow.right.square.fill': 'exit-to-app',
+  'arrow.up.circle.fill': 'arrow-upward',
+  'xmark': 'close',
+
+  // Communication
+  'paperplane.fill': 'send',
+  'bell.fill': 'notifications',
+
+  // Finance & Business
+  'wallet.pass.fill': 'account-balance-wallet',
+  'chart.line.uptrend.xyaxis': 'trending-up',
+  'creditcard.fill': 'credit-card',
+  'tag.fill': 'local-offer',
+
+  // User & Profile
+  'person.fill': 'person',
+  'faceid': 'fingerprint',
+
+  // Documents & Files
+  'doc.text.fill': 'description',
+
+  // Security
+  'lock.fill': 'lock',
+  'eye': 'visibility',
+  'eye.slash': 'visibility-off',
+  'eye.fill': 'visibility',
+
+  // UI Elements
+  'ellipsis': 'more-vert',
+  'line.3.horizontal': 'menu',
+  'info.circle.fill': 'info',
+
+  // Alerts
+  'exclamationmark.triangle.fill': 'warning',
+
+  // Calendar
+  'calendar': 'calendar-today',
+
+  // Phone
+  'phone.fill': 'phone',
+
+  // Email
+  'envelope.fill': 'email',
+
+  // Chart
+  'chart.bar.fill': 'bar-chart',
 } as IconMapping;
 
 /**

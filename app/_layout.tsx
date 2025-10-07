@@ -1,24 +1,76 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { applyGlobalFontStyles } from '@/constants/global-styles';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, useFonts } from '@expo-google-fonts/montserrat';
+import { DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
+import { useEffect } from 'react';
+import { Platform, StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import 'react-native-reanimated';
 
-import { useColorScheme } from '@/hooks/use-color-scheme';
+SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  initialRouteName: 'splash',
 };
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const [fontsLoaded] = useFonts({
+    Montserrat_400Regular,
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      // Aplicar fonte Montserrat globalmente em todo o app
+      applyGlobalFontStyles();
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  useEffect(() => {
+    // Configurar StatusBar para Android
+    if (Platform.OS === 'android') {
+      StatusBar.setBackgroundColor('#0195D8');
+      StatusBar.setBarStyle('light-content');
+      StatusBar.setTranslucent(false);
+    } else if (Platform.OS === 'ios') {
+      // Configurar StatusBar para iOS
+      StatusBar.setBarStyle('light-content');
+    }
+  }, []);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="splash" />
+            <Stack.Screen name="login" />
+            <Stack.Screen name="register" />
+            <Stack.Screen name="recover" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="pendencias" />
+            <Stack.Screen name="ofertas" />
+            <Stack.Screen name="planos" />
+            <Stack.Screen name="chat" options={{ presentation: 'modal' }} />
+            <Stack.Screen name="my-cpf" />
+            <Stack.Screen name="acordos" />
+            <Stack.Screen name="gerar-acordos" />
+            <Stack.Screen name="configuracoes" />
+          </Stack>
+          <ExpoStatusBar style="dark" backgroundColor="#0195D8" translucent={false} />
+        </ThemeProvider>
+      </AuthProvider>
+    </GestureHandlerRootView>
   );
 }
