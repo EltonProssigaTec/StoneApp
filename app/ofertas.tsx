@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Card } from '@/components/ui/Card';
 import { AppColors } from '@/constants/theme';
@@ -49,7 +50,7 @@ export default function OfertasScreen() {
   const totalDebt = 2500.00;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -117,7 +118,7 @@ export default function OfertasScreen() {
           ))}
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: AppColors.primary,
-    paddingTop: 50,
+    paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',

@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Card } from '@/components/ui/Card';
-import { AppColors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppColors } from '@/constants/theme';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 interface DebtCardProps {
   amount: number;
@@ -47,7 +47,7 @@ export function DebtCard({
       </View>
 
       <Text style={[styles.amount, isPrimary && styles.amountPrimary]}>
-        ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        R${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </Text>
 
       {updatedAt && (

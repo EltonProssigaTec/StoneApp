@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { AppColors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -8,7 +9,7 @@ export default function AcordosScreen() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <IconSymbol name="chevron.left" size={24} color={AppColors.white} />
@@ -20,7 +21,7 @@ export default function AcordosScreen() {
         <Text style={styles.title}>Meus Acordos</Text>
         <Text style={styles.subtitle}>Em desenvolvimento...</Text>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -31,7 +32,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: AppColors.primary,
-    paddingTop: 50,
+    paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
     flexDirection: 'row',

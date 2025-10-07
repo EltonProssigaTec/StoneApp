@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
 import { AuthLayout } from '@/components/layouts/AuthLayout';
+import { Button } from '@/components/ui/Button';
 import { FloatingInput } from '@/components/ui/FloatingInput';
 import { GradientButton } from '@/components/ui/GradientButton';
-import { Button } from '@/components/ui/Button';
 import { Text } from '@/components/ui/Text';
-import { AppColors, Fonts } from '@/constants/theme';
+import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import Checkbox from 'expo-checkbox';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [keepLoggedIn, setKeepLoggedIn] = useState(false);
 
   const handleLogin = async () => {
     const newErrors = { email: '', password: '' };
@@ -41,7 +43,7 @@ export default function LoginScreen() {
       // Fazer logout antes de tentar novo login (limpa tokens antigos)
       await signOut();
 
-      const success = await signIn(email, password);
+      const success = await signIn(email, password, keepLoggedIn);
 
       if (success) {
         router.replace('/(tabs)/home');
@@ -58,65 +60,93 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout waveVariant="login">
-      <FloatingInput
-        label="Login"
-        placeholder="Digite seu email cadastrado."
-        icon="person.fill"
-        value={email}
-        onChangeText={setEmail}
-        error={errors.email}
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-
-      <FloatingInput
-        label="Senha"
-        placeholder="Digite sua senha."
-        icon="lock.fill"
-        value={password}
-        onChangeText={setPassword}
-        error={errors.password}
-        secureTextEntry
-      />
-
-      <View style={styles.linksContainer}>
-        <Text style={styles.linkText}>Lembrar senha.</Text>
-        <TouchableOpacity onPress={() => router.push('/recover')}>
-          <Text style={styles.linkText}>Esqueceu sua senha?</Text>
-        </TouchableOpacity>
-      </View>
-
-      <GradientButton
-        title="Acessar"
-        onPress={handleLogin}
-        loading={loading}
-        disabled={loading}
-        fullWidth
-      />
-
-      <View style={styles.registerSection}>
-        <Text style={styles.registerQuestion}>Não tem uma conta ainda?</Text>
-        <Button
-          title="Criar conta"
-          variant="outline"
-          onPress={() => router.push('/register')}
-          fullWidth
-          style={styles.createAccountButton}
+      <View style={styles.container}>
+        <FloatingInput
+          label="Login"
+          placeholder="Digite seu email cadastrado."
+          icon="person.fill"
+          value={email}
+          onChangeText={setEmail}
+          error={errors.email}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          autoCorrect={false}
         />
-      </View>
 
-      <Text style={styles.termsText}>Ler termos de uso</Text>
+        <FloatingInput
+          label="Senha"
+          placeholder="Digite sua senha."
+          icon="lock.fill"
+          value={password}
+          onChangeText={setPassword}
+          error={errors.password}
+          secureTextEntry
+        />
+
+        <View style={styles.checkboxContainer}>
+          <Checkbox
+            value={keepLoggedIn}
+            onValueChange={setKeepLoggedIn}
+            color={keepLoggedIn ? AppColors.primary : undefined}
+            style={styles.checkbox}
+          />
+          <Text style={styles.checkboxLabel}>Manter logado</Text>
+        </View>
+
+        <View style={styles.linksContainer}>
+          <View />
+          <TouchableOpacity onPress={() => router.push('/recover')}>
+            <Text style={styles.linkText}>Esqueceu sua senha?</Text>
+          </TouchableOpacity>
+        </View>
+
+        <GradientButton
+          title="Acessar"
+          onPress={handleLogin}
+          loading={loading}
+          disabled={loading}
+          fullWidth
+        />
+
+        <View style={styles.registerSection}>
+          <Text style={styles.registerQuestion}>Não tem uma conta ainda?</Text>
+          <Button
+            title="Criar conta"
+            variant="outline"
+            onPress={() => router.push('/register')}
+            fullWidth
+            style={styles.createAccountButton}
+          />
+        </View>
+
+        <Text style={styles.termsText}>Ler termos de uso</Text>
+      </View>
     </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    marginTop: 70,
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  checkbox: {
+    marginRight: 8,
+  },
+  checkboxLabel: {
+    fontSize: 14,
+    color: AppColors.text.primary,
+  },
   linksContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 28,
-    marginTop: -8,
+    marginTop: 4,
   },
   linkText: {
     fontSize: 12,

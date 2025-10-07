@@ -9,6 +9,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -24,7 +25,7 @@ export function AuthLayout({
   waveVariant = 'small',
 }: AuthLayoutProps) {
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <View style={styles.wrapper}>
         <KeyboardAvoidingView
           style={styles.keyboardView}
@@ -49,7 +50,7 @@ export function AuthLayout({
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -87,7 +88,6 @@ const styles = StyleSheet.create({
   },
   logoContainer: {
     alignItems: 'center',
-    marginBottom: 48,
   },
   content: {
     flex: 1,

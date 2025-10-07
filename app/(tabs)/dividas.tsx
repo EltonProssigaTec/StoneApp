@@ -1,13 +1,16 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AppColors } from '@/constants/theme';
 
 export default function DividasScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Dívidas</Text>
-      <Text style={styles.subtitle}>Em desenvolvimento...</Text>
-    </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <View style={styles.content}>
+        <Text style={styles.title}>Dívidas</Text>
+        <Text style={styles.subtitle}>Em desenvolvimento...</Text>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -15,6 +18,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: AppColors.background.secondary,
+  },
+  content: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 20,

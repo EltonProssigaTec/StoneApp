@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { AppColors } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from './icon-symbol';
 
 interface ScreenHeaderProps {
@@ -10,6 +11,8 @@ interface ScreenHeaderProps {
   showBack?: boolean;
   showMenu?: boolean;
   showAvatar?: boolean;
+  showGreeting?: boolean;
+  subtitle?: string;
   onBackPress?: () => void;
   onMenuPress?: () => void;
   rightAction?: React.ReactNode;
@@ -20,11 +23,14 @@ export function ScreenHeader({
   showBack = false,
   showMenu = false,
   showAvatar = false,
+  showGreeting = false,
+  subtitle,
   onBackPress,
   onMenuPress,
   rightAction,
 }: ScreenHeaderProps) {
   const router = useRouter();
+  const { user } = useAuth();
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -32,6 +38,17 @@ export function ScreenHeader({
     } else {
       router.back();
     }
+  };
+
+  // Pega o primeiro nome do usuário
+  const firstName = user?.name?.split(' ')[0] || 'Usuário';
+
+  // Define saudação baseada na hora
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 12 && hour < 18) return 'Boa tarde';
+    if (hour >= 18 || hour < 6) return 'Boa noite';
+    return 'Bom dia';
   };
 
   return (
@@ -56,7 +73,16 @@ export function ScreenHeader({
       </View>
 
       {/* Title */}
-      <Text style={styles.title}>{title}</Text>
+      <View style={styles.titleContainer}>
+        {showGreeting ? (
+          <>
+            <Text style={styles.greeting}>{getGreeting()}, {firstName}!</Text>
+            {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+          </>
+        ) : (
+          <Text style={styles.title}>{title}</Text>
+        )}
+      </View>
 
       {/* Right Action */}
       <View style={styles.rightAction}>
@@ -64,7 +90,11 @@ export function ScreenHeader({
           rightAction
         ) : showAvatar ? (
           <TouchableOpacity style={styles.avatar}>
-            <IconSymbol name="person.fill" size={24} color={AppColors.white} />
+            {user?.picture ? (
+              <Image source={{ uri: user.picture }} style={styles.avatarImage} />
+            ) : (
+              <IconSymbol name="person.fill" size={24} color={AppColors.white} />
+            )}
           </TouchableOpacity>
         ) : (
           <View style={styles.placeholder} />
@@ -93,12 +123,29 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 4,
   },
+  titleContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     color: AppColors.white,
     textAlign: 'center',
-    flex: 1,
+  },
+  greeting: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: AppColors.white,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: AppColors.white,
+    opacity: 0.9,
+    marginTop: 4,
+    textAlign: 'center',
   },
   avatar: {
     width: 40,
@@ -107,6 +154,12 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.secondary,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
   },
   placeholder: {
     width: 24,

@@ -15,12 +15,15 @@ import React, {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '@/services/api.config';
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
   cpf?: string;
+  cpf_cnpj?: string;
   phone?: string;
+  picture?: string;
+  plano?: string;
   // Adicione outros campos conforme necessário
 }
 
@@ -28,7 +31,7 @@ interface AuthContextData {
   isLogged: boolean;
   loading: boolean;
   user: User | null;
-  signIn: (email: string, password: string) => Promise<boolean>;
+  signIn: (email: string, password: string, keepLoggedIn?: boolean) => Promise<boolean>;
   signOut: () => Promise<void>;
   updateUser: (newData: Partial<User>) => Promise<void>;
   setUser: (user: User | null) => void;
@@ -67,7 +70,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   /**
    * Login do usuário
    */
-  const signIn = async (email: string, password: string): Promise<boolean> => {
+  const signIn = async (email: string, password: string, keepLoggedIn: boolean = false): Promise<boolean> => {
     try {
       console.log('[Auth] Iniciando login...');
 
@@ -126,10 +129,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
       // Salva no AsyncStorage
-      await AsyncStorage.multiSet([
+      const storageItems: [string, string][] = [
         ['@Auth:user', JSON.stringify(user)],
         ['@Auth:token', token],
-      ]);
+        ['@Auth:keepLoggedIn', keepLoggedIn ? 'true' : 'false'],
+      ];
+
+      await AsyncStorage.multiSet(storageItems);
 
       setUser(user);
       console.log('[Auth] Login concluído com sucesso!');
@@ -172,18 +178,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    */
   const verifyIsLogged = useCallback(async () => {
     try {
-      const [storedUser, storedToken] = await AsyncStorage.multiGet([
+      const [storedUser, storedToken, storedKeepLoggedIn] = await AsyncStorage.multiGet([
         '@Auth:user',
         '@Auth:token',
+        '@Auth:keepLoggedIn',
       ]);
 
-      if (storedUser[1] && storedToken[1]) {
-        // Nota: Não configurar o token aqui automaticamente
-        // porque pode causar erro se o token for inválido
-        // O token será configurado apenas após um login bem-sucedido
-        console.log('[Auth] Sessão encontrada, mas não configurando token automaticamente');
-        // api.defaults.headers.common['Authorization'] = `Bearer ${storedToken[1]}`;
-        // setUser(JSON.parse(storedUser[1]));
+      const keepLoggedIn = storedKeepLoggedIn[1] === 'true';
+
+      if (storedUser[1] && storedToken[1] && keepLoggedIn) {
+        // Restaurar sessão automaticamente apenas se o usuário escolheu manter logado
+        console.log('[Auth] Restaurando sessão (manter logado ativado)');
+        api.defaults.headers.common['Authorization'] = `Bearer ${storedToken[1]}`;
+        setUser(JSON.parse(storedUser[1]));
+      } else {
+        console.log('[Auth] Não há sessão para restaurar ou manter logado está desativado');
       }
     } catch (error) {
       console.error('[Auth] Erro ao verificar sessão:', error);

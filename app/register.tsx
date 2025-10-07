@@ -1,21 +1,21 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { LogoImage } from '@/components/LogoImage';
-import { Input } from '@/components/ui/Input';
+import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { GradientButton } from '@/components/ui/GradientButton';
+import { Input } from '@/components/ui/Input';
 import { AppColors, Fonts } from '@/constants/theme';
 import { AuthService } from '@/services';
-import { cpfMask, phoneMask, dateMask, removeMask, validateCPF, validateDate } from '@/utils/masks';
+import { cpfMask, dateMask, phoneMask, removeMask, validateCPF, validateDate } from '@/utils/masks';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -144,133 +144,110 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        {/* Onda decorativa superior */}
-        <View style={styles.waveTop} />
-        <View style={styles.waveTopOrange} />
+    <AuthLayout waveVariant="login">
+      <View style={styles.container}>
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <LogoImage size="small" />
-        </View>
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {/* Formulário */}
+            <View style={styles.formContainer}>
+              <Input
+                label="Nome"
+                placeholder="Digite seu nome completo."
+                icon="person.fill"
+                value={formData.name}
+                onChangeText={(value) => updateField('name', value)}
+                error={errors.name}
+              />
 
-        {/* Formulário */}
-        <View style={styles.formContainer}>
-          <Input
-            label="Nome"
-            placeholder="Digite seu nome completo."
-            icon="person.fill"
-            value={formData.name}
-            onChangeText={(value) => updateField('name', value)}
-          />
+              <Input
+                label="Email"
+                placeholder="Digite seu email."
+                icon="envelope.fill"
+                value={formData.email}
+                onChangeText={(value) => updateField('email', value)}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                error={errors.email}
+              />
 
-          <Input
-            label="Email"
-            placeholder="Digite seu email."
-            icon="envelope.fill"
-            value={formData.email}
-            onChangeText={(value) => updateField('email', value)}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
+              <Input
+                label="CPF"
+                placeholder="Digite seu CPF."
+                icon="creditcard.fill"
+                value={formData.cpf}
+                onChangeText={(value) => updateField('cpf', value)}
+                keyboardType="number-pad"
+                error={errors.cpf}
+              />
 
-          <Input
-            label="CPF"
-            placeholder="Digite seu CPF."
-            icon="creditcard.fill"
-            value={formData.cpf}
-            onChangeText={(value) => updateField('cpf', value)}
-            keyboardType="number-pad"
-          />
+              <Input
+                label="Data de nascimento"
+                placeholder="Digite sua data de nascimento."
+                icon="calendar"
+                value={formData.birthDate}
+                onChangeText={(value) => updateField('birthDate', value)}
+                error={errors.birthDate}
+              />
 
-          <Input
-            label="Data de nascimento"
-            placeholder="Digite sua data de nascimento."
-            icon="calendar"
-            value={formData.birthDate}
-            onChangeText={(value) => updateField('birthDate', value)}
-          />
+              <Input
+                label="Telefone"
+                placeholder="Digite seu telefone."
+                icon="phone.fill"
+                value={formData.phone}
+                onChangeText={(value) => updateField('phone', value)}
+                keyboardType="phone-pad"
+                error={errors.phone}
+              />
 
-          <Input
-            label="Telefone"
-            placeholder="Digite seu telefone."
-            icon="phone.fill"
-            value={formData.phone}
-            onChangeText={(value) => updateField('phone', value)}
-            keyboardType="phone-pad"
-          />
+              <Input
+                label="Senha"
+                placeholder="Crie uma senha forte."
+                icon="lock.fill"
+                value={formData.password}
+                onChangeText={(value) => updateField('password', value)}
+                secureTextEntry
+                error={errors.password}
+              />
 
-          <Input
-            label="Senha"
-            placeholder="Crie uma senha forte."
-            icon="lock.fill"
-            value={formData.password}
-            onChangeText={(value) => updateField('password', value)}
-            secureTextEntry
-          />
+              <GradientButton
+                title="Cadastrar"
+                onPress={handleRegister}
+                loading={loading}
+                disabled={loading}
+                fullWidth
+                style={styles.button}
+              />
 
-          <GradientButton
-            title="Cadastrar"
-            onPress={handleRegister}
-            loading={loading}
-            disabled={loading}
-            fullWidth
-            style={styles.button}
-          />
-
-          <TouchableOpacity style={styles.termsContainer}>
-            <Text style={styles.termsText}>Ler termos de uso</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
-  );
+              <TouchableOpacity style={styles.termsContainer}>
+                <Text style={styles.termsText}>Ler termos de uso</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </View>
+    </AuthLayout>);
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.white,
+    backgroundColor: "transparent",
   },
   keyboardView: {
     flex: 1,
-  },
-  waveTop: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 120,
-    height: 60,
-    backgroundColor: AppColors.primary,
-    borderBottomRightRadius: 60,
-  },
-  waveTopOrange: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 200,
-    height: 50,
-    backgroundColor: AppColors.secondary,
-    borderBottomLeftRadius: 50,
   },
   scrollContent: {
     flexGrow: 1,
     paddingHorizontal: 24,
     paddingTop: 80,
     paddingBottom: 40,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 32,
   },
   formContainer: {
     flex: 1,

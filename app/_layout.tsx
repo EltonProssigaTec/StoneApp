@@ -35,12 +35,12 @@ export default function RootLayout() {
   useEffect(() => {
     // Configurar StatusBar para Android
     if (Platform.OS === 'android') {
-      StatusBar.setBackgroundColor('#0195D8');
-      StatusBar.setBarStyle('light-content');
-      StatusBar.setTranslucent(false);
+      StatusBar.setBackgroundColor('transparent');
+      StatusBar.setBarStyle('dark-content');
+      StatusBar.setTranslucent(true);
     } else if (Platform.OS === 'ios') {
       // Configurar StatusBar para iOS
-      StatusBar.setBarStyle('light-content');
+      StatusBar.setBarStyle('dark-content');
     }
   }, []);
 
@@ -68,7 +68,7 @@ export default function RootLayout() {
             <Stack.Screen name="gerar-acordos" />
             <Stack.Screen name="configuracoes" />
           </Stack>
-          <ExpoStatusBar style="dark" backgroundColor="#0195D8" translucent={false} />
+          <ExpoStatusBar style="dark" translucent />
         </ThemeProvider>
       </AuthProvider>
     </GestureHandlerRootView>

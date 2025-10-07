@@ -15,7 +15,39 @@ export interface Divida {
   // Adicione outros campos conforme necessário
 }
 
+export interface ResumoFinanceiro {
+  total_dividas: number;
+  quantidade_dividas: number;
+  dividas_ativas: number;
+  dividas_quitadas: number;
+}
+
 export const DividasService = {
+  /**
+   * Busca resumo financeiro (total de dívidas)
+   */
+  resumo: async (cpf: string): Promise<ResumoFinanceiro> => {
+    try {
+      const dividas = await DividasService.listar(cpf);
+      const total = dividas.reduce((acc, div) => acc + (div.valor || 0), 0);
+
+      return {
+        total_dividas: total,
+        quantidade_dividas: dividas.length,
+        dividas_ativas: dividas.filter(d => d.status !== 'quitado').length,
+        dividas_quitadas: dividas.filter(d => d.status === 'quitado').length,
+      };
+    } catch (error: any) {
+      console.log('Erro ao buscar resumo:', error);
+      return {
+        total_dividas: 0,
+        quantidade_dividas: 0,
+        dividas_ativas: 0,
+        dividas_quitadas: 0,
+      };
+    }
+  },
+
   /**
    * Lista todas as dívidas de um CPF
    */

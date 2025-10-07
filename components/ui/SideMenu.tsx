@@ -1,23 +1,27 @@
 import { AppColors, Fonts } from '@/constants/theme';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import {
   Animated,
+  Dimensions,
   Image,
   Modal,
+  Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Dimensions,
 } from 'react-native';
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { IconSymbol } from './icon-symbol';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const MENU_WIDTH = SCREEN_WIDTH * 0.8;
+const MENU_WIDTH =
+  Platform.OS === 'web'
+    ? (SCREEN_WIDTH > 720 ? SCREEN_WIDTH * 0.5 : SCREEN_WIDTH * 0.8) // 40vw se for web
+    : SCREEN_WIDTH * 0.8; // 80% se for mobile
 
 interface SideMenuProps {
   visible: boolean;
@@ -30,8 +34,8 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   const menuItems = [
-    { icon: 'person.fill', title: 'Meu perfil', route: '/(tabs)/home', color: AppColors.primary },
-    { icon: 'lock.fill', title: 'Minha senha', route: '/configuracoes', color: AppColors.secondary },
+    { icon: 'person.fill', title: 'Meu perfil', route: '/perfil', color: AppColors.primary },
+    { icon: 'lock.fill', title: 'Minha senha', route: '/configuracoes', color: AppColors.primary },
     { icon: 'bell.fill', title: 'Notificações', route: '/(tabs)/notificacoes', color: AppColors.primary },
     { icon: 'exclamationmark.triangle.fill', title: 'Minhas pendências', route: '/pendencias', color: AppColors.primary },
     { icon: 'wallet.pass.fill', title: 'Meus boletos', route: '/acordos', color: AppColors.primary },
@@ -123,44 +127,51 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
               },
             ]}
           >
-          {/* Header with Gradient */}
-          <LinearGradient
-            colors={['#0195D8', '#0164AE']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.header}
-          >
-            <Image
-              source={require('@/assets/images/logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-
-            <TouchableOpacity style={styles.avatarContainer}>
-              <IconSymbol name="person.fill" size={32} color={AppColors.white} />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.eyeButton}>
-              <IconSymbol name="eye.fill" size={24} color={AppColors.white} />
-            </TouchableOpacity>
-          </LinearGradient>
-
-          {/* Menu Items */}
-          <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
-            {menuItems.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.menuItem}
-                onPress={() => handleNavigate(item.route)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.iconContainer, { backgroundColor: item.color === AppColors.secondary ? '#FFF3E0' : '#E3F2FD' }]}>
-                  <IconSymbol name={item.icon as any} size={20} color={item.color} />
-                </View>
-                <Text style={styles.menuItemText}>{item.title}</Text>
+            {/* Header with Gradient */}
+            {/* <LinearGradient
+              colors={['#0195D8', '#0164AE']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.header}
+            > */}
+            <View style={styles.header}>
+              <Image
+                source={require('@/assets/images/logo.png')}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+            {/* <TouchableOpacity style={styles.avatarContainer}>
+                <IconSymbol name="person.fill" size={32} color={AppColors.white} />
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+
+              <TouchableOpacity style={styles.eyeButton}>
+                <IconSymbol name="eye.fill" size={24} color={AppColors.white} />
+              </TouchableOpacity> */}
+            {/* </LinearGradient> */}
+
+            {/* Menu Items */}
+            <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
+              {menuItems.map((item, index) => (
+                <Pressable
+                  key={index}
+                  style={styles.menuItem}
+                  onPress={() => handleNavigate(item.route)}
+                >
+                  {({ pressed }) => (
+                    <>
+                      <View style={[
+                        styles.iconContainer,
+                        { backgroundColor: pressed ? '#FFF3E0' : '#E3F2FD' }
+                      ]}>
+                        <IconSymbol name={item.icon as any} size={20} color={pressed ? AppColors.secondary : item.color} />
+                      </View>
+                      <Text style={[styles.menuItemText, pressed && { color: AppColors.secondary }]}>{item.title}</Text>
+                    </>
+                  )}
+                </Pressable>
+              ))}
+            </ScrollView>
           </Animated.View>
         </GestureDetector>
         <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
@@ -199,10 +210,11 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   logo: {
-    width: 120,
-    height: 40,
+    width: 200,
+    height: 150,
     marginBottom: 20,
   },
   avatarContainer: {

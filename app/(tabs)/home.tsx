@@ -1,13 +1,35 @@
 import { DebtCard, MenuItem } from '@/components/cards';
 import { Card, ScreenHeader, SideMenu } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import { DividasService, ResumoFinanceiro } from '@/services/dividas.service';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Section } from '@/components/teste';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [resumo, setResumo] = useState<ResumoFinanceiro | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Busca resumo financeiro
+  useEffect(() => {
+    const fetchResumo = async () => {
+      if (user?.cpf_cnpj) {
+        setLoading(true);
+        const data = await DividasService.resumo(user.cpf_cnpj);
+        setResumo(data);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    };
+
+    fetchResumo();
+  }, [user]);
 
   const menuItems = [
     { icon: 'creditcard.fill', title: 'Meu CPF/CNPJ', route: '/my-cpf' },
@@ -20,34 +42,19 @@ export default function HomeScreen() {
 
   return (
     <ScrollView style={styles.container}>
+      <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
 
-        <ScreenHeader
-          title="Home"
-          showMenu
-          showAvatar
-          onMenuPress={() => setMenuVisible(true)}
-        />        
-        <View style={styles.welcomeSection}>
-          <Text style={styles.welcomeText}>Bem vindo, RAFAEL</Text>
-          <Text style={styles.planText}>Plano Premium</Text>
-        </View>
-        <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
-        {/* Welcome Section */}
+      {/* Section com Header e Card de Dívidas */}
+      <Section
+        amount={loading ? 0 : (resumo?.total_dividas || 0)}
+        updatedAt={new Date().toLocaleDateString('pt-BR')}
+        onMenuPress={() => setMenuVisible(true)}
+      />
 
       <View style={styles.wrapper}>
         <View style={styles.contentWrapper}>
           <View style={styles.scrollContainer}>
-
-
-            {/* Debt Card */}
             <View style={styles.content}>
-              <DebtCard
-                amount={2500.00}
-                updatedAt="02/09/2025"
-                variant="primary"
-                showEyeIcon
-                style={styles.debtCard}
-              />
 
               {/* Menu Grid */}
               <View style={styles.menuGrid}>
@@ -83,7 +90,6 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: AppColors.background.secondary,
   },
   safeArea: {
@@ -110,22 +116,6 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
   },
-  welcomeSection: {
-    backgroundColor: "transparent",
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  welcomeText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: AppColors.white,
-  },
-  planText: {
-    fontSize: 14,
-    color: AppColors.white,
-    opacity: 0.9,
-    marginTop: 4,
-  },
   content: {
     flex: 1,
     backgroundColor: AppColors.background.secondary,
@@ -136,6 +126,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   menuGrid: {
+    justifyContent: "center",
     flexDirection: 'row',
     flexWrap: 'wrap',
     paddingHorizontal: 20,
@@ -177,5 +168,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: AppColors.white,
     marginTop: 2,
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
