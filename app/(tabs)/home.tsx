@@ -1,12 +1,12 @@
-import { DebtCard, MenuItem } from '@/components/cards';
-import { Card, ScreenHeader, SideMenu } from '@/components/ui';
+import { MenuItem } from '@/components/cards';
+import { Section } from '@/components/teste';
+import { Card, SideMenu } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { DividasService, ResumoFinanceiro } from '@/services/dividas.service';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Section } from '@/components/teste';
+import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -90,6 +90,8 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    marginBottom: 100,
     backgroundColor: AppColors.background.secondary,
   },
   safeArea: {
@@ -131,6 +133,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingHorizontal: 20,
     gap: 12,
+    marginTop: 20
   },
   promoBanner: {
     backgroundColor: AppColors.primary,

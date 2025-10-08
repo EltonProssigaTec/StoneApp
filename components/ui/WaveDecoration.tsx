@@ -1,6 +1,7 @@
-import { AppColors } from '@/constants/theme';
+import { AppColors, Gradients } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 interface WaveDecorationProps {
   variant?: 'login' | 'splash' | 'small';
@@ -10,9 +11,25 @@ export function WaveDecoration({ variant = 'login' }: WaveDecorationProps) {
   if (variant === 'splash') {
     return (
       <>
-        <View style={styles.splashTop} />
+        {/* Onda decorativa superior com gradiente laranja */}
+        <LinearGradient
+          {...Gradients.secondary}
+          style={styles.splashTopOrange}
+        />
+
+        {/* Onda decorativa superior com gradiente azul */}
+        <LinearGradient
+          {...Gradients.primary}
+          style={styles.splashTop}
+        />
+        {/* Onda decorativa inferior com gradiente azul */}
+        <LinearGradient
+          {...Gradients.primary}
+          style={styles.splashBottom}
+        />
+        {/* <View style={styles.splashTop} />
         <View style={styles.splashTopOrange} />
-        <View style={styles.splashBottom} />
+        <View style={styles.splashBottom} /> */}
       </>
     );
   }
@@ -20,16 +37,38 @@ export function WaveDecoration({ variant = 'login' }: WaveDecorationProps) {
   if (variant === 'small') {
     return (
       <>
-        <View style={styles.smallBlue} />
-        <View style={styles.smallOrange} />
+        {/* Onda decorativa superior com gradiente laranja */}
+        <LinearGradient
+          {...Gradients.secondary}
+          style={styles.smallOrange}
+        />
+
+        {/* Onda decorativa superior com gradiente azul */}
+        <LinearGradient
+          {...Gradients.primary}
+          style={styles.smallBlue}
+        />
+        {/* <View style={styles.smallBlue} />
+        <View style={styles.smallOrange} /> */}
       </>
     );
   }
 
   return (
     <>
-      <View style={styles.loginOrange} />
-      <View style={styles.loginBlue} />
+      {/* Onda decorativa superior com gradiente laranja */}
+      <LinearGradient
+        {...Gradients.secondary}
+        style={styles.loginOrange}
+      />
+
+      {/* Onda decorativa superior com gradiente azul */}
+      <LinearGradient
+        {...Gradients.primary}
+        style={styles.loginBlue}
+      />
+      {/* <View style={styles.loginOrange} />
+      <View style={styles.loginBlue} /> */}
     </>
   );
 }
@@ -38,7 +77,7 @@ const styles = StyleSheet.create({
   // Login variant
   loginBlue: {
     position: 'absolute',
-    top: -10,
+    top: -5,
     left: 0,
     width: "35%",
     height: 40,

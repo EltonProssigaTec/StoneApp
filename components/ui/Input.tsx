@@ -1,13 +1,13 @@
+import { AppColors, Fonts } from '@/constants/theme';
 import React, { useState } from 'react';
 import {
-  View,
-  TextInput,
-  Text,
   StyleSheet,
-  TouchableOpacity,
+  Text,
+  TextInput,
   TextInputProps,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { AppColors, Fonts } from '@/constants/theme';
 import { IconSymbol } from './icon-symbol';
 
 interface InputProps extends TextInputProps {
@@ -100,7 +100,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: AppColors.border.light,
     borderRadius: 8,
-    paddingHorizontal: 16,
   },
   inputFocused: {
     borderColor: AppColors.primary,
@@ -123,6 +122,5 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontSize: 12,
     fontFamily: Fonts.regular,
-    color: AppColors.status.error,
   },
 });

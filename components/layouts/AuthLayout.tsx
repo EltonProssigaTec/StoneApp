@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   responsiveContainer: {
     flex: 1,
     paddingHorizontal: 32,
-    paddingTop: 80,
+    paddingTop: 20,
     paddingBottom: 40,
   },
   logoContainer: {

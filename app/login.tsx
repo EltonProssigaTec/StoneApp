@@ -1,14 +1,15 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/ui/Button';
-import { FloatingInput } from '@/components/ui/FloatingInput';
+
 import { GradientButton } from '@/components/ui/GradientButton';
+import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import Checkbox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
-import Checkbox from 'expo-checkbox';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -61,7 +62,7 @@ export default function LoginScreen() {
   return (
     <AuthLayout waveVariant="login">
       <View style={styles.container}>
-        <FloatingInput
+        <Input
           label="Login"
           placeholder="Digite seu email cadastrado."
           icon="person.fill"
@@ -73,7 +74,7 @@ export default function LoginScreen() {
           autoCorrect={false}
         />
 
-        <FloatingInput
+        <Input
           label="Senha"
           placeholder="Digite sua senha."
           icon="lock.fill"
@@ -82,23 +83,26 @@ export default function LoginScreen() {
           error={errors.password}
           secureTextEntry
         />
-
-        <View style={styles.checkboxContainer}>
-          <Checkbox
-            value={keepLoggedIn}
-            onValueChange={setKeepLoggedIn}
-            color={keepLoggedIn ? AppColors.primary : undefined}
-            style={styles.checkbox}
-          />
-          <Text style={styles.checkboxLabel}>Manter logado</Text>
+        <View style={styles.containerCheckbox}>
+          <View style={styles.checkboxContainer}>
+            <Checkbox
+              value={keepLoggedIn}
+              onValueChange={setKeepLoggedIn}
+              color={keepLoggedIn ? AppColors.primary : undefined}
+              style={styles.checkbox}
+            />
+            <TouchableOpacity onPress={() => setKeepLoggedIn(!keepLoggedIn)}>
+              <Text style={styles.checkboxLabel}>Manter logado</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.linksContainer}>
+            <View />
+            <TouchableOpacity onPress={() => router.push('/recover')}>
+              <Text style={styles.linkText}>Esqueceu sua senha?</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <View style={styles.linksContainer}>
-          <View />
-          <TouchableOpacity onPress={() => router.push('/recover')}>
-            <Text style={styles.linkText}>Esqueceu sua senha?</Text>
-          </TouchableOpacity>
-        </View>
 
         <GradientButton
           title="Acessar"
@@ -127,13 +131,18 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 70,
+    marginTop: 40,
+  },
+  containerCheckbox: {
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   checkboxContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 12,
-    marginBottom: 8,
   },
   checkbox: {
     marginRight: 8,
@@ -145,15 +154,15 @@ const styles = StyleSheet.create({
   linksContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 28,
-    marginTop: 4,
   },
   linkText: {
     fontSize: 12,
+    fontFamily: Fonts.regular,
     color: AppColors.text.secondary,
+    textDecorationLine: 'underline',
   },
   registerSection: {
-    marginTop: 28,
+    marginTop: 16,
     alignItems: 'center',
   },
   registerQuestion: {

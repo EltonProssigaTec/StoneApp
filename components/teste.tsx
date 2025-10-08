@@ -1,10 +1,10 @@
-import { AppColors, Gradients } from '@/constants/theme';
+import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import React from 'react';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from './ui/icon-symbol';
 
 import type { StyleProp, ViewStyle } from 'react-native';
@@ -83,36 +83,39 @@ export function Section(props: SectionProps) {
                     <Text style={styles.welcomeText}>{getGreeting()}, {firstName}!</Text>
                     <Text style={styles.planText}>{user?.plano || 'Plano Gratuito'}</Text>
                 </View>
-            </LinearGradient>
 
-            <View style={styles.card}>
-                <LinearGradient
-                    colors={['#0195D8', '#0164AE']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 0 }}
-                    style={styles.rectangle2}
-                />
-                <View style={styles.cardHeader}>
-                    <Text style={styles.myBalance}>MINHAS DÍVIDAS</Text>
-                    <TouchableOpacity
-                        style={styles.eyeButton}
-                        activeOpacity={0.7}
-                        onPress={() => setShowAmount(!showAmount)}
-                    >
-                        <IconSymbol
-                            name={showAmount ? "eye.fill" : "eye.slash.fill"}
-                            size={24}
-                            color={AppColors.white}
-                        />
-                    </TouchableOpacity>
+
+                <View style={styles.card}>
+                    <LinearGradient
+                        colors={['#0164AE', '#0195D8']}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.rectangle2}
+                    />
+                    <View style={styles.cardHeader}>
+                        <Text style={styles.myBalance}>MINHAS DÍVIDAS</Text>
+                    </View>
+                    <View style={styles.amountRow}>
+                        <Text style={styles.amount}>
+                            {showAmount ? `R$ ${amount.toFixed(2).replace('.', ',')}` : 'R$ •••••'}
+                        </Text>
+                        <TouchableOpacity
+                            style={styles.eyeButton}
+                            activeOpacity={0.7}
+                            onPress={() => setShowAmount(!showAmount)}
+                        >
+                            <IconSymbol
+                                name={showAmount ? "eye.fill" : "eye.slash"}
+                                size={30}
+                                color={AppColors.white}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                    <Text style={styles.expOnSep172023}>
+                        Atualizado em {updatedAt}
+                    </Text>
                 </View>
-                <Text style={styles.amount}>
-                    {showAmount ? `R$ ${amount.toFixed(2).replace('.', ',')}` : 'R$ •••••'}
-                </Text>
-                <Text style={styles.expOnSep172023}>
-                    Atualizado em {updatedAt}
-                </Text>
-            </View>
+            </LinearGradient>
         </View>
     );
 }
@@ -124,11 +127,19 @@ const styles = StyleSheet.create({
     },
     rectangle: {
         width: '100%',
-        minHeight: 265,
-        borderBottomLeftRadius: 14,
-        borderBottomRightRadius: 14,
+        minHeight: "auto",
         paddingHorizontal: 20,
         paddingBottom: 20,
+        backgroundColor: AppColors.primary,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        ...Platform.select({
+            web: {
+                maxWidth: 720,
+                marginHorizontal: 'auto',
+                width: "100%",
+            },
+        }),
     },
     header: {
         flexDirection: 'row',
@@ -166,8 +177,7 @@ const styles = StyleSheet.create({
         opacity: 0.8,
     },
     card: {
-        marginHorizontal: 14,
-        marginTop: -60,
+        marginTop: 30,
         paddingVertical: 21,
         paddingHorizontal: 14,
         borderRadius: 19,
@@ -176,6 +186,12 @@ const styles = StyleSheet.create({
         shadowOpacity: 1,
         shadowRadius: 10,
         elevation: 5,
+        ...Platform.select({
+            web: {
+                marginHorizontal: 'auto',
+                width: "100%",
+            },
+        }),
     },
     rectangle2: {
         position: 'absolute',
@@ -199,6 +215,12 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
         opacity: 0.8,
     },
+    amountRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
     eyeButton: {
         padding: 4,
     },
@@ -207,7 +229,6 @@ const styles = StyleSheet.create({
         fontSize: 32,
         fontWeight: '600',
         letterSpacing: 0,
-        marginBottom: 8,
     },
     expOnSep172023: {
         color: AppColors.white,
