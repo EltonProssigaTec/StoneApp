@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { AppColors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppColors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AcordosScreen() {
   const router = useRouter();

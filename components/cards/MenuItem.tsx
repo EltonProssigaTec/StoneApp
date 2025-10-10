@@ -1,7 +1,7 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
-import { AppColors } from '@/constants/theme';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppColors } from '@/constants/theme';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface MenuItemProps {
   icon: string;
@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.white,
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: 'flex-start',
     minHeight: 100,
     justifyContent: 'center',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
@@ -45,6 +45,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: AppColors.text.primary,
-    textAlign: 'center',
   },
 });

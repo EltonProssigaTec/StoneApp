@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
+import { LogoImage } from '@/components/LogoImage';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppColors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { LogoImage } from '@/components/LogoImage';
-import { AppColors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 
 interface Message {
   id: string;
@@ -23,12 +25,9 @@ interface Message {
 
 export default function ChatScreen() {
   const router = useRouter();
+  const scrollRef = useRef<ScrollView>(null);
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: 'Olá, tudo bem?',
-      sender: 'bot',
-    },
+    { id: '1', text: 'Olá, tudo bem?', sender: 'bot' },
     {
       id: '2',
       text: 'Seja bem-vindo(a) ao suporte da StoneUP Monitora! Estou aqui para te ajudar com suas dúvidas.\n\nDescreva sua dúvida:',
@@ -36,38 +35,56 @@ export default function ChatScreen() {
     },
   ]);
   const [inputText, setInputText] = useState('');
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Detecta altura do teclado no Android
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const handleSend = () => {
-    if (inputText.trim()) {
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        text: inputText.trim(),
-        sender: 'user',
-      };
-      setMessages([...messages, newMessage]);
-      setInputText('');
+    if (!inputText.trim()) return;
 
-      // Simulate bot response
-      setTimeout(() => {
-        const botResponse: Message = {
-          id: (Date.now() + 1).toString(),
-          text: 'Obrigado pela sua mensagem! Em breve um de nossos atendentes irá responder.',
-          sender: 'bot',
-        };
-        setMessages((prev) => [...prev, botResponse]);
-      }, 1000);
-    }
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      text: inputText.trim(),
+      sender: 'user',
+    };
+    setMessages((prev) => [...prev, newMessage]);
+    setInputText('');
+
+    setTimeout(() => {
+      const botResponse: Message = {
+        id: (Date.now() + 1).toString(),
+        text: 'Obrigado pela sua mensagem! Em breve um de nossos atendentes irá responder.',
+        sender: 'bot',
+      };
+      setMessages((prev) => [...prev, botResponse]);
+    }, 1000);
+
+    // Rola até o fim ao enviar
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
-      >
-        {/* Header */}
-        <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+      <StatusBar
+        backgroundColor={AppColors.primary} // cor do header no Android
+        barStyle="light-content" // texto branco
+        translucent={false}
+      />
+  
+      {/* Header fixo */}
+      <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.logoContainer}>
             <LogoImage size="small" />
@@ -84,66 +101,87 @@ export default function ChatScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Messages */}
-      <ScrollView
-        style={styles.messagesContainer}
-        contentContainerStyle={styles.messagesContent}
-        showsVerticalScrollIndicator={false}
+      {/* Conteúdo com KeyboardAvoidingView */}
+      <KeyboardAvoidingView
+        style={styles.flexContainer}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {messages.map((message) => (
-          <View
-            key={message.id}
-            style={[
-              styles.messageWrapper,
-              message.sender === 'user' && styles.messageWrapperUser,
-            ]}
-          >
-            {message.sender === 'bot' && (
-              <View style={styles.botAvatar}>
-                <LogoImage size="small" />
-              </View>
-            )}
+        {/* Mensagens roláveis */}
+        <ScrollView
+          ref={scrollRef}
+          style={styles.messagesContainer}
+          contentContainerStyle={[
+            styles.messagesContent,
+            { paddingBottom: 80 }, // espaço pro input
+          ]}
+          showsVerticalScrollIndicator={false}
+          onContentSizeChange={() =>
+            scrollRef.current?.scrollToEnd({ animated: true })
+          }
+        >
+          {messages.map((message) => (
             <View
+              key={message.id}
               style={[
-                styles.messageBubble,
-                message.sender === 'user' && styles.messageBubbleUser,
+                styles.messageWrapper,
+                message.sender === 'user' && styles.messageWrapperUser,
               ]}
             >
-              <Text
+              {message.sender === 'bot' && (
+                <View style={styles.botAvatar}>
+                  <LogoImage size="small" />
+                </View>
+              )}
+              <View
                 style={[
-                  styles.messageText,
-                  message.sender === 'user' && styles.messageTextUser,
+                  styles.messageBubble,
+                  message.sender === 'user' && styles.messageBubbleUser,
                 ]}
               >
-                {message.text}
-              </Text>
+                <Text
+                  style={[
+                    styles.messageText,
+                    message.sender === 'user' && styles.messageTextUser,
+                  ]}
+                >
+                  {message.text}
+                </Text>
+              </View>
             </View>
-          </View>
-        ))}
-      </ScrollView>
+          ))}
+        </ScrollView>
 
-      {/* Input */}
-      <View style={styles.inputContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Digite sua dúvida:"
-          placeholderTextColor={AppColors.text.placeholder}
-          value={inputText}
-          onChangeText={setInputText}
-          multiline
-        />
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={handleSend}
-          disabled={!inputText.trim()}
+        {/* Input fixo no rodapé */}
+        <View
+          style={[
+            styles.inputContainer,
+            { marginBottom: Platform.OS === 'android' ? keyboardHeight : 0 },
+          ]}
         >
-          <IconSymbol
-            name="arrow.up.circle.fill"
-            size={32}
-            color={inputText.trim() ? AppColors.primary : AppColors.gray[300]}
+          <TextInput
+            style={styles.input}
+            placeholder="Digite sua dúvida:"
+            placeholderTextColor={AppColors.text.placeholder}
+            value={inputText}
+            onChangeText={setInputText}
+            multiline
           />
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={handleSend}
+            disabled={!inputText.trim()}
+          >
+            <IconSymbol
+              name="arrow.up.circle.fill"
+              size={32}
+              color={
+                inputText.trim()
+                  ? AppColors.secondary
+                  : AppColors.gray[300]
+              }
+            />
+          </TouchableOpacity>
+        </View>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -154,14 +192,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.white,
   },
-  container: {
-    flex: 1,
-    backgroundColor: AppColors.white,
-  },
   header: {
     backgroundColor: AppColors.primary,
-    paddingTop: 16,
-    paddingBottom: 16,
+    paddingVertical: 16,
     paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
@@ -195,9 +228,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  messagesContainer: {
+  flexContainer: {
     flex: 1,
     backgroundColor: AppColors.background.secondary,
+  },
+  messagesContainer: {
+    flex: 1,
   },
   messagesContent: {
     padding: 20,

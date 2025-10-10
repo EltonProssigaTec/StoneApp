@@ -92,6 +92,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginBottom: 100,
+    ...Platform.select({
+      web: {
+        paddingBottom: 60,
+      },
+    }),
     backgroundColor: AppColors.background.secondary,
   },
   safeArea: {

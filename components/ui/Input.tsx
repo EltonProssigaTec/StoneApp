@@ -1,6 +1,7 @@
 import { AppColors, Fonts } from '@/constants/theme';
 import React, { useState } from 'react';
 import {
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -51,7 +52,15 @@ export function Input({
         ]}
       >
         <TextInput
-          style={[styles.input, style]}
+          style={[
+            styles.input,
+            style,
+            Platform.OS === 'web' && {
+              // @ts-ignore
+              WebkitBoxShadow: '0 0 0 1000px white inset',
+              WebkitTextFillColor: AppColors.text.primary,
+            },
+          ]}
           placeholderTextColor={AppColors.text.placeholder}
           secureTextEntry={secureTextEntry && !isPasswordVisible}
           onFocus={() => setIsFocused(true)}
@@ -114,6 +123,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.regular,
     color: AppColors.text.primary,
+    ...(Platform.OS === 'web' && {
+      // @ts-ignore
+      outlineStyle: 'none',
+    }),
   },
   eyeIcon: {
     padding: 8,

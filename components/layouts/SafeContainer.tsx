@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, ViewStyle, Platform } from 'react-native';
+import { Platform, StyleSheet, View, ViewStyle } from 'react-native';
 
 interface SafeContainerProps {
   children: React.ReactNode;

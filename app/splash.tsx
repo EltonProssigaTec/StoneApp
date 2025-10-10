@@ -1,5 +1,6 @@
 import { LogoImage } from '@/components/LogoImage';
 import { AppColors, Gradients } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect } from 'react';
@@ -7,6 +8,7 @@ import { Animated, StyleSheet, View } from 'react-native';
 
 export default function SplashScreen() {
   const router = useRouter();
+  const { isLogged, loading } = useAuth();
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.8);
 
@@ -24,14 +26,22 @@ export default function SplashScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-
-    // Navegar para login após 2.5 segundos
-    const timer = setTimeout(() => {
-      router.replace('/login');
-    }, 2500);
-
-    return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    // Só navegar quando o loading terminar
+    if (!loading) {
+      const timer = setTimeout(() => {
+        if (isLogged) {
+          router.replace('/(tabs)/home');
+        } else {
+          router.replace('/login');
+        }
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading, isLogged]);
 
   return (
     <View style={styles.container}>
