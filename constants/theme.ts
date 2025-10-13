@@ -3,7 +3,6 @@
  * Cores e estilos baseados no design do Figma
  */
 
-import { Platform } from 'react-native';
 
 // Cores principais do StoneUP Monitora
 export const AppColors = {

@@ -5,7 +5,8 @@
       "Bash(mv:*)",
       "Bash(rmdir:*)",
       "Bash(rm:*)",
-      "Read(//c/Users/pross/PROJETOS_PROSSIGA/monitora_mobile/**)"
+      "Read(//c/Users/pross/PROJETOS_PROSSIGA/monitora_mobile/**)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

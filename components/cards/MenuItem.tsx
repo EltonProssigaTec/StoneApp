@@ -1,5 +1,5 @@
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 13,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: AppColors.text.primary,
   },
 });

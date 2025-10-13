@@ -1,12 +1,14 @@
 import { MenuItem } from '@/components/cards';
+import { PropagandaDeOferta } from '@/components/PropagandaDeOferta';
 import { Section } from '@/components/teste';
-import { Card, SideMenu } from '@/components/ui';
+import { SideMenu } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { DividasService, ResumoFinanceiro } from '@/services/dividas.service';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -41,50 +43,47 @@ export default function HomeScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container}>
-      <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
-
-      {/* Section com Header e Card de Dívidas */}
-      <Section
-        amount={loading ? 0 : (resumo?.total_dividas || 0)}
-        updatedAt={new Date().toLocaleDateString('pt-BR')}
-        onMenuPress={() => setMenuVisible(true)}
+    <SafeAreaView style={styles.safeArea} edges={[]}>
+      <StatusBar
+        backgroundColor={AppColors.primary}
+        barStyle="light-content"
+        translucent={false}
       />
+      <ScrollView style={styles.container}>
+        <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
 
-      <View style={styles.wrapper}>
-        <View style={styles.contentWrapper}>
-          <View style={styles.scrollContainer}>
-            <View style={styles.content}>
+        {/* Section com Header e Card de Dívidas */}
+        <Section
+          amount={loading ? 0 : (resumo?.total_dividas || 0)}
+          updatedAt={new Date().toLocaleDateString('pt-BR')}
+          onMenuPress={() => setMenuVisible(true)}
+        />
 
-              {/* Menu Grid */}
-              <View style={styles.menuGrid}>
-                {menuItems.map((item, index) => (
-                  <MenuItem
-                    key={index}
-                    icon={item.icon}
-                    title={item.title}
-                    onPress={() => router.push(item.route as any)}
-                  />
-                ))}
-              </View>
+        <View style={styles.wrapper}>
+          <View style={styles.contentWrapper}>
+            <View style={styles.scrollContainer}>
+              <View style={styles.content}>
 
-              {/* Promo Banner */}
-              <Card style={styles.promoBanner}>
-                <View style={styles.promoContent}>
-                  <View style={styles.promoIcon}>
-                    <Text style={styles.promoIconText}>B</Text>
-                  </View>
-                  <View style={styles.promoText}>
-                    <Text style={styles.promoTitle}>Aproveite nossas ofertas</Text>
-                    <Text style={styles.promoSubtitle}>e limpe já o seu nome!</Text>
-                  </View>
+                {/* Menu Grid */}
+                <View style={styles.menuGrid}>
+                  {menuItems.map((item, index) => (
+                    <MenuItem
+                      key={index}
+                      icon={item.icon}
+                      title={item.title}
+                      onPress={() => router.push(item.route as any)}
+                    />
+                  ))}
                 </View>
-              </Card>
+
+                {/* Promo Banner */}
+                <PropagandaDeOferta style={styles.promoBanner} />
+              </View>
             </View>
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -95,12 +94,14 @@ const styles = StyleSheet.create({
     ...Platform.select({
       web: {
         paddingBottom: 60,
+        marginBottom: 0
       },
     }),
     backgroundColor: AppColors.background.secondary,
   },
   safeArea: {
     backgroundColor: AppColors.primary,
+    flex: 1,
   },
   wrapper: {
     flex: 1,
@@ -141,41 +142,9 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   promoBanner: {
-    backgroundColor: AppColors.primary,
-    marginHorizontal: 20,
+    paddingHorizontal: 20,
     marginTop: 20,
     marginBottom: 30,
-  },
-  promoContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  promoIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
-    backgroundColor: AppColors.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 16,
-  },
-  promoIconText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: AppColors.white,
-  },
-  promoText: {
-    flex: 1,
-  },
-  promoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: AppColors.white,
-  },
-  promoSubtitle: {
-    fontSize: 14,
-    color: AppColors.white,
-    marginTop: 2,
   },
   loadingContainer: {
     padding: 40,

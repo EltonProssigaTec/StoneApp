@@ -206,8 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: 20,
+    paddingTop: 30,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
@@ -215,7 +214,6 @@ const styles = StyleSheet.create({
   logo: {
     width: 200,
     height: 150,
-    marginBottom: 20,
   },
   avatarContainer: {
     width: 64,
@@ -237,8 +235,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 12,
-    gap: 16,
+    paddingVertical: 8,
+    gap: 8,
   },
   iconContainer: {
     width: 40,

@@ -1,4 +1,4 @@
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
             web: {
                 maxWidth: 720,
                 marginHorizontal: 'auto',
-                width: "100%",
             },
         }),
     },
@@ -145,7 +144,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 10,
     },
     avatarContainer: {
         width: 43,
@@ -164,14 +163,14 @@ const styles = StyleSheet.create({
     },
     welcomeText: {
         fontSize: 24,
-        fontWeight: '700',
+        fontFamily: Fonts.semiBold,
         color: AppColors.white,
         letterSpacing: 0,
         marginBottom: 4,
     },
     planText: {
         fontSize: 16,
-        fontWeight: '400',
+        fontFamily: Fonts.medium,
         color: AppColors.white,
         letterSpacing: 0,
         opacity: 0.8,
@@ -210,10 +209,10 @@ const styles = StyleSheet.create({
     myBalance: {
         color: AppColors.white,
         fontSize: 12,
-        fontWeight: '600',
+        fontFamily: Fonts.semiBold,
         letterSpacing: 0.5,
         textTransform: 'uppercase',
-        opacity: 0.8,
+        opacity: 0.9,
     },
     amountRow: {
         flexDirection: 'row',
@@ -227,14 +226,14 @@ const styles = StyleSheet.create({
     amount: {
         color: AppColors.white,
         fontSize: 32,
-        fontWeight: '600',
+        fontFamily: Fonts.medium,
         letterSpacing: 0,
     },
     expOnSep172023: {
         color: AppColors.white,
         fontSize: 11,
-        fontWeight: '400',
+        fontFamily: Fonts.regular,
         letterSpacing: 0,
-        opacity: 0.7,
+        opacity: 0.8,
     },
 });

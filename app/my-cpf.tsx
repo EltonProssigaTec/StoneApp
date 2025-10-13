@@ -1,25 +1,91 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { AppColors } from '@/constants/theme';
+import { AppHeader } from '@/components/ui/AppHeader';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppColors } from '@/constants/theme';
+import React, { useState } from 'react';
+import {
+  Image,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MyCpfScreen() {
-  const router = useRouter();
+  const [nomeCompleto, setNomeCompleto] = useState('');
+  const [dataNascimento, setDataNascimento] = useState('');
+
+  const handlePesquisar = () => {
+    console.log('Pesquisar:', { nomeCompleto, dataNascimento });
+    // Implementar lógica de pesquisa
+  };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Meu CPF/CNPJ</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <StatusBar
+        backgroundColor={AppColors.primary}
+        barStyle="light-content"
+        translucent={false}
+      />
+
+      {/* Header */}
+      <AppHeader title='Meu CPF' />
+
+      {/* Content */}
       <View style={styles.content}>
-        <Text style={styles.title}>Meu CPF/CNPJ</Text>
-        <Text style={styles.subtitle}>Em desenvolvimento...</Text>
+        {/* Ilustração */}
+        <View style={styles.illustrationContainer}>
+          <Image
+            source={require('@/assets/images/flutuante.png')}
+            style={styles.illustrationImage}
+            resizeMode="contain"
+          />
+        </View>
+
+        {/* Campo Nome Completo */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputIcon}>
+            <IconSymbol name="person.fill" size={24} color={AppColors.primary} />
+          </View>
+          <View style={styles.inputContent}>
+            <Text style={styles.inputLabel}>NOME COMPLETO:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Escreva seu nome completo."
+              placeholderTextColor={AppColors.gray[400]}
+              value={nomeCompleto}
+              onChangeText={setNomeCompleto}
+            />
+          </View>
+        </View>
+
+        {/* Campo Data de Nascimento */}
+        <View style={styles.inputContainer}>
+          <View style={styles.inputIcon}>
+            <IconSymbol name="calendar" size={24} color={AppColors.primary} />
+          </View>
+          <View style={styles.inputContent}>
+            <Text style={styles.inputLabel}>DATA DE NASCIMENTO:</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ex.: 20/04/..."
+              placeholderTextColor={AppColors.gray[400]}
+              value={dataNascimento}
+              onChangeText={setDataNascimento}
+              keyboardType="numeric"
+            />
+          </View>
+        </View>
+
+        {/* Botão Pesquisar */}
+        <TouchableOpacity
+          style={styles.searchButton}
+          onPress={handlePesquisar}
+        >
+          <Text style={styles.searchButtonText}>PESQUISAR</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -30,15 +96,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.background.secondary,
   },
-  header: {
-    backgroundColor: AppColors.primary,
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
@@ -46,18 +103,80 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 24,
+  },
+  illustrationContainer: {
+    width: '100%',
+    height: 300,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    overflow: 'hidden',
+    position: 'relative',
+    left: '15%',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: AppColors.primary,
-    marginBottom: 8,
+  illustrationImage: {
+    width: '100%',
+    height: '100%',
   },
-  subtitle: {
-    fontSize: 16,
-    color: AppColors.text.secondary,
+  inputContainer: {
+    flexDirection: 'row',
+    backgroundColor: AppColors.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: AppColors.gray[200],
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+    gap: 12,
+    minHeight: 100,
+  },
+  inputIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 14,
+    backgroundColor: AppColors.background.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  inputContent: {
+    flex: 1,
+    gap: 7,
+  },
+  inputLabel: {
+    color: AppColors.text.primary,
+    fontFamily: 'Montserrat',
+    fontSize: 14,
+    fontWeight: '500',
+    letterSpacing: 1,
+  },
+  input: {
+    color: AppColors.gray[400],
+    fontFamily: 'Montserrat',
+    fontSize: 11,
+    fontWeight: '400',
+    letterSpacing: 1,
+    padding: 0,
+  },
+  searchButton: {
+    backgroundColor: AppColors.secondary,
+    borderRadius: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    alignSelf: 'center',
+    minWidth: 128,
+  },
+  searchButtonText: {
+    color: AppColors.white,
+    fontFamily: 'Montserrat',
+    fontSize: 15,
+    fontWeight: '500',
+    letterSpacing: 1,
+    textAlign: 'center',
   },
 });

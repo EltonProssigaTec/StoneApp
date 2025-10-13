@@ -1,22 +1,24 @@
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Input } from '@/components/ui/Input';
+import { AppColors } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
+import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
   Alert,
+  Image,
+  Platform,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '@/contexts/AuthContext';
-import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AppColors } from '@/constants/theme';
 
 export default function PerfilScreen() {
   const router = useRouter();
@@ -64,7 +66,12 @@ export default function PerfilScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <StatusBar
+        backgroundColor={AppColors.primary} // cor do header no Android
+        barStyle="light-content" // texto branco
+        translucent={false}
+      />
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
@@ -166,6 +173,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: AppColors.background.secondary,
+    width: '100%',
+    ...Platform.select({
+      web: {
+          maxWidth: 720,
+          marginHorizontal: 'auto',
+      },
+  }),
   },
   header: {
     backgroundColor: AppColors.primary,
