@@ -8,9 +8,8 @@ import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import Checkbox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, BackHandler, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -20,6 +19,19 @@ export default function LoginScreen() {
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+
+  // Bloquear botão voltar do Android
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        // Retornar true impede a ação padrão (voltar)
+        return true;
+      }
+    );
+
+    return () => backHandler.remove();
+  }, []);
 
   const handleLogin = async () => {
     const newErrors = { email: '', password: '' };
@@ -62,7 +74,7 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout waveVariant="login">
-      <StatusBar animated/>
+      <StatusBar barStyle={'dark-content'} translucent={true}/>
       <View style={styles.container}>
         <Input
           label="Login"

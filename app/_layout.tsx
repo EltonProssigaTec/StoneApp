@@ -52,12 +52,12 @@ export default function RootLayout() {
       <AuthProvider>
         <ThemeProvider value={DefaultTheme}>
           <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="splash" />
-            <Stack.Screen name="login" />
+            <Stack.Screen name="index" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="splash" options={{ headerShown: false, gestureEnabled: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false, gestureEnabled: false }} />
             <Stack.Screen name="register" />
             <Stack.Screen name="recover" />
-            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false, gestureEnabled: false }} />
             <Stack.Screen name="pendencias" />
             <Stack.Screen name="ofertas" />
             <Stack.Screen name="planos" />

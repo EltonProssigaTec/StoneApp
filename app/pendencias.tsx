@@ -2,10 +2,12 @@ import { AppHeader } from '@/components/ui/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Platform,
+  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -78,26 +80,35 @@ export default function PendenciasScreen() {
         {/* Debt List */}
         <View style={styles.debtList}>
           {debts.map((debt) => (
-            <TouchableOpacity key={debt.id}>
-              <Card style={styles.debtCard}>
-                <View style={styles.debtContent}>
-                  <View style={styles.debtIcon}>
-                    <Text style={styles.debtIconText}>{debt.icon}</Text>
+            <View key={debt.id} style={styles.debtCardWrapper}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.pressableContainer,
+                  pressed && styles.debtCardPressed,
+                ]}
+                android_ripple={null}
+                android_disableSound={true}
+              >
+                <Card style={styles.debtCard} elevated={false}>
+                  <View style={styles.debtContent}>
+                    <View style={styles.debtIcon}>
+                      <Text style={styles.debtIconText}>{debt.icon}</Text>
+                    </View>
+                    <View style={styles.debtInfo}>
+                      <Text style={styles.debtCompany}>{debt.company}</Text>
+                      <Text style={styles.debtAmount}>
+                        R$ {debt.amount.toFixed(2)}
+                      </Text>
+                    </View>
+                    <IconSymbol
+                      name="chevron.right"
+                      size={20}
+                      color={AppColors.gray[400]}
+                    />
                   </View>
-                  <View style={styles.debtInfo}>
-                    <Text style={styles.debtCompany}>{debt.company}</Text>
-                    <Text style={styles.debtAmount}>
-                      R$ {debt.amount.toFixed(2)}
-                    </Text>
-                  </View>
-                  <IconSymbol
-                    name="chevron.right"
-                    size={20}
-                    color={AppColors.gray[400]}
-                  />
-                </View>
-              </Card>
-            </TouchableOpacity>
+                </Card>
+              </Pressable>
+            </View>
           ))}
         </View>
 
@@ -161,7 +172,7 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.medium,
     color: AppColors.text.secondary,
   },
   activeTabText: {
@@ -171,8 +182,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  debtCard: {
+  debtCardWrapper: {
     marginBottom: 12,
+  },
+  pressableContainer: {
+    borderWidth: 0,
+    borderRadius: 12,
+    overflow: 'hidden',
+    ...Platform.select({
+      android: {
+        elevation: 0,
+        borderColor: 'transparent',
+        outlineWidth: 0,
+        outlineColor: 'transparent',
+      },
+      ios: {
+        borderWidth: 0,
+      },
+    }),
+  },
+  debtCardPressed: {
+    opacity: 0.7,
+  },
+  debtCard: {
+    borderWidth: 0,
   },
   debtContent: {
     flexDirection: 'row',
@@ -189,7 +222,7 @@ const styles = StyleSheet.create({
   },
   debtIconText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Fonts.semiBold,
     color: AppColors.primary,
   },
   debtInfo: {
@@ -197,12 +230,13 @@ const styles = StyleSheet.create({
   },
   debtCompany: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: AppColors.text.primary,
     marginBottom: 4,
   },
   debtAmount: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: AppColors.text.secondary,
   },
   totalSection: {
@@ -213,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginTop: 16,
     marginHorizontal: 20,
-    elevation: 2,
+    elevation: 1,
     marginBottom: 20,
   },
   totalRow: {
@@ -224,12 +258,12 @@ const styles = StyleSheet.create({
   },
   totalLabel: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: Fonts.semiBold,
     color: AppColors.text.primary,
   },
   totalAmount: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: Fonts.semiBold,
     color: AppColors.primary,
   },
   generateButton: {
