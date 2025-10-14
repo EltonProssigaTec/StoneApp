@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
+import { Fonts } from "@/constants/theme";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -27,7 +28,7 @@ export default function TabLayout() {
         },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: '600',
+          fontFamily: Fonts.medium,
           textTransform: 'uppercase',
         },
       }}
@@ -51,11 +52,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="dividas"
+        name="ofertas"
         options={{
-          title: "DÍVIDAS",
+          title: "OFERTAS",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="wallet.pass.fill" color={color} />
+            <IconSymbol size={28} name="tag.fill" color={color} />
           ),
         }}
       />

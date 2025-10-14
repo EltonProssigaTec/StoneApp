@@ -1,9 +1,12 @@
 import { AppHeader } from '@/components/ui/AppHeader';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import React, { useState } from 'react';
 import {
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -25,68 +28,78 @@ export default function MyCpfScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <StatusBar
-        backgroundColor={AppColors.primary}
         barStyle="light-content"
-        translucent={false}
+        translucent={true}
       />
 
       {/* Header */}
       <AppHeader title='Meu CPF' />
 
       {/* Content */}
-      <View style={styles.content}>
-        {/* Ilustração */}
-        <View style={styles.illustrationContainer}>
-          <Image
-            source={require('@/assets/images/flutuante.png')}
-            style={styles.illustrationImage}
-            resizeMode="contain"
-          />
-        </View>
-
-        {/* Campo Nome Completo */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputIcon}>
-            <IconSymbol name="person.fill" size={24} color={AppColors.primary} />
-          </View>
-          <View style={styles.inputContent}>
-            <Text style={styles.inputLabel}>NOME COMPLETO:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Escreva seu nome completo."
-              placeholderTextColor={AppColors.gray[400]}
-              value={nomeCompleto}
-              onChangeText={setNomeCompleto}
-            />
-          </View>
-        </View>
-
-        {/* Campo Data de Nascimento */}
-        <View style={styles.inputContainer}>
-          <View style={styles.inputIcon}>
-            <IconSymbol name="calendar" size={24} color={AppColors.primary} />
-          </View>
-          <View style={styles.inputContent}>
-            <Text style={styles.inputLabel}>DATA DE NASCIMENTO:</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ex.: 20/04/..."
-              placeholderTextColor={AppColors.gray[400]}
-              value={dataNascimento}
-              onChangeText={setDataNascimento}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
-
-        {/* Botão Pesquisar */}
-        <TouchableOpacity
-          style={styles.searchButton}
-          onPress={handlePesquisar}
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.searchButtonText}>PESQUISAR</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Ilustração */}
+          <View style={styles.illustrationContainer}>
+            <Image
+              source={require('@/assets/images/flutuante.png')}
+              style={styles.illustrationImage}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* Campo Nome Completo */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputIcon}>
+              <IconSymbol name="person.fill" size={24} color={AppColors.primary} />
+            </View>
+            <View style={styles.inputContent}>
+              <Text style={styles.inputLabel}>NOME COMPLETO:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Escreva seu nome completo."
+                placeholderTextColor={AppColors.gray[400]}
+                value={nomeCompleto}
+                onChangeText={setNomeCompleto}
+              />
+            </View>
+          </View>
+
+          {/* Campo Data de Nascimento */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputIcon}>
+              <IconSymbol name="calendar" size={24} color={AppColors.primary} />
+            </View>
+            <View style={styles.inputContent}>
+              <Text style={styles.inputLabel}>DATA DE NASCIMENTO:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Ex.: 20/04/..."
+                placeholderTextColor={AppColors.gray[400]}
+                value={dataNascimento}
+                onChangeText={setDataNascimento}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
+
+          {/* Botão Pesquisar */}
+          <TouchableOpacity
+            style={styles.searchButton}
+            onPress={handlePesquisar}
+          >
+            <Text style={styles.searchButtonText}>PESQUISAR</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -94,17 +107,31 @@ export default function MyCpfScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.background.secondary,
+    width: '100%',
+    alignSelf: "center",
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
+    backgroundColor: AppColors.background.primary,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: AppColors.white,
   },
-  content: {
+  keyboardView: {
     flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  content: {
+    flexGrow: 1,
     paddingHorizontal: 20,
     paddingTop: 24,
+    paddingBottom: 20,
   },
   illustrationContainer: {
     width: '100%',
@@ -147,16 +174,15 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     color: AppColors.text.primary,
-    fontFamily: 'Montserrat',
+    fontFamily: Fonts.medium,
     fontSize: 14,
     fontWeight: '500',
     letterSpacing: 1,
   },
   input: {
     color: AppColors.gray[400],
-    fontFamily: 'Montserrat',
+    fontFamily: Fonts.regular,
     fontSize: 11,
-    fontWeight: '400',
     letterSpacing: 1,
     padding: 0,
   },
@@ -173,9 +199,8 @@ const styles = StyleSheet.create({
   },
   searchButtonText: {
     color: AppColors.white,
-    fontFamily: 'Montserrat',
+    fontFamily: Fonts.regular,
     fontSize: 15,
-    fontWeight: '500',
     letterSpacing: 1,
     textAlign: 'center',
   },

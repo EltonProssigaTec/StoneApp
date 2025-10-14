@@ -19,7 +19,9 @@ const api = axios.create({
   baseURL: settings.API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  timeout: 30000, // 30 segundos
 });
 
 // Interceptor de requisição
@@ -41,18 +43,35 @@ api.interceptors.response.use(
     return response;
   },
   async (error) => {
-    const errorMsg = error.response?.data?.message || error.message;
+    console.error('[API Response Error]', {
+      url: error.config?.url,
+      status: error.response?.status,
+      code: error.code,
+      message: error.message,
+    });
 
-    // Ignorar erros de SQL do backend (problema no servidor)
-    if (errorMsg && errorMsg.includes('SQLSTATE')) {
-      console.warn('[API] Erro de SQL no backend (ignorado):', errorMsg);
-      // Se houve resposta mesmo com erro, retornar a resposta
-      if (error.response) {
-        return error.response;
-      }
+    // Tratar erros de rede
+    if (error.code === 'ECONNABORTED') {
+      console.error('[API] Timeout na requisição');
+      error.userMessage = 'Tempo de espera esgotado. Verifique sua conexão.';
+      return Promise.reject(error);
     }
 
-    console.log('[API Response Error]', error.response?.data || error.message);
+    if (error.code === 'ERR_NETWORK' || !error.response) {
+      console.error('[API] Erro de rede - sem conexão com o servidor');
+      error.userMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.';
+      return Promise.reject(error);
+    }
+
+    // Para erros 401, 403, etc
+    if (error.response?.status === 401) {
+      error.userMessage = 'Email ou senha incorretos.';
+    } else if (error.response?.status === 403) {
+      error.userMessage = 'Acesso negado.';
+    } else if (error.response?.status >= 500) {
+      error.userMessage = 'Erro no servidor. Tente novamente mais tarde.';
+    }
+
     return Promise.reject(error);
   }
 );

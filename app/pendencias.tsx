@@ -1,17 +1,19 @@
+import { AppHeader } from '@/components/ui/AppHeader';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppColors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { AppColors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 
 interface Debt {
   id: string;
@@ -35,17 +37,14 @@ export default function PendenciasScreen() {
   const totalDebt = debts.reduce((sum, debt) => sum + debt.amount, 0);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <StatusBar
+        barStyle="light-content"
+        translucent={true}
+      />
+
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Pendências financeiras</Text>
-        <TouchableOpacity>
-          <IconSymbol name="ellipsis" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title='Pendências Financeiras' />
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Tabs */}
@@ -116,7 +115,7 @@ export default function PendenciasScreen() {
           />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </SafeAreaView >
   );
 }
 

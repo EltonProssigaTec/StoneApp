@@ -8,6 +8,7 @@ import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import Checkbox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Alert, StyleSheet, TouchableOpacity, View } from 'react-native';
 
@@ -61,6 +62,7 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout waveVariant="login">
+      <StatusBar animated/>
       <View style={styles.container}>
         <Input
           label="Login"

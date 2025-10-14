@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconSymbol } from './ui/icon-symbol';
 
 import type { StyleProp, ViewStyle } from 'react-native';
+import { DebtCard } from './cards/DebtCardEye';
 
 export interface SectionProps {
     /** Used to override the default root style. */
@@ -83,9 +84,8 @@ export function Section(props: SectionProps) {
                     <Text style={styles.welcomeText}>{getGreeting()}, {firstName}!</Text>
                     <Text style={styles.planText}>{user?.plano || 'Plano Gratuito'}</Text>
                 </View>
-
-
-                <View style={styles.card}>
+                <DebtCard amount={amount} updatedAt={updatedAt}></DebtCard>
+                {/* <View style={styles.card}>
                     <LinearGradient
                         colors={['#0164AE', '#0195D8']}
                         start={{ x: 0, y: 0 }}
@@ -114,7 +114,7 @@ export function Section(props: SectionProps) {
                     <Text style={styles.expOnSep172023}>
                         Atualizado em {updatedAt}
                     </Text>
-                </View>
+                </View>  */}
             </LinearGradient>
         </View>
     );
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
         opacity: 0.8,
     },
     card: {
-        marginTop: 30,
+        marginTop: 16,
         paddingVertical: 21,
         paddingHorizontal: 14,
         borderRadius: 19,

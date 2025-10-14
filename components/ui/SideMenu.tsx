@@ -1,4 +1,5 @@
 import { AppColors, Fonts } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef } from 'react';
 import {
@@ -30,6 +31,7 @@ interface SideMenuProps {
 
 export function SideMenu({ visible, onClose }: SideMenuProps) {
   const router = useRouter();
+  const { signOut } = useAuth();
   const slideAnim = useRef(new Animated.Value(-MENU_WIDTH)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
@@ -41,7 +43,7 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
     { icon: 'wallet.pass.fill', title: 'Meus boletos', route: '/acordos', color: AppColors.primary },
     { icon: 'chart.line.uptrend.xyaxis', title: 'Saúde financeira', route: '/(tabs)/saude-financeira', color: AppColors.primary },
     { icon: 'info.circle.fill', title: 'Ajuda', route: '/chat', color: AppColors.primary },
-    { icon: 'arrow.right.square.fill', title: 'Sair', route: '/login', color: AppColors.primary },
+    { icon: 'arrow.right.square.fill', title: 'Sair', route: 'LOGOUT', color: AppColors.primary },
   ];
 
   useEffect(() => {
@@ -76,8 +78,16 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
     }
   }, [visible]);
 
-  const handleNavigate = (route: string) => {
+  const handleNavigate = async (route: string) => {
     onClose();
+
+    // Tratar logout de forma especial
+    if (route === 'LOGOUT') {
+      await signOut();
+      router.replace('/login');
+      return;
+    }
+
     router.push(route as any);
   };
 

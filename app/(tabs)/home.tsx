@@ -1,6 +1,6 @@
 import { MenuItem } from '@/components/cards';
 import { PropagandaDeOferta } from '@/components/PropagandaDeOferta';
-import { Section } from '@/components/teste';
+import { Section } from '@/components/section';
 import { SideMenu } from '@/components/ui';
 import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
@@ -43,21 +43,20 @@ export default function HomeScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={[]}>
+    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
       <StatusBar
-        backgroundColor={AppColors.primary}
-        barStyle="light-content"
-        translucent={false}
+        barStyle={'light-content'}
+        translucent={true}
       />
-      <ScrollView style={styles.container}>
-        <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
 
+      <ScrollView style={styles.container}>
         {/* Section com Header e Card de Dívidas */}
         <Section
-          amount={loading ? 0 : (resumo?.total_dividas || 0)}
-          updatedAt={new Date().toLocaleDateString('pt-BR')}
-          onMenuPress={() => setMenuVisible(true)}
-        />
+        amount={loading ? 0 : (resumo?.total_dividas || 0)}
+        updatedAt={new Date().toLocaleDateString('pt-BR')}
+        onMenuPress={() => setMenuVisible(true)}
+      />
+        <SideMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
 
         <View style={styles.wrapper}>
           <View style={styles.contentWrapper}>
@@ -74,10 +73,10 @@ export default function HomeScreen() {
                       onPress={() => router.push(item.route as any)}
                     />
                   ))}
+                  {/* Promo Banner */}
+                  <PropagandaDeOferta style={styles.promoBanner} />
                 </View>
 
-                {/* Promo Banner */}
-                <PropagandaDeOferta style={styles.promoBanner} />
               </View>
             </View>
           </View>
@@ -89,8 +88,6 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    marginBottom: 100,
     ...Platform.select({
       web: {
         paddingBottom: 60,
@@ -100,8 +97,13 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.background.secondary,
   },
   safeArea: {
-    backgroundColor: AppColors.primary,
     flex: 1,
+    backgroundColor: AppColors.background.primary,
+    ...Platform.select({
+      web: {
+
+      },
+    }),
   },
   wrapper: {
     flex: 1,
@@ -142,9 +144,16 @@ const styles = StyleSheet.create({
     marginTop: 20
   },
   promoBanner: {
-    paddingHorizontal: 20,
+    ...Platform.select({
+      web: {
+        width: '100%',
+        maxWidth: 665,
+        alignSelf: 'center',
+      },
+    }),
+
     marginTop: 20,
-    marginBottom: 30,
+    marginBottom: 100,
   },
   loadingContainer: {
     padding: 40,

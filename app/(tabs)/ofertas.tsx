@@ -1,16 +1,18 @@
+import { AppHeader, DebtCard } from '@/components';
+import { Card } from '@/components/ui/Card';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+import { AppColors } from '@/constants/theme';
+import { router } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Platform,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Card } from '@/components/ui/Card';
-import { AppColors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 
 interface Offer {
   id: string;
@@ -21,8 +23,6 @@ interface Offer {
 }
 
 export default function OfertasScreen() {
-  const router = useRouter();
-
   const offers: Offer[] = [
     {
       id: '1',
@@ -50,32 +50,14 @@ export default function OfertasScreen() {
   const totalDebt = 2500.00;
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <IconSymbol name="ellipsis" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-      </View>
 
-      {/* Debt Card */}
-      <View style={styles.debtCard}>
-        <View style={styles.debtHeader}>
-          <Text style={styles.debtLabel}>MINHAS DÍVIDAS</Text>
-          <TouchableOpacity style={styles.payButton}>
-            <Text style={styles.payButtonText}>PAGAR</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.debtAmount}>$2,500.00</Text>
-        <Text style={styles.debtDate}>Atualizado em 02/09/2025</Text>
-      </View>
+      <AppHeader title='Ofertas' onBackPress={() => router.back()} onMenuPress={undefined} />
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
-        {/* Title */}
-        <Text style={styles.title}>Ofertas</Text>
+              {/* Debt Card */}
+      <DebtCard amount={totalDebt} updatedAt={'14/10/2025'} />
 
         {/* Offers List */}
         <View style={styles.offersList}>
@@ -125,7 +107,14 @@ export default function OfertasScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.background.secondary,
+    width: '100%',
+    alignSelf: "center",
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
+    backgroundColor: AppColors.background.primary,
   },
   header: {
     backgroundColor: AppColors.primary,
@@ -135,6 +124,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: AppColors.white,
   },
   debtCard: {
     backgroundColor: AppColors.primary,
@@ -186,6 +180,7 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   offersList: {
+    marginTop: 20,
     paddingHorizontal: 20,
     paddingBottom: 40,
   },

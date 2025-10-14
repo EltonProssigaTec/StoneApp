@@ -13,6 +13,7 @@ import React, {
   ReactNode,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 import api from '@/services/api.config';
 
 export interface User {
@@ -71,95 +72,155 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * Login do usuário
    */
   const signIn = async (email: string, password: string, keepLoggedIn: boolean = false): Promise<boolean> => {
-    try {
-      console.log('[Auth] Iniciando login...');
+    let attempts = 0;
+    const maxAttempts = 2;
 
-      // IMPORTANTE: Remover token antigo antes de fazer login
-      // Isso evita que o backend tente validar um token expirado/inválido
-      delete api.defaults.headers.common['Authorization'];
+    while (attempts < maxAttempts) {
+      try {
+        attempts++;
+        console.log(`[Auth] Tentativa ${attempts} de login...`);
 
-      // Fazer requisição diretamente sem usar o interceptor
-      const response = await api.post('/login_monitora', { email, password }, {
-        validateStatus: (status) => status < 500, // Aceitar qualquer status < 500
-      });
+        // IMPORTANTE: Remover token antigo antes de fazer login
+        // Isso evita que o backend tente validar um token expirado/inválido
+        delete api.defaults.headers.common['Authorization'];
 
-      console.log('[Auth] Status da resposta:', response.status);
-      console.log('[Auth] Dados da resposta:', JSON.stringify(response.data, null, 2));
+        // Fazer requisição de login
+        const response = await api.post('/login_monitora', {
+          email: email.trim().toLowerCase(),
+          password
+        });
 
-      // Verifica se é um erro de SQL do backend (mas o login pode ter funcionado)
-      const hasException = response.data?.exception || response.data?.message?.includes('SQLSTATE');
+        console.log('[Auth] Status da resposta:', response.status);
 
-      if (hasException) {
-        console.warn('[Auth] Backend retornou erro mas vou tentar extrair dados do login...');
-        // O backend tem um bug que retorna erro depois do login bem-sucedido
-        // Mas não retorna os dados do usuário nesta resposta
-        // Vamos tentar fazer login sem validação do middleware
-        alert('Login efetuado mas o sistema apresentou um erro técnico. Por favor, tente novamente.');
+        // Verificar se o status não é 2xx (sucesso)
+        if (response.status < 200 || response.status >= 300) {
+          console.error('[Auth] Status de erro:', response.status);
+          if (attempts < maxAttempts) {
+            console.log('[Auth] Tentando novamente...');
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Aguardar 1s antes de tentar novamente
+            continue;
+          }
+          throw new Error('Status de resposta inválido');
+        }
+
+        // Verifica diferentes estruturas de resposta possíveis
+        let user = null;
+        let token = null;
+
+        // Tentar extrair dados em diferentes estruturas
+        const data = response.data;
+
+        if (data?.dados?.user && data?.dados?.access_token) {
+          // Estrutura: { dados: { user, access_token } }
+          user = data.dados.user;
+          token = data.dados.access_token;
+        } else if (data?.user && data?.access_token) {
+          // Estrutura: { user, access_token }
+          user = data.user;
+          token = data.access_token;
+        } else if (data?.data?.user && data?.data?.access_token) {
+          // Estrutura: { data: { user, access_token } }
+          user = data.data.user;
+          token = data.data.access_token;
+        }
+
+        if (!user || !token) {
+          console.error('[Auth] Estrutura de resposta inválida');
+          console.error('[Auth] Resposta recebida:', JSON.stringify(data, null, 2));
+
+          if (attempts < maxAttempts) {
+            console.log('[Auth] Tentando novamente...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            continue;
+          }
+
+          throw new Error('Resposta da API inválida');
+        }
+
+        console.log('[Auth] Token recebido com sucesso');
+        console.log('[Auth] Usuário:', user.name || user.email);
+
+        // Configura token no header
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Salva no AsyncStorage
+        const storageItems: [string, string][] = [
+          ['@Auth:user', JSON.stringify(user)],
+          ['@Auth:token', token],
+          ['@Auth:keepLoggedIn', keepLoggedIn ? 'true' : 'false'],
+        ];
+
+        await AsyncStorage.multiSet(storageItems);
+
+        setUser(user);
+        console.log('[Auth] Login concluído com sucesso!');
+        return true;
+
+      } catch (err: any) {
+        console.error(`[Auth] Erro na tentativa ${attempts}:`, err.message);
+
+        // Se ainda há tentativas, continuar
+        if (attempts < maxAttempts) {
+          console.log('[Auth] Tentando novamente...');
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          continue;
+        }
+
+        // Última tentativa falhou - mostrar erro ao usuário
+        console.error('[Auth] Todas as tentativas falharam');
+        console.error('[Auth] Detalhes do erro:', {
+          code: err.code,
+          status: err.response?.status,
+          data: err.response?.data,
+        });
+
+        // Usar mensagem personalizada do interceptor se disponível
+        let message = err?.userMessage;
+
+        if (!message) {
+          // Verificar tipo de erro
+          if (err.code === 'ERR_NETWORK' || !err.response) {
+            message = 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.';
+          } else if (err.code === 'ECONNABORTED') {
+            message = 'Tempo de espera esgotado. Tente novamente.';
+          } else if (err.response?.status === 401) {
+            message = 'Email ou senha incorretos.';
+          } else if (err.response?.status >= 500) {
+            message = 'Erro no servidor. Tente novamente mais tarde.';
+          } else {
+            message = err?.response?.data?.message ?? 'Falha ao fazer login. Tente novamente.';
+          }
+        }
+
+        Alert.alert('Erro no Login', message);
         return false;
       }
-
-      // Verifica diferentes estruturas de resposta possíveis
-      let user = null;
-      let token = null;
-
-      if (response.data?.dados) {
-        // Estrutura: { dados: { user, access_token } }
-        user = response.data.dados.user;
-        token = response.data.dados.access_token;
-      } else if (response.data?.user && response.data?.access_token) {
-        // Estrutura: { user, access_token }
-        user = response.data.user;
-        token = response.data.access_token;
-      } else if (response.data?.data) {
-        // Estrutura: { data: { user, access_token } }
-        user = response.data.data.user;
-        token = response.data.data.access_token;
-      }
-
-      if (!user || !token) {
-        console.error('[Auth] Estrutura de resposta inválida');
-        console.error('[Auth] Resposta completa:', response.data);
-        alert('Email ou senha incorretos');
-        return false;
-      }
-
-      console.log('[Auth] Token recebido:', token.substring(0, 20) + '...');
-
-      // Configura token no header
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-      // Salva no AsyncStorage
-      const storageItems: [string, string][] = [
-        ['@Auth:user', JSON.stringify(user)],
-        ['@Auth:token', token],
-        ['@Auth:keepLoggedIn', keepLoggedIn ? 'true' : 'false'],
-      ];
-
-      await AsyncStorage.multiSet(storageItems);
-
-      setUser(user);
-      console.log('[Auth] Login concluído com sucesso!');
-      return true;
-    } catch (err: any) {
-      console.error('[Auth] Erro ao fazer login:', err.message);
-      console.error('[Auth] Detalhes:', err.response?.data);
-
-      const message = err?.response?.data?.message ?? 'Falha ao entrar. Verifique suas credenciais.';
-      alert(message);
-
-      return false;
     }
+
+    return false;
   };
 
   /**
    * Logout do usuário
    */
   const signOut = async (): Promise<void> => {
+    console.log('[Auth] Fazendo logout...');
     setLoading(true);
-    await AsyncStorage.clear();
-    api.defaults.headers.common['Authorization'] = '';
+
+    // Limpar token do header da API
+    delete api.defaults.headers.common['Authorization'];
+
+    // Desabilitar login automático ao fazer logout manual
+    await AsyncStorage.multiSet([
+      ['@Auth:keepLoggedIn', 'false'],
+      ['@Auth:token', ''],
+      ['@Auth:user', ''],
+    ]);
+
+    // Limpar estado do usuário
     setUser(null);
     setLoading(false);
+    console.log('[Auth] Logout concluído');
   };
 
   /**

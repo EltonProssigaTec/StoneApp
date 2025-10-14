@@ -77,8 +77,8 @@ const styles = StyleSheet.create({
   // Login variant
   loginBlue: {
     position: 'absolute',
-    top: -5,
-    left: 0,
+    top: 0,
+    left: -1,
     width: "35%",
     height: 40,
     backgroundColor: AppColors.primary,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   loginOrange: {
     position: 'absolute',
-    top: 10,
+    top: 20,
     left: 0,
     width: "24%",
     height: 40,
