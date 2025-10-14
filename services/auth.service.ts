@@ -30,7 +30,7 @@ export const AuthService = {
    * Pré-registro de usuário (envia código de verificação por email)
    */
   preRegister: async (data: RegisterData): Promise<RegisterResponse> => {
-    console.log('[AuthService] Pré-registro:', data.email);
+    if (__DEV__) console.log('[AuthService] Pré-registro:', data.email);
 
     const body = {
       ...data,
@@ -44,7 +44,7 @@ export const AuthService = {
     try {
       const response = await api.post('/pre_register_monitora', body);
 
-      console.log('[AuthService] Resposta pré-registro:', response.data);
+      if (__DEV__) console.log('[AuthService] Resposta pré-registro:', response.data);
 
       if (!response.data?.id) {
         throw new Error('ID de cadastro não retornado');
@@ -52,7 +52,7 @@ export const AuthService = {
 
       return response.data;
     } catch (error: any) {
-      console.error('[AuthService] Erro no pré-registro:', error.response?.data || error.message);
+      if (__DEV__) console.error('[AuthService] Erro no pré-registro:', error.response?.data || error.message);
       throw error;
     }
   },
@@ -69,7 +69,7 @@ export const AuthService = {
 
       return response.data?.success || false;
     } catch (error: any) {
-      console.error('[AuthService] Erro ao verificar código:', error.response?.data || error.message);
+      if (__DEV__) console.error('[AuthService] Erro ao verificar código:', error.response?.data || error.message);
       throw error;
     }
   },
@@ -87,7 +87,7 @@ export const AuthService = {
 
       return null;
     } catch (error: any) {
-      console.error('[AuthService] Erro ao consultar termos:', error.response?.data || error.message);
+      if (__DEV__) console.error('[AuthService] Erro ao consultar termos:', error.response?.data || error.message);
       throw error;
     }
   },
@@ -100,7 +100,7 @@ export const AuthService = {
       const response = await api.post('/recover_password', { email });
       return response.data?.success || false;
     } catch (error: any) {
-      console.error('[AuthService] Erro ao recuperar senha:', error.response?.data || error.message);
+      if (__DEV__) console.error('[AuthService] Erro ao recuperar senha:', error.response?.data || error.message);
       throw error;
     }
   },

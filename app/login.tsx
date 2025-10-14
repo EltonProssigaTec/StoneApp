@@ -51,22 +51,37 @@ export default function LoginScreen() {
       return;
     }
 
-    try {
-      setLoading(true);
+    setLoading(true);
 
+    try {
       // Fazer logout antes de tentar novo login (limpa tokens antigos)
       await signOut();
 
       const success = await signIn(email, password, keepLoggedIn);
 
       if (success) {
-        router.replace('/(tabs)/home');
+        // Aguarda um tick para garantir que o estado foi atualizado
+        setTimeout(() => {
+          router.replace('/(tabs)/home');
+        }, 100);
       } else {
-        Alert.alert('Erro', 'Email ou senha incorretos');
+        // Mostra erro de forma segura
+        setTimeout(() => {
+          Alert.alert('Erro de Login', 'Email ou senha incorretos. Verifique seus dados e tente novamente.');
+        }, 100);
       }
     } catch (error) {
-      console.error('[Login] Erro:', error);
-      Alert.alert('Erro', 'Falha ao fazer login. Tente novamente.');
+      // Tratamento de erro mais robusto
+      if (__DEV__) {
+        console.error('[Login] Erro:', error);
+      }
+
+      setTimeout(() => {
+        Alert.alert(
+          'Erro de Conexão',
+          'Não foi possível realizar o login. Verifique sua conexão com a internet e tente novamente.'
+        );
+      }, 100);
     } finally {
       setLoading(false);
     }

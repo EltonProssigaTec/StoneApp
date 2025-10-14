@@ -27,11 +27,15 @@ const api = axios.create({
 // Interceptor de requisição
 api.interceptors.request.use(
   async (config) => {
-    console.log('[API Request]', config.method?.toUpperCase(), config.url);
+    if (__DEV__) {
+      console.log('[API Request]', config.method?.toUpperCase(), config.url);
+    }
     return config;
   },
   (error) => {
-    console.log('[API Request Error]', error);
+    if (__DEV__) {
+      console.log('[API Request Error]', error);
+    }
     return Promise.reject(error);
   }
 );
@@ -39,26 +43,30 @@ api.interceptors.request.use(
 // Interceptor de resposta
 api.interceptors.response.use(
   async (response) => {
-    console.log('[API Response Success]', response.status, response.config.url);
+    if (__DEV__) {
+      console.log('[API Response Success]', response.status, response.config.url);
+    }
     return response;
   },
   async (error) => {
-    console.error('[API Response Error]', {
-      url: error.config?.url,
-      status: error.response?.status,
-      code: error.code,
-      message: error.message,
-    });
+    if (__DEV__) {
+      console.error('[API Response Error]', {
+        url: error.config?.url,
+        status: error.response?.status,
+        code: error.code,
+        message: error.message,
+      });
+    }
 
     // Tratar erros de rede
     if (error.code === 'ECONNABORTED') {
-      console.error('[API] Timeout na requisição');
+      if (__DEV__) console.error('[API] Timeout na requisição');
       error.userMessage = 'Tempo de espera esgotado. Verifique sua conexão.';
       return Promise.reject(error);
     }
 
     if (error.code === 'ERR_NETWORK' || !error.response) {
-      console.error('[API] Erro de rede - sem conexão com o servidor');
+      if (__DEV__) console.error('[API] Erro de rede - sem conexão com o servidor');
       error.userMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.';
       return Promise.reject(error);
     }
@@ -97,7 +105,9 @@ apiFree.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.log('[API Free Error]', error);
+    if (__DEV__) {
+      console.log('[API Free Error]', error);
+    }
     return Promise.reject(error);
   }
 );
