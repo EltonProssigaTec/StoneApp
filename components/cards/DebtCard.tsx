@@ -1,7 +1,8 @@
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
+import { Button } from '@/components/ui/Button';
 import { AppColors } from '@/constants/theme';
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from 'react-native';
 
 interface DebtCardProps {
@@ -9,6 +10,8 @@ interface DebtCardProps {
   updatedAt?: string;
   showEyeIcon?: boolean;
   onEyePress?: () => void;
+  showPayButton?: boolean;
+  onPayPress?: () => void;
   variant?: 'primary' | 'card';
   style?: ViewStyle;
 }
@@ -16,12 +19,20 @@ interface DebtCardProps {
 export function DebtCard({
   amount,
   updatedAt,
-  showEyeIcon = true,
+  showEyeIcon = false,
   onEyePress,
+  showPayButton = false,
+  onPayPress,
   variant = 'card',
   style,
 }: DebtCardProps) {
   const isPrimary = variant === 'primary';
+  const [isAmountVisible, setIsAmountVisible] = useState(true);
+
+  const handleEyePress = () => {
+    setIsAmountVisible(!isAmountVisible);
+    onEyePress?.();
+  };
 
   const Container = isPrimary ? View : Card;
   const containerStyle = [
@@ -29,16 +40,28 @@ export function DebtCard({
     style,
   ];
 
+  const formattedAmount = isAmountVisible
+    ? `R$ ${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+    : 'R$ •••••';
+
   return (
     <Container style={containerStyle}>
       <View style={styles.header}>
         <Text style={[styles.label, isPrimary && styles.labelPrimary]}>
           MINHAS DÍVIDAS
         </Text>
+        {showPayButton && (
+          <Button
+            title="PAGAR"
+            variant="secondary"
+            compact
+            onPress={onPayPress || (() => {})}
+          />
+        )}
         {showEyeIcon && (
-          <TouchableOpacity onPress={onEyePress}>
+          <TouchableOpacity onPress={handleEyePress}>
             <IconSymbol
-              name="eye.fill"
+              name={isAmountVisible ? "eye.fill" : "eye.slash"}
               size={20}
               color={isPrimary ? AppColors.white : AppColors.primary}
             />
@@ -47,7 +70,7 @@ export function DebtCard({
       </View>
 
       <Text style={[styles.amount, isPrimary && styles.amountPrimary]}>
-        R${amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        {formattedAmount}
       </Text>
 
       {updatedAt && (

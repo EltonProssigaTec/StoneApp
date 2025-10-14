@@ -13,6 +13,7 @@ interface ButtonProps extends TouchableOpacityProps {
   variant?: 'primary' | 'secondary' | 'outline';
   loading?: boolean;
   fullWidth?: boolean;
+  compact?: boolean;
 }
 
 export function Button({
@@ -20,6 +21,7 @@ export function Button({
   variant = 'primary',
   loading = false,
   fullWidth = false,
+  compact = false,
   disabled,
   style,
   ...props
@@ -56,6 +58,7 @@ export function Button({
         styles.button,
         getButtonStyle(),
         fullWidth && styles.fullWidth,
+        compact && styles.compact,
         disabled && styles.disabled,
         style,
       ]}
@@ -67,7 +70,7 @@ export function Button({
           color={variant === 'primary' ? AppColors.white : AppColors.primary}
         />
       ) : (
-        <Text style={[styles.text, getTextStyle()]}>{title}</Text>
+        <Text style={[styles.text, compact && styles.compactText, getTextStyle()]}>{title}</Text>
       )}
     </TouchableOpacity>
   );
@@ -84,6 +87,12 @@ const styles = StyleSheet.create({
   },
   fullWidth: {
     width: '100%',
+  },
+  compact: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 24,
+    minHeight: 36,
   },
   primaryButton: {
     backgroundColor: AppColors.primary,
@@ -102,6 +111,12 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     fontFamily: Fonts.semiBold,
+  },
+  compactText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
   },
   primaryText: {
     color: AppColors.white,

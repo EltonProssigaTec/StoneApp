@@ -1,12 +1,12 @@
-import { AppHeader, DebtCard } from '@/components';
+import { OffersSection } from '@/components/OffersSection';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors } from '@/constants/theme';
-import { router } from 'expo-router';
 import React from 'react';
 import {
   Platform,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -51,13 +51,15 @@ export default function OfertasScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      {/* Header */}
-
-      <AppHeader title='Ofertas' onBackPress={() => router.back()} onMenuPress={undefined} />
-
+      <StatusBar barStyle={'light-content'} translucent={true}/>
+          {/* Offers Section with Debt Card */}
+          <OffersSection
+          amount={totalDebt}
+          updatedAt="02/09/2025"
+          onPayPress={() => console.log('Pagar pressionado')}
+          onMenuPress={() => console.log('Menu pressionado')}
+        />
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
-              {/* Debt Card */}
-      <DebtCard amount={totalDebt} updatedAt={'14/10/2025'} />
 
         {/* Offers List */}
         <View style={styles.offersList}>
@@ -114,59 +116,7 @@ const styles = StyleSheet.create({
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
-  },
-  header: {
-    backgroundColor: AppColors.primary,
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: AppColors.white,
-  },
-  debtCard: {
-    backgroundColor: AppColors.primary,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-  },
-  debtHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  debtLabel: {
-    fontSize: 12,
-    color: AppColors.white,
-    fontWeight: '600',
-  },
-  payButton: {
-    backgroundColor: AppColors.secondary,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  payButtonText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: AppColors.white,
-  },
-  debtAmount: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: AppColors.white,
-    marginBottom: 4,
-  },
-  debtDate: {
-    fontSize: 12,
-    color: AppColors.white,
-    opacity: 0.8,
+    backgroundColor: AppColors.background.secondary,
   },
   content: {
     flex: 1,
@@ -180,9 +130,9 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   offersList: {
-    marginTop: 20,
+    paddingTop: 16,
     paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   offerCard: {
     marginBottom: 16,

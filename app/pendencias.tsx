@@ -102,17 +102,19 @@ export default function PendenciasScreen() {
         </View>
 
         {/* Total Section */}
-        <View style={styles.totalSection}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Dívida total:</Text>
-            <Text style={styles.totalAmount}>R$ {totalDebt.toFixed(2)}</Text>
+        <View style={styles.containerTotalSection}>
+          <View style={styles.totalSection}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Dívida total:</Text>
+              <Text style={styles.totalAmount}>R$ {totalDebt.toFixed(2)}</Text>
+            </View>
+            <Button
+              title="GERAR BOLETO"
+              variant="secondary"
+              fullWidth
+              style={styles.generateButton}
+            />
           </View>
-          <Button
-            title="GERAR BOLETO"
-            variant="secondary"
-            fullWidth
-            style={styles.generateButton}
-          />
         </View>
       </ScrollView>
     </SafeAreaView >
@@ -140,17 +142,19 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
     marginHorizontal: 20,
     marginTop: 20,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 4,
+    gap: 8
   },
   tab: {
     flex: 1,
     paddingVertical: 12,
     alignItems: 'center',
-    borderRadius: 6,
+    borderRadius: 16,
+    backgroundColor: AppColors.background.primary,
   },
   activeTab: {
     backgroundColor: AppColors.secondary,
@@ -202,9 +206,15 @@ const styles = StyleSheet.create({
     color: AppColors.text.secondary,
   },
   totalSection: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 40,
+    padding: 20,
+  },
+  containerTotalSection: {
+    backgroundColor: AppColors.background.primary,
+    borderRadius: 16,
+    marginTop: 16,
+    marginHorizontal: 20,
+    elevation: 2,
+    marginBottom: 20,
   },
   totalRow: {
     flexDirection: 'row',
