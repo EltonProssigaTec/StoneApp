@@ -1,8 +1,9 @@
+import { AppHeader } from '@/components/ui/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/Input';
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -66,26 +67,14 @@ export default function PerfilScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <StatusBar
-        backgroundColor={AppColors.primary} // cor do header no Android
-        barStyle="light-content" // texto branco
-        translucent={false}
+        barStyle="light-content"
+        translucent={true}
       />
+
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Meu Perfil</Text>
-        <TouchableOpacity onPress={() => setEditing(!editing)}>
-          <IconSymbol
-            name={editing ? "xmark" : "pencil"}
-            size={24}
-            color={AppColors.white}
-          />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title='Meu Perfil' />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Avatar Section */}
@@ -190,11 +179,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: AppColors.white,
-  },
   scrollView: {
     flex: 1,
   },
@@ -240,12 +224,13 @@ const styles = StyleSheet.create({
   },
   userName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: Fonts.medium,
     color: AppColors.text.primary,
     marginBottom: 4,
   },
   userPlan: {
     fontSize: 14,
+    fontFamily: Fonts.medium,
     color: AppColors.text.secondary,
   },
   section: {
@@ -253,8 +238,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontFamily: Fonts.semiBold,
     color: AppColors.text.secondary,
     marginBottom: 12,
     marginLeft: 4,

@@ -1,19 +1,18 @@
+import { LogoImage } from '@/components/LogoImage';
+import { AppHeader } from '@/components/ui/AppHeader';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { AppColors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
-  TouchableOpacity,
-  Image,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { LogoImage } from '@/components/LogoImage';
-import { AppColors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 
 interface Plan {
   id: string;
@@ -51,17 +50,14 @@ export default function PlanosScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <StatusBar
+        barStyle="light-content"
+        translucent={true}
+      />
+
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>PLANOS</Text>
-        <TouchableOpacity>
-          <IconSymbol name="ellipsis" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-      </View>
+      <AppHeader title='Planos' />
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
         {/* Plans List */}

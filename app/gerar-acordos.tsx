@@ -1,22 +1,22 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { AppHeader } from '@/components/ui/AppHeader';
 import { AppColors } from '@/constants/theme';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { useRouter } from 'expo-router';
+import React from 'react';
+import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function GerarAcordosScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <IconSymbol name="chevron.left" size={24} color={AppColors.white} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Geração de Acordos</Text>
-        <View style={{ width: 24 }} />
-      </View>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <StatusBar
+        barStyle="light-content"
+        translucent={true}
+      />
+
+      {/* Header */}
+      <AppHeader title='Pendências Financeiras' />
       <View style={styles.content}>
         <Text style={styles.title}>Geração de Acordos</Text>
         <Text style={styles.subtitle}>Em desenvolvimento...</Text>

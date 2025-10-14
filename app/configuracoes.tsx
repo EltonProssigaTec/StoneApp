@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  Switch,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { ScreenHeader } from '@/components/ui/ScreenHeader';
+import { AppHeader } from '@/components';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors } from '@/constants/theme';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import {
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ConfiguracoesScreen() {
   const router = useRouter();
@@ -20,12 +21,14 @@ export default function ConfiguracoesScreen() {
   const [biometricEnabled, setBiometricEnabled] = useState(false);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader
-        title="Configurações"
-        showBack
-        onBackPress={() => router.back()}
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <StatusBar
+        barStyle="light-content"
+        translucent={true}
       />
+
+      {/* Header */}
+      <AppHeader title='Configurações' />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Notificações */}

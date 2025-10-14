@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: AppColors.background.secondary,
     marginHorizontal: 20,
-    marginTop: 20,
+    marginTop: 12,
     borderRadius: 16,
     padding: 4,
     gap: 8
@@ -180,10 +180,10 @@ const styles = StyleSheet.create({
   },
   debtList: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 12,
   },
   debtCardWrapper: {
-    marginBottom: 12,
+    marginBottom: 6,
   },
   pressableContainer: {
     borderWidth: 0,
@@ -267,6 +267,5 @@ const styles = StyleSheet.create({
     color: AppColors.primary,
   },
   generateButton: {
-    marginTop: 8,
   },
 });

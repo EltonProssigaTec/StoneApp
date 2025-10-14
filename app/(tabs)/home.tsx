@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { DividasService, ResumoFinanceiro } from '@/services/dividas.service';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { BackHandler, Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, ScrollView, StatusBar, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function HomeScreen() {
@@ -16,18 +16,6 @@ export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [resumo, setResumo] = useState<ResumoFinanceiro | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Block Android back button
-  useEffect(() => {
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      () => {
-        return true;
-      }
-    );
-
-    return () => backHandler.remove();
-  }, []);
 
   // Busca resumo financeiro
   useEffect(() => {

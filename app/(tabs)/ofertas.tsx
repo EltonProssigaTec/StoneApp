@@ -149,14 +149,14 @@ const styles = StyleSheet.create({
     color: AppColors.text.primary,
   },
   progressContainer: {
-    marginBottom: 16,
+    marginBottom: 4,
   },
   progressBackground: {
     height: 8,
     backgroundColor: AppColors.gray[200],
     borderRadius: 4,
     overflow: 'hidden',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   progressBar: {
     height: '100%',
@@ -168,7 +168,6 @@ const styles = StyleSheet.create({
     color: AppColors.text.secondary,
   },
   amountInfo: {
-    marginTop: 8,
   },
   amountLabel: {
     fontSize: 14,

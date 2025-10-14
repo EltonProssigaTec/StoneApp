@@ -1,11 +1,19 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { AppHeader } from '@/components';
 import { AppColors } from '@/constants/theme';
+import React from 'react';
+import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function NotificacoesScreen() {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <StatusBar
+        barStyle="light-content"
+        translucent={true}
+      />
+
+      {/* Header */}
+      <AppHeader title='Notificações' />
       <View style={styles.content}>
         <Text style={styles.title}>Notificações</Text>
         <Text style={styles.subtitle}>Em desenvolvimento...</Text>
