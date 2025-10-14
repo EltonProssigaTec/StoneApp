@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import {
   Alert,
   Image,
+  Modal,
   Platform,
   ScrollView,
   StatusBar,
@@ -25,17 +26,46 @@ export default function PerfilScreen() {
   const router = useRouter();
   const { user, updateUser } = useAuth();
   const [editing, setEditing] = useState(false);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
   });
 
-  const handleImagePick = async () => {
+  const handlePhotoOptions = () => {
+    setShowPhotoOptions(true);
+  };
+
+  const handleTakePhoto = async () => {
+    setShowPhotoOptions(false);
+
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'We need camera permission to take photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled && result.assets[0]) {
+      await updateUser({ picture: result.assets[0].uri });
+      Alert.alert('Success', 'Profile photo updated!');
+    }
+  };
+
+  const handlePickFromGallery = async () => {
+    setShowPhotoOptions(false);
+
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permissão necessária', 'Precisamos de permissão para acessar suas fotos.');
+      Alert.alert('Permission Required', 'We need permission to access your photos.');
       return;
     }
 
@@ -48,8 +78,31 @@ export default function PerfilScreen() {
 
     if (!result.canceled && result.assets[0]) {
       await updateUser({ picture: result.assets[0].uri });
-      Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+      Alert.alert('Success', 'Profile photo updated!');
     }
+  };
+
+  const handleRemovePhoto = () => {
+    setShowPhotoOptions(false);
+
+    Alert.alert(
+      'Remove Photo',
+      'Are you sure you want to remove your profile photo?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: async () => {
+            await updateUser({ picture: '' });
+            Alert.alert('Success', 'Profile photo removed!');
+          },
+        },
+      ]
+    );
   };
 
   const handleSave = async () => {
@@ -79,7 +132,7 @@ export default function PerfilScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
-          <TouchableOpacity onPress={handleImagePick} style={styles.avatarContainer}>
+          <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
             {user?.picture ? (
               <Image
                 source={{ uri: user.picture }}
@@ -154,6 +207,59 @@ export default function PerfilScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Photo Options Modal */}
+      <Modal
+        visible={showPhotoOptions}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPhotoOptions(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPhotoOptions(false)}
+        >
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Foto de Perfil</Text>
+
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={handleTakePhoto}
+            >
+              <IconSymbol name="camera.fill" size={24} color={AppColors.primary} />
+              <Text style={styles.modalOptionText}>Tirar Foto</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={handlePickFromGallery}
+            >
+              <IconSymbol name="photo.fill" size={24} color={AppColors.primary} />
+              <Text style={styles.modalOptionText}>Escolher da Galeria</Text>
+            </TouchableOpacity>
+
+            {user?.picture && (
+              <TouchableOpacity
+                style={[styles.modalOption, styles.modalOptionDanger]}
+                onPress={handleRemovePhoto}
+              >
+                <IconSymbol name="trash.fill" size={24} color="#DC3545" />
+                <Text style={[styles.modalOptionText, styles.modalOptionTextDanger]}>
+                  Remover Foto
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setShowPhotoOptions(false)}
+            >
+              <Text style={styles.modalCancelText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -250,5 +356,56 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 20,
     paddingBottom: 40,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: AppColors.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.text.primary,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    backgroundColor: AppColors.background.secondary,
+    marginBottom: 12,
+  },
+  modalOptionDanger: {
+    backgroundColor: '#FEE',
+  },
+  modalOptionText: {
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.primary,
+    marginLeft: 16,
+  },
+  modalOptionTextDanger: {
+    color: '#DC3545',
+  },
+  modalCancelButton: {
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  modalCancelText: {
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.secondary,
   },
 });

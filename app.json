@@ -9,7 +9,12 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Este app precisa de acesso à câmera para você tirar fotos do perfil.",
+        "NSPhotoLibraryUsageDescription": "Este app precisa de acesso à galeria de fotos para você escolher uma foto de perfil.",
+        "NSPhotoLibraryAddUsageDescription": "Este app precisa de acesso para salvar fotos na galeria."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -18,6 +23,12 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ],
       "navigationBar": {
         "visible": "sticky-immersive",
         "barStyle": "light-content",
