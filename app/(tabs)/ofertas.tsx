@@ -78,14 +78,14 @@ export default function OfertasScreen() {
 
               {/* Progress Bar */}
               <View style={styles.progressContainer}>
-                <View style={styles.progressBackground}>
+                {/* <View style={styles.progressBackground}>
                   <View
                     style={[
                       styles.progressBar,
                       { width: `${offer.discount}%` },
                     ]}
                   />
-                </View>
+                </View> */}
                 <Text style={styles.discountText}>{offer.discount}% de desconto</Text>
               </View>
 

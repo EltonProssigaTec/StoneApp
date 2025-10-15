@@ -2,9 +2,12 @@ import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
 import { AppColors } from '@/constants/theme';
+import api from '@/services/api.config';
+import { cpfMask, removeMask, validateCPF } from '@/utils/masks';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -14,17 +17,227 @@ import {
   View,
 } from 'react-native';
 
+type RecoverStep = 'cpf' | 'code' | 'password';
+
 export default function RecoverScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
-  const [confirmEmail, setConfirmEmail] = useState('');
+  const [cpf, setCpf] = useState('');
+  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<RecoverStep>('cpf');
+  const [userEmail, setUserEmail] = useState('');
 
-  const handleRecover = () => {
-    // Aqui você implementaria a lógica de recuperação
-    console.log('Recuperando senha para:', email);
-    router.back();
+  // Verifica CPF e solicita código
+  const handleVerifyCPF = async () => {
+    const cleanCPF = removeMask(cpf);
+
+    if (!validateCPF(cpf)) {
+      Alert.alert('Erro', 'CPF inválido.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.post('/verificar_cpf_cnpj', {
+        cpf_cnpj: cleanCPF
+      });
+
+      const userData = response.data.data;
+      setUserEmail(userData.email);
+
+      // Envia código de recuperação para o email
+      await api.post('/confirmCodeEmail', {
+        email: userData.email,
+      });
+
+      Alert.alert('Sucesso', `Um código foi enviado para ${userData.email}`);
+      setStep('code');
+    } catch (error: any) {
+      if (__DEV__) console.error('[Recover] Erro ao verificar CPF:', error);
+      Alert.alert(
+        'Erro',
+        error.response?.data?.message || 'CPF não encontrado ou erro ao enviar código.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // Verifica código e avança para alteração de senha
+  const handleVerifyCode = async () => {
+    if (!code.trim()) {
+      Alert.alert('Erro', 'Digite o código recebido.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/confirmCodeEmail', {
+        email: userEmail,
+        codigo: code.trim(),
+      });
+
+      setStep('password');
+    } catch (error: any) {
+      if (__DEV__) console.error('[Recover] Erro ao verificar código:', error);
+      Alert.alert('Erro', 'Código inválido ou expirado.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Altera a senha
+  const handleChangePassword = async () => {
+    if (!newPassword.trim() || !confirmPassword.trim()) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Erro', 'As senhas não coincidem.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.post('/recuperar_senha', {
+        email: userEmail,
+        nova_senha: newPassword,
+      });
+
+      Alert.alert(
+        'Sucesso',
+        'Senha alterada com sucesso!',
+        [{ text: 'OK', onPress: () => router.replace('/login') }]
+      );
+    } catch (error: any) {
+      if (__DEV__) console.error('[Recover] Erro ao alterar senha:', error);
+      Alert.alert(
+        'Erro',
+        error.response?.data?.message || 'Não foi possível alterar a senha.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const renderCPFStep = () => (
+    <>
+      <Text style={styles.title}>Recuperar Senha</Text>
+      <Text style={styles.description}>
+        Digite seu CPF para recuperar o acesso.
+      </Text>
+
+      <Input
+        label="CPF"
+        placeholder="Digite seu CPF"
+        icon="creditcard.fill"
+        value={cpf}
+        onChangeText={(value) => setCpf(cpfMask(value))}
+        keyboardType="number-pad"
+        editable={!loading}
+      />
+
+      <GradientButton
+        title="Continuar"
+        onPress={handleVerifyCPF}
+        loading={loading}
+        disabled={loading}
+        fullWidth
+        style={styles.button}
+      />
+    </>
+  );
+
+  const renderCodeStep = () => (
+    <>
+      <Text style={styles.title}>Digite o Código</Text>
+      <Text style={styles.description}>
+        Um código foi enviado para {userEmail}
+      </Text>
+
+      <Input
+        label="Código de Verificação"
+        placeholder="Digite o código de 6 dígitos"
+        icon="checkmark.circle.fill"
+        value={code}
+        onChangeText={setCode}
+        keyboardType="number-pad"
+        maxLength={6}
+        editable={!loading}
+      />
+
+      <GradientButton
+        title="Verificar Código"
+        onPress={handleVerifyCode}
+        loading={loading}
+        disabled={loading}
+        fullWidth
+        style={styles.button}
+      />
+
+      <TouchableOpacity
+        onPress={() => setStep('cpf')}
+        style={styles.backButton}
+        disabled={loading}
+      >
+        <Text style={styles.backText}>Voltar</Text>
+      </TouchableOpacity>
+    </>
+  );
+
+  const renderPasswordStep = () => (
+    <>
+      <Text style={styles.title}>Nova Senha</Text>
+      <Text style={styles.description}>
+        Digite sua nova senha
+      </Text>
+
+      <Input
+        label="Nova Senha"
+        placeholder="Digite uma senha forte"
+        icon="lock.fill"
+        value={newPassword}
+        onChangeText={setNewPassword}
+        secureTextEntry
+        editable={!loading}
+      />
+
+      <Input
+        label="Confirmar Senha"
+        placeholder="Digite a senha novamente"
+        icon="lock.fill"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+        editable={!loading}
+      />
+
+      <GradientButton
+        title="Alterar Senha"
+        onPress={handleChangePassword}
+        loading={loading}
+        disabled={loading}
+        fullWidth
+        style={styles.button}
+      />
+
+      <TouchableOpacity
+        onPress={() => setStep('code')}
+        style={styles.backButton}
+        disabled={loading}
+      >
+        <Text style={styles.backText}>Voltar</Text>
+      </TouchableOpacity>
+    </>
+  );
 
   return (
     <AuthLayout waveVariant="login">
@@ -32,54 +245,26 @@ export default function RecoverScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Formulário */}
           <View style={styles.formContainer}>
-            <Input
-              label="Email"
-              placeholder="Digite seu email."
-              icon="envelope.fill"
-              value={email}
-              onChangeText={setEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            {step === 'cpf' && renderCPFStep()}
+            {step === 'code' && renderCodeStep()}
+            {step === 'password' && renderPasswordStep()}
 
-            <Input
-              label="Confirme seu email"
-              placeholder="Digite o código enviado para o seu email."
-              icon="checkmark.circle.fill"
-              value={confirmEmail}
-              onChangeText={setConfirmEmail}
-            />
-
-            <Input
-              label="Digite sua nova senha"
-              placeholder="Digite uma senha forte."
-              icon="lock.fill"
-              value={newPassword}
-              onChangeText={setNewPassword}
-              secureTextEntry
-            />
-
-            <GradientButton
-              title="Recuperar"
-              onPress={handleRecover}
-              fullWidth
-              style={styles.button}
-            />
-
-            <TouchableOpacity style={styles.termsContainer}>
-              <Text style={styles.termsText}>Ler termos de uso</Text>
+            <TouchableOpacity
+              style={styles.termsContainer}
+              onPress={() => router.back()}
+            >
+              <Text style={styles.termsText}>Voltar para o login</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </AuthLayout>);
+    </AuthLayout>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -96,8 +281,29 @@ const styles = StyleSheet.create({
   formContainer: {
     flex: 1,
   },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: AppColors.text.primary,
+    marginBottom: 12,
+  },
+  description: {
+    fontSize: 14,
+    color: AppColors.text.secondary,
+    marginBottom: 24,
+    lineHeight: 20,
+  },
   button: {
     marginTop: 8,
+  },
+  backButton: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  backText: {
+    fontSize: 14,
+    color: AppColors.primary,
+    textDecorationLine: 'underline',
   },
   termsContainer: {
     alignItems: 'center',

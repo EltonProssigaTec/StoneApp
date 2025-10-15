@@ -5,9 +5,11 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/Input';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import api from '@/services/api.config';
+import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Alert,
   Image,
@@ -31,7 +33,69 @@ export default function PerfilScreen() {
     name: user?.name || '',
     email: user?.email || '',
     phone: user?.phone || '',
+    cep: '',
+    endereco: '',
+    numero: '',
+    bairro: '',
+    cidade: '',
+    uf: '',
+    complemento: '',
   });
+  const [loadingAddress, setLoadingAddress] = useState(false);
+
+  // Carregar endereço do usuário
+  useEffect(() => {
+    const loadUserAddress = async () => {
+      if (!user?.id) return;
+
+      try {
+        const response = await api.post('/monitora/endereco_usuario', { id: user.id });
+        if (response.status === 200 && response.data?.data?.length > 0) {
+          const addressData = response.data.data[0];
+          setFormData((prev) => ({
+            ...prev,
+            cep: addressData.cep || '',
+            endereco: addressData.endereco || '',
+            numero: addressData.numero || '',
+            bairro: addressData.bairro || '',
+            cidade: addressData.municipio || '',
+            uf: addressData.uf || '',
+            complemento: addressData.complemento || '',
+          }));
+        }
+      } catch (error) {
+        if (__DEV__) console.error('[Perfil] Erro ao carregar endereço:', error);
+      }
+    };
+
+    loadUserAddress();
+  }, [user?.id]);
+
+  // Buscar endereço por CEP
+  const handleCEPSearch = async (cep: string) => {
+    const cleanCEP = cep.replace(/\D/g, '');
+    setFormData((prev) => ({ ...prev, cep }));
+
+    if (cleanCEP.length === 8) {
+      setLoadingAddress(true);
+      try {
+        const response = await axios.get(`https://viacep.com.br/ws/${cleanCEP}/json/`);
+        if (response.data && !response.data.erro) {
+          setFormData((prev) => ({
+            ...prev,
+            endereco: response.data.logradouro || '',
+            bairro: response.data.bairro || '',
+            cidade: response.data.localidade || '',
+            uf: response.data.uf || '',
+          }));
+        }
+      } catch (error) {
+        if (__DEV__) console.error('[Perfil] Erro ao buscar CEP:', error);
+      } finally {
+        setLoadingAddress(false);
+      }
+    }
+  };
 
   const handlePhotoOptions = () => {
     setShowPhotoOptions(true);

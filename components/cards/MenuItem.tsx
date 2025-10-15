@@ -29,8 +29,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     minHeight: 100,
     justifyContent: 'center',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    elevation: 2,
+    // boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    // elevation: 2,
   },
   iconContainer: {
     width: 48,

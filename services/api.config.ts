@@ -27,6 +27,19 @@ const api = axios.create({
 // Interceptor de requisição
 api.interceptors.request.use(
   async (config) => {
+    // Buscar token do AsyncStorage se não estiver no header
+    if (!config.headers.Authorization) {
+      try {
+        const AsyncStorage = await import('@react-native-async-storage/async-storage').then(m => m.default);
+        const token = await AsyncStorage.getItem('@Auth:token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+      } catch (error) {
+        if (__DEV__) console.warn('[API] Erro ao buscar token:', error);
+      }
+    }
+
     if (__DEV__) {
       console.log('[API Request]', config.method?.toUpperCase(), config.url);
     }

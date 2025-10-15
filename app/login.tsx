@@ -165,6 +165,7 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 14,
+    fontFamily: Fonts.regular,
     color: AppColors.text.primary,
   },
   linksContainer: {
@@ -195,5 +196,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 32,
     textDecorationLine: 'underline',
+    fontFamily: Fonts.regular,
   },
 });

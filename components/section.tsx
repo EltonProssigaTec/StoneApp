@@ -69,7 +69,7 @@ export function Section(props: SectionProps) {
                             <Image
                                 source={{ uri: user.picture }}
                                 style={styles.avatar}
-                                defaultSource={require('@/assets/images/Mask.png')}
+                                // defaultSource={require('@/assets/images/Mask.png')}
                             />
                         ) : (
                             <Image

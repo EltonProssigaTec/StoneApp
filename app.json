@@ -31,7 +31,7 @@
       ],
       "navigationBar": {
         "visible": "sticky-immersive",
-        "barStyle": "light-content",
+        "barStyle": "light-content"
       },
       "statusBar": {
         "barStyle": "light-content",
