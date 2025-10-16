@@ -34,7 +34,8 @@ export default function PerfilScreen() {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    phone: user?.phone || '',
+    telefone: user?.telefone || '',
+    data_nascimento: '', // Será preenchido pelo useEffect
     cep: '',
     endereco: '',
     numero: '',
@@ -45,17 +46,30 @@ export default function PerfilScreen() {
   });
   const [loadingAddress, setLoadingAddress] = useState(false);
 
-  // Carregar endereço do usuário
+  // Carregar endereço do usuário e dados pessoais
   useEffect(() => {
-    const loadUserAddress = async () => {
+    const loadUserData = async () => {
       if (!user?.id) return;
 
       try {
+        // Buscar endereço da API
         const response = await api.post('/monitora/endereco_usuario', { id: user.id });
         if (response.status === 200 && response.data?.data?.length > 0) {
           const addressData = response.data.data[0];
+
+          // Converter data_nascimento de YYYY-MM-DD para DD/MM/AAAA
+          let dataNascimentoFormatted = '';
+          if (user.data_nascimento) {
+            const [year, month, day] = user.data_nascimento.split('-');
+            dataNascimentoFormatted = `${day}/${month}/${year}`;
+          }
+
           setFormData((prev) => ({
             ...prev,
+            name: user.name || '',
+            email: user.email || '',
+            telefone: user.telefone || '',
+            data_nascimento: dataNascimentoFormatted,
             cep: addressData.cep || '',
             endereco: addressData.endereco || '',
             numero: addressData.numero || '',
@@ -66,12 +80,12 @@ export default function PerfilScreen() {
           }));
         }
       } catch (error) {
-        if (__DEV__) console.error('[Perfil] Erro ao carregar endereço:', error);
+        if (__DEV__) console.error('[Perfil] Erro ao carregar dados:', error);
       }
     };
 
-    loadUserAddress();
-  }, [user?.id]);
+    loadUserData();
+  }, [user?.id, user?.data_nascimento, user?.telefone, user?.name, user?.email, user?.phone]);
 
   // Buscar endereço por CEP
   const handleCEPSearch = async (cep: string) => {
@@ -246,14 +260,47 @@ export default function PerfilScreen() {
 
   const handleSave = async () => {
     try {
-      await updateUser({
+      // Converter data de DD/MM/AAAA para YYYY-MM-DD
+      let dataNascimentoAPI = '';
+      if (formData.data_nascimento) {
+        const [day, month, year] = formData.data_nascimento.split('/');
+        if (day && month && year) {
+          dataNascimentoAPI = `${year}-${month}-${day}`;
+        }
+      }
+
+      // Enviar dados para a API seguindo padrão do monitora_mobile
+      const response = await api.post('/monitora/editar_usuario', {
+        id: user?.id,
         name: formData.name,
         email: formData.email,
-        phone: formData.phone,
+        cpf_cnpj: user?.cpf_cnpj || user?.cpf || '',
+        data_nascimento: dataNascimentoAPI,
+        telefone: formData.telefone,
+        cep: formData.cep,
+        endereco: formData.endereco,
+        bairro: formData.bairro,
+        cidade: formData.cidade,
+        uf: formData.uf,
+        numero: formData.numero,
+        complemento: formData.complemento,
+        perfil: user?.picture || '',
       });
-      setEditing(false);
-      Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+
+      if (response.status === 200) {
+        // Atualizar dados locais no contexto
+        await updateUser({
+          name: formData.name,
+          email: formData.email,
+          telefone: formData.telefone,
+          data_nascimento: dataNascimentoAPI,
+        });
+
+        setEditing(false);
+        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+      }
     } catch (error) {
+      if (__DEV__) console.error('[Perfil] Erro ao salvar:', error);
       Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
     }
   };
@@ -296,7 +343,15 @@ export default function PerfilScreen() {
 
         {/* Info Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Informações Pessoais</Text>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Informações Pessoais</Text>
+            {!editing && (
+              <TouchableOpacity onPress={() => setEditing(true)} style={styles.editButton}>
+                <IconSymbol name="pencil" size={18} color={AppColors.primary} />
+                <Text style={styles.editButtonText}>Editar</Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           <Card style={styles.card}>
             <Input
@@ -329,13 +384,102 @@ export default function PerfilScreen() {
 
             <Input
               label="Telefone"
-              placeholder="Digite seu telefone"
+              placeholder="(00) 00000-0000"
               icon="phone.fill"
-              value={formData.phone}
-              onChangeText={(value) => setFormData({ ...formData, phone: value })}
+              value={formData.telefone}
+              onChangeText={(value) => setFormData({ ...formData, telefone: value })}
               keyboardType="phone-pad"
               editable={editing}
             />
+
+            <Input
+              label="Data de Nascimento"
+              placeholder="DD/MM/AAAA"
+              icon="calendar"
+              value={formData.data_nascimento}
+              onChangeText={(value) => setFormData({ ...formData, data_nascimento: value })}
+              keyboardType="numeric"
+              editable={editing}
+            />
+          </Card>
+        </View>
+
+        {/* Address Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Endereço</Text>
+
+          <Card style={styles.card}>
+            <Input
+              label="CEP"
+              placeholder="00000-000"
+              icon="location.fill"
+              value={formData.cep}
+              onChangeText={handleCEPSearch}
+              keyboardType="numeric"
+              editable={editing}
+            />
+
+            <Input
+              label="Endereço"
+              placeholder="Rua, Avenida..."
+              icon="house.fill"
+              value={formData.endereco}
+              onChangeText={(value) => setFormData({ ...formData, endereco: value })}
+              editable={editing}
+            />
+
+            <View style={styles.row}>
+              <View style={styles.inputSmall}>
+                <Input
+                  label="Número"
+                  placeholder="Nº"
+                  value={formData.numero}
+                  onChangeText={(value) => setFormData({ ...formData, numero: value })}
+                  keyboardType="numeric"
+                  editable={editing}
+                />
+              </View>
+              <View style={styles.inputLarge}>
+                <Input
+                  label="Complemento"
+                  placeholder="Apto, Bloco..."
+                  value={formData.complemento}
+                  onChangeText={(value) => setFormData({ ...formData, complemento: value })}
+                  editable={editing}
+                />
+              </View>
+            </View>
+
+            <Input
+              label="Bairro"
+              placeholder="Bairro"
+              value={formData.bairro}
+              onChangeText={(value) => setFormData({ ...formData, bairro: value })}
+              editable={editing}
+            />
+
+            <View style={styles.row}>
+              <View style={styles.inputLarge}>
+                <Input
+                  label="Cidade"
+                  placeholder="Cidade"
+                  value={formData.cidade}
+                  onChangeText={(value) => setFormData({ ...formData, cidade: value })}
+                  editable={editing}
+                />
+              </View>
+              <View style={styles.inputSmall}>
+                <Input
+                  label="UF"
+                  placeholder="UF"
+                  value={formData.uf}
+                  onChangeText={(value) => setFormData({ ...formData, uf: value })}
+                  autoCapitalize="characters"
+                  maxLength={2}
+                  editable={editing}
+                />
+              </View>
+            </View>
           </Card>
         </View>
 
@@ -346,6 +490,33 @@ export default function PerfilScreen() {
               variant="primary"
               onPress={handleSave}
               fullWidth
+            />
+            <Button
+              title="Cancelar"
+              variant="secondary"
+              onPress={() => {
+                setEditing(false);
+                // Recarregar dados originais
+                const dataNascimentoFormatted = user?.data_nascimento
+                  ? user.data_nascimento.split('-').reverse().join('/')
+                  : '';
+
+                setFormData({
+                  name: user?.name || '',
+                  email: user?.email || '',
+                  telefone: user?.telefone || '',
+                  data_nascimento: dataNascimentoFormatted,
+                  cep: formData.cep,
+                  endereco: formData.endereco,
+                  numero: formData.numero,
+                  bairro: formData.bairro,
+                  cidade: formData.cidade,
+                  uf: formData.uf,
+                  complemento: formData.complemento,
+                });
+              }}
+              fullWidth
+              style={{ marginTop: 12 }}
             />
           </View>
         )}
@@ -500,15 +671,40 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 24,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
   sectionTitle: {
     fontFamily: Fonts.semiBold,
     color: AppColors.text.secondary,
-    marginBottom: 12,
     marginLeft: 4,
     textTransform: 'uppercase',
   },
+  editButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  editButtonText: {
+    fontFamily: Fonts.medium,
+    color: AppColors.primary,
+    fontSize: 14,
+  },
   card: {
     padding: 16,
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  inputSmall: {
+    flex: 1,
+  },
+  inputLarge: {
+    flex: 2,
   },
   buttonContainer: {
     paddingHorizontal: 20,

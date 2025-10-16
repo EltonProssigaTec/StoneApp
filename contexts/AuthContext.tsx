@@ -21,9 +21,10 @@ export interface User {
   email: string;
   cpf?: string;
   cpf_cnpj?: string;
-  phone?: string;
+  telefone?: string; // Campo da API
   picture?: string;
   plano?: string;
+  data_nascimento?: string; // Campo da API (formato: YYYY-MM-DD)
   // Adicione outros campos conforme necessário
 }
 
