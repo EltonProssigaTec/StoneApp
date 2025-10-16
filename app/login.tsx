@@ -7,9 +7,9 @@ import { Text } from '@/components/ui/Text';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import Checkbox from 'expo-checkbox';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { Alert, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, useState } from 'react';
+import { Alert, BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -19,6 +19,20 @@ export default function LoginScreen() {
   const [errors, setErrors] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
+
+  // Previne voltar para splash screen APENAS quando a tela login está focada
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'android') {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+          // Bloqueia voltar ao splash quando estiver no login
+          return true;
+        });
+
+        return () => backHandler.remove();
+      }
+    }, [])
+  );
 
   const handleLogin = async () => {
     const newErrors = { email: '', password: '' };
