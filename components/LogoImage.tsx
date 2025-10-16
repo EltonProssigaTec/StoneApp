@@ -2,7 +2,7 @@ import React from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 interface LogoImageProps {
-  size?: 'small' | 'medium' | 'large';
+  size?: 'small' | 'medium' | 'large' | 'extra';
 }
 
 export function LogoImage({ size = 'medium' }: LogoImageProps) {
@@ -12,6 +12,8 @@ export function LogoImage({ size = 'medium' }: LogoImageProps) {
         return { width: 80, height: 80 };
       case 'large':
         return { width: 200, height: 200 };
+      case 'extra':
+        return { width: 300, height: 300 };
       default:
         return { width: 120, height: 120 };
     }

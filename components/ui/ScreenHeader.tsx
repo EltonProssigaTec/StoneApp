@@ -1,5 +1,6 @@
 import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { settings } from '@/services/api.config';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -91,7 +92,14 @@ export function ScreenHeader({
         ) : showAvatar ? (
           <TouchableOpacity style={styles.avatar}>
             {user?.picture ? (
-              <Image source={{ uri: user.picture }} style={styles.avatarImage} />
+              <Image
+                source={{
+                  uri: user.picture.startsWith('http') || user.picture.startsWith('file')
+                    ? user.picture
+                    : settings.FILES_URL + user.picture
+                }}
+                style={styles.avatarImage}
+              />
             ) : (
               <IconSymbol name="person.fill" size={24} color={AppColors.white} />
             )}

@@ -1,7 +1,7 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import api from '@/services/api.config';
 import { cpfMask, removeMask, validateCPF } from '@/utils/masks';
 import { useRouter } from 'expo-router';
@@ -258,7 +258,7 @@ export default function RecoverScreen() {
               style={styles.termsContainer}
               onPress={() => router.back()}
             >
-              <Text style={styles.termsText}>Voltar para o login</Text>
+              <Text style={styles.backText}>Voltar para o login</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -274,24 +274,22 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingHorizontal: 24,
-    paddingTop: 80,
-    paddingBottom: 40,
   },
   formContainer: {
     flex: 1,
   },
   title: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 22,
+    fontFamily: Fonts.semiBold,
     color: AppColors.text.primary,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   description: {
     fontSize: 14,
     color: AppColors.text.secondary,
     marginBottom: 24,
     lineHeight: 20,
+    fontFamily: Fonts.medium,
   },
   button: {
     marginTop: 8,
@@ -303,6 +301,7 @@ const styles = StyleSheet.create({
   backText: {
     fontSize: 14,
     color: AppColors.primary,
+    fontFamily: Fonts.medium,
     textDecorationLine: 'underline',
   },
   termsContainer: {

@@ -61,6 +61,7 @@ interface AuthProviderProps {
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   // Preferências de notificação
   const [notificar, setNotificar] = useState(false);
@@ -190,7 +191,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
    * Verifica se há sessão ativa
    */
   const verifyIsLogged = useCallback(async () => {
+    // Evita verificações duplicadas
+    if (hasCheckedAuth) {
+      if (__DEV__) console.log('[Auth] Verificação já realizada, pulando...');
+      return;
+    }
+
     try {
+      if (__DEV__) console.log('[Auth] Verificando sessão...');
+      setHasCheckedAuth(true);
+
       const [storedUser, storedToken, storedKeepLoggedIn] = await AsyncStorage.multiGet([
         '@Auth:user',
         '@Auth:token',
@@ -219,7 +229,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [hasCheckedAuth]);
 
   useEffect(() => {
     verifyIsLogged();

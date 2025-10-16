@@ -76,7 +76,7 @@ export default function LoginScreen() {
 
   return (
     <AuthLayout waveVariant="login">
-      <StatusBar barStyle={'dark-content'} translucent={true}/>
+      <StatusBar barStyle={'dark-content'} translucent={true} />
       <View style={styles.container}>
         <Input
           label="Login"
@@ -138,8 +138,12 @@ export default function LoginScreen() {
             style={styles.createAccountButton}
           />
         </View>
-
-        <Text style={styles.termsText}>Ler termos de uso</Text>
+        <TouchableOpacity onPress={() => undefined}>
+          <Text style={styles.termsText}>Ler termos de uso</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => undefined}>
+          <Text style={styles.termsText}>Política de privacidade</Text>
+        </TouchableOpacity>
       </View>
     </AuthLayout>
   );
@@ -147,12 +151,11 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 40,
   },
   containerCheckbox: {
     alignItems: 'center',
-    marginTop: 16,
-    marginBottom: 24,
+    marginTop: 4,
+    marginBottom: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     fontSize: 14,
     fontFamily: Fonts.regular,
-    color: AppColors.text.primary,
+    color: AppColors.text.secondary,
   },
   linksContainer: {
     flexDirection: 'row',
@@ -180,6 +183,7 @@ const styles = StyleSheet.create({
   },
   registerSection: {
     marginTop: 16,
+    marginBottom: 16,
     alignItems: 'center',
   },
   registerQuestion: {
@@ -194,7 +198,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: AppColors.text.secondary,
     textAlign: 'center',
-    marginTop: 32,
+    marginBottom: 10,
     textDecorationLine: 'underline',
     fontFamily: Fonts.regular,
   },

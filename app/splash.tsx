@@ -3,7 +3,7 @@ import { AppColors, Gradients } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 
 export default function SplashScreen() {
@@ -11,6 +11,8 @@ export default function SplashScreen() {
   const { isLogged, loading } = useAuth();
   const fadeAnim = new Animated.Value(0);
   const scaleAnim = new Animated.Value(0.8);
+  const [hasNavigated, setHasNavigated] = useState(false);
+  const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     // Animação de entrada
@@ -29,19 +31,26 @@ export default function SplashScreen() {
   }, []);
 
   useEffect(() => {
-    // Só navegar quando o loading terminar
-    if (!loading) {
-      const timer = setTimeout(() => {
+    // Só navegar quando o loading terminar e ainda não tiver navegado
+    if (!loading && !hasNavigated) {
+      navigationTimeoutRef.current = setTimeout(() => {
+        setHasNavigated(true);
+
         if (isLogged) {
           router.replace('/(tabs)/home');
         } else {
           router.replace('/login');
         }
       }, 2500);
-
-      return () => clearTimeout(timer);
     }
-  }, [loading, isLogged]);
+
+    // Cleanup: limpar o timeout se o componente for desmontado
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+      }
+    };
+  }, [loading, isLogged, hasNavigated, router]);
 
   return (
     <View style={styles.container}>
@@ -64,7 +73,7 @@ export default function SplashScreen() {
           transform: [{ scale: scaleAnim }],
         }}
       >
-        <LogoImage size="large" />
+        <LogoImage size="extra" />
       </Animated.View>
 
       {/* Onda decorativa inferior com gradiente azul */}
@@ -105,9 +114,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 80,
-    borderTopLeftRadius: 100,
-    borderTopRightRadius: 100,
+    height: 110,
     transform: [{ scaleX: 2 }],
   },
 });

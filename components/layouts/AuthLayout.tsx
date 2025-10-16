@@ -21,17 +21,20 @@ interface AuthLayoutProps {
 export function AuthLayout({
   children,
   showLogo = true,
-  logoSize = 'medium',
+  logoSize = 'large',
   waveVariant = 'small',
 }: AuthLayoutProps) {
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
       <View style={styles.wrapper}>
         <KeyboardAvoidingView
           style={styles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
+          <View style={styles.waveContainer}>
           <WaveDecoration variant={waveVariant} />
+          </View>
+
 
           <ScrollView
             contentContainerStyle={styles.scrollContent}
@@ -59,6 +62,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.white,
   },
+  waveContainer: {
+    width: '100%',
+    height: 70,
+    backgroundColor: AppColors.white,
+  },
   wrapper: {
     flex: 1,
     ...Platform.select({
@@ -83,8 +91,6 @@ const styles = StyleSheet.create({
   responsiveContainer: {
     flex: 1,
     paddingHorizontal: 32,
-    paddingTop: 20,
-    paddingBottom: 40,
   },
   logoContainer: {
     alignItems: 'center',

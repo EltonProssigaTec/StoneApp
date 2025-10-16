@@ -1,5 +1,6 @@
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
+import { settings } from '@/services/api.config';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
@@ -67,9 +68,12 @@ export function Section(props: SectionProps) {
                     >
                         {user?.picture ? (
                             <Image
-                                source={{ uri: user.picture }}
+                                source={{
+                                    uri: user.picture.startsWith('http') || user.picture.startsWith('file')
+                                        ? user.picture
+                                        : settings.FILES_URL + user.picture
+                                }}
                                 style={styles.avatar}
-                                // defaultSource={require('@/assets/images/Mask.png')}
                             />
                         ) : (
                             <Image

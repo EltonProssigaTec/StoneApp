@@ -5,7 +5,7 @@ import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/Input';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
-import api from '@/services/api.config';
+import api, { settings } from '@/services/api.config';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
@@ -21,6 +21,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -29,6 +30,7 @@ export default function PerfilScreen() {
   const { user, updateUser } = useAuth();
   const [editing, setEditing] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -97,6 +99,67 @@ export default function PerfilScreen() {
     }
   };
 
+  // Upload de foto para o servidor
+  const uploadPhotoToServer = async (uriLocal: string): Promise<string | null> => {
+    if (uploading) {
+      if (__DEV__) console.log('[Perfil] Upload já em andamento, ignorando...');
+      return null;
+    }
+
+    try {
+      if (__DEV__) console.log('[Perfil] Iniciando upload da imagem:', uriLocal);
+      setUploading(true);
+
+      if (!user?.email) {
+        if (__DEV__) console.error('[Perfil] Email do usuário não encontrado');
+        Alert.alert('Erro', 'Dados do usuário não encontrados');
+        return null;
+      }
+
+      // Criar FormData seguindo o padrão do monitora_mobile
+      const formData = new FormData();
+      formData.append('doc', {
+        uri: uriLocal,
+        name: 'perfil.jpg',
+        type: 'image/jpeg',
+      } as any);
+      formData.append('email', user.email);
+
+      if (__DEV__) console.log('[Perfil] Enviando para API...');
+
+      // Fazer upload para o servidor
+      const response = await api.post('monitora/anexar_foto_perfil', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      if (__DEV__) console.log('[Perfil] Resposta da API:', response.status, response.data);
+
+      if (response.status === 200) {
+        // Extrair o nome do arquivo retornado pela API
+        const filename = response.data?.data;
+
+        if (filename) {
+          // Retornar apenas o nome do arquivo (será combinado com FILES_URL na exibição)
+          return filename;
+        } else {
+          // Se não retornou filename, usar a URI local temporariamente
+          return uriLocal;
+        }
+      } else {
+        Alert.alert('Erro', 'Erro ao enviar foto');
+        return null;
+      }
+    } catch (error: any) {
+      if (__DEV__) console.error('[Perfil] Erro no upload:', error);
+      Alert.alert('Erro', 'Falha ao enviar foto. Verifique sua conexão.');
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handlePhotoOptions = () => {
     setShowPhotoOptions(true);
   };
@@ -107,19 +170,25 @@ export default function PerfilScreen() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'We need camera permission to take photos.');
+      Alert.alert('Permissão Necessária', 'Precisamos de permissão para acessar a câmera.');
       return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.5, // Mesma qualidade do monitora_mobile
     });
 
     if (!result.canceled && result.assets[0]) {
-      await updateUser({ picture: result.assets[0].uri });
-      Alert.alert('Success', 'Profile photo updated!');
+      // Fazer upload para o servidor
+      const filename = await uploadPhotoToServer(result.assets[0].uri);
+
+      if (filename) {
+        // Atualizar o usuário com o nome do arquivo
+        await updateUser({ picture: filename });
+        Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+      }
     }
   };
 
@@ -129,7 +198,7 @@ export default function PerfilScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permission Required', 'We need permission to access your photos.');
+      Alert.alert('Permissão Necessária', 'Precisamos de permissão para acessar suas fotos.');
       return;
     }
 
@@ -137,12 +206,18 @@ export default function PerfilScreen() {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.8,
+      quality: 0.5, // Mesma qualidade do monitora_mobile
     });
 
     if (!result.canceled && result.assets[0]) {
-      await updateUser({ picture: result.assets[0].uri });
-      Alert.alert('Success', 'Profile photo updated!');
+      // Fazer upload para o servidor
+      const filename = await uploadPhotoToServer(result.assets[0].uri);
+
+      if (filename) {
+        // Atualizar o usuário com o nome do arquivo
+        await updateUser({ picture: filename });
+        Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+      }
     }
   };
 
@@ -150,19 +225,19 @@ export default function PerfilScreen() {
     setShowPhotoOptions(false);
 
     Alert.alert(
-      'Remove Photo',
-      'Are you sure you want to remove your profile photo?',
+      'Remover Foto',
+      'Tem certeza que deseja remover sua foto de perfil?',
       [
         {
-          text: 'Cancel',
+          text: 'Cancelar',
           style: 'cancel',
         },
         {
-          text: 'Remove',
+          text: 'Remover',
           style: 'destructive',
           onPress: async () => {
             await updateUser({ picture: '' });
-            Alert.alert('Success', 'Profile photo removed!');
+            Alert.alert('Sucesso', 'Foto de perfil removida!');
           },
         },
       ]
@@ -199,7 +274,11 @@ export default function PerfilScreen() {
           <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
             {user?.picture ? (
               <Image
-                source={{ uri: user.picture }}
+                source={{
+                  uri: user.picture.startsWith('http') || user.picture.startsWith('file')
+                    ? user.picture
+                    : settings.FILES_URL + user.picture
+                }}
                 style={styles.avatar}
               />
             ) : (
@@ -290,6 +369,7 @@ export default function PerfilScreen() {
             <TouchableOpacity
               style={styles.modalOption}
               onPress={handleTakePhoto}
+              disabled={uploading}
             >
               <IconSymbol name="camera.fill" size={24} color={AppColors.primary} />
               <Text style={styles.modalOptionText}>Tirar Foto</Text>
@@ -298,6 +378,7 @@ export default function PerfilScreen() {
             <TouchableOpacity
               style={styles.modalOption}
               onPress={handlePickFromGallery}
+              disabled={uploading}
             >
               <IconSymbol name="photo.fill" size={24} color={AppColors.primary} />
               <Text style={styles.modalOptionText}>Escolher da Galeria</Text>
@@ -307,6 +388,7 @@ export default function PerfilScreen() {
               <TouchableOpacity
                 style={[styles.modalOption, styles.modalOptionDanger]}
                 onPress={handleRemovePhoto}
+                disabled={uploading}
               >
                 <IconSymbol name="trash.fill" size={24} color="#DC3545" />
                 <Text style={[styles.modalOptionText, styles.modalOptionTextDanger]}>
@@ -318,12 +400,23 @@ export default function PerfilScreen() {
             <TouchableOpacity
               style={styles.modalCancelButton}
               onPress={() => setShowPhotoOptions(false)}
+              disabled={uploading}
             >
               <Text style={styles.modalCancelText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Loading Overlay durante upload */}
+      {uploading && (
+        <View style={styles.loadingOverlay}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={AppColors.primary} />
+            <Text style={styles.loadingText}>Enviando foto...</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -471,5 +564,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.medium,
     color: AppColors.text.secondary,
+  },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 9999,
+  },
+  loadingContainer: {
+    backgroundColor: AppColors.white,
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    minWidth: 150,
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.primary,
   },
 });
