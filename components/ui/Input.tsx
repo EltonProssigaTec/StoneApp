@@ -16,6 +16,7 @@ interface InputProps extends TextInputProps {
   error?: string;
   icon?: any;
   secureTextEntry?: boolean;
+  disabled?: boolean;
 }
 
 export function Input({
@@ -24,6 +25,7 @@ export function Input({
   icon,
   secureTextEntry,
   style,
+  disabled,
   ...props
 }: InputProps) {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -49,6 +51,7 @@ export function Input({
           styles.inputContainer,
           isFocused && styles.inputFocused,
           error && styles.inputError,
+          (disabled || props.editable === false) && styles.inputDisabled,
         ]}
       >
         <TextInput
@@ -71,11 +74,12 @@ export function Input({
           <TouchableOpacity
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
             style={styles.eyeIcon}
+            disabled={disabled || props.editable === false}
           >
             <IconSymbol
               size={20}
               name={isPasswordVisible ? 'eye.slash' : 'eye'}
-              color={AppColors.gray[400]}
+              color={disabled || props.editable === false ? AppColors.gray[300] : AppColors.gray[400]}
             />
           </TouchableOpacity>
         )}
@@ -116,6 +120,10 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: AppColors.status.error,
+  },
+  inputDisabled: {
+    backgroundColor: AppColors.gray[50],
+    opacity: 0.8,
   },
   input: {
     flex: 1,

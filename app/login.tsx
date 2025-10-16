@@ -102,6 +102,7 @@ export default function LoginScreen() {
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
+          editable={!loading}
         />
 
         <Input
@@ -112,6 +113,7 @@ export default function LoginScreen() {
           onChangeText={setPassword}
           error={errors.password}
           secureTextEntry
+          editable={!loading}
         />
         <View style={styles.containerCheckbox}>
           <View style={styles.checkboxContainer}>
@@ -120,15 +122,26 @@ export default function LoginScreen() {
               onValueChange={setKeepLoggedIn}
               color={keepLoggedIn ? AppColors.primary : undefined}
               style={styles.checkbox}
+              disabled={loading}
             />
-            <TouchableOpacity onPress={() => setKeepLoggedIn(!keepLoggedIn)}>
-              <Text style={styles.checkboxLabel}>Manter logado</Text>
+            <TouchableOpacity
+              onPress={() => setKeepLoggedIn(!keepLoggedIn)}
+              disabled={loading}
+            >
+              <Text style={[styles.checkboxLabel, loading && styles.disabledText]}>
+                Manter logado
+              </Text>
             </TouchableOpacity>
           </View>
           <View style={styles.linksContainer}>
             <View />
-            <TouchableOpacity onPress={() => router.push('/recover')}>
-              <Text style={styles.linkText}>Esqueceu sua senha?</Text>
+            <TouchableOpacity
+              onPress={() => router.push('/recover')}
+              disabled={loading}
+            >
+              <Text style={[styles.linkText, loading && styles.disabledText]}>
+                Esqueceu sua senha?
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -150,6 +163,7 @@ export default function LoginScreen() {
             onPress={() => router.push('/register')}
             fullWidth
             style={styles.createAccountButton}
+            disabled={loading}
           />
         </View>
         <TouchableOpacity onPress={() => undefined}>
@@ -215,5 +229,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textDecorationLine: 'underline',
     fontFamily: Fonts.regular,
+  },
+  disabledText: {
+    opacity: 0.5,
   },
 });

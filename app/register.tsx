@@ -23,8 +23,8 @@ export default function RegisterScreen() {
     name: '',
     email: '',
     cpf: '',
-    birthDate: '',
-    phone: '',
+    data_nascimento: '',
+    telefone: '',
     password: '',
   });
   const [loading, setLoading] = useState(false);
@@ -46,15 +46,15 @@ export default function RegisterScreen() {
     } else if (!validateCPF(formData.cpf)) {
       newErrors.cpf = 'CPF inválido';
     }
-    if (!formData.birthDate.trim()) {
-      newErrors.birthDate = 'Data de nascimento é obrigatória';
-    } else if (!validateDate(formData.birthDate)) {
-      newErrors.birthDate = 'Data inválida';
+    if (!formData.data_nascimento.trim()) {
+      newErrors.data_nascimento = 'Data de nascimento é obrigatória';
+    } else if (!validateDate(formData.data_nascimento)) {
+      newErrors.data_nascimento = 'Data inválida';
     }
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Telefone é obrigatório';
-    } else if (removeMask(formData.phone).length < 10) {
-      newErrors.phone = 'Telefone inválido';
+    if (!formData.telefone.trim()) {
+      newErrors.telefone = 'Telefone é obrigatório';
+    } else if (removeMask(formData.telefone).length < 10) {
+      newErrors.telefone = 'Telefone inválido';
     }
     if (!formData.password.trim()) {
       newErrors.password = 'Senha é obrigatória';
@@ -76,7 +76,7 @@ export default function RegisterScreen() {
       setLoading(true);
 
       // Converter data de DD/MM/YYYY para YYYY-MM-DD HH:mm:ss
-      const [day, month, year] = formData.birthDate.split('/');
+      const [day, month, year] = formData.data_nascimento.split('/');
       const formattedDate = `${year}-${month}-${day} 00:00:00`;
 
       const registerData = {
@@ -85,7 +85,7 @@ export default function RegisterScreen() {
         password: formData.password,
         cpf_cnpj: formData.cpf.replace(/\D/g, ''), // Remove caracteres não numéricos
         data_nascimento: formattedDate,
-        telefone: formData.phone.replace(/\D/g, ''),
+        telefone: formData.telefone.replace(/\D/g, ''),
         origem: 'mobile',
       };
 
@@ -125,10 +125,10 @@ export default function RegisterScreen() {
       case 'cpf':
         formattedValue = cpfMask(value);
         break;
-      case 'phone':
+      case 'telefone':
         formattedValue = phoneMask(value);
         break;
-      case 'birthDate':
+      case 'data_nascimento':
         formattedValue = dateMask(value);
         break;
       default:
@@ -191,19 +191,20 @@ export default function RegisterScreen() {
                 label="Data de nascimento"
                 placeholder="Digite sua data de nascimento."
                 icon="calendar"
-                value={formData.birthDate}
-                onChangeText={(value) => updateField('birthDate', value)}
-                error={errors.birthDate}
+                value={formData.data_nascimento}
+                onChangeText={(value) => updateField('data_nascimento', value)}
+                keyboardType="phone-pad"
+                error={errors.data_nascimento}
               />
 
               <Input
                 label="Telefone"
                 placeholder="Digite seu telefone."
                 icon="phone.fill"
-                value={formData.phone}
-                onChangeText={(value) => updateField('phone', value)}
+                value={formData.telefone}
+                onChangeText={(value) => updateField('telefone', value)}
                 keyboardType="phone-pad"
-                error={errors.phone}
+                error={errors.telefone}
               />
 
               <Input

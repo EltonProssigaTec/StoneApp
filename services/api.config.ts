@@ -84,9 +84,38 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Para erros 401, 403, etc
+    // Tratar erro 401 Unauthorized
     if (error.response?.status === 401) {
-      error.userMessage = 'Email ou senha incorretos.';
+      const url = error.config?.url || '';
+
+      // Se for erro em rota de login, apenas retorna erro
+      if (url.includes('/login')) {
+        error.userMessage = 'Email ou senha incorretos.';
+      } else {
+        // Se for erro 401 em outras rotas = sessão inválida/expirada
+        // Fazer logout automático apenas em produção
+        if (!__DEV__) {
+          if (__DEV__) console.warn('[API] Token inválido ou sessão expirada. Fazendo logout...');
+
+          try {
+            const AsyncStorage = await import('@react-native-async-storage/async-storage').then(m => m.default);
+            await AsyncStorage.multiRemove(['@Auth:user', '@Auth:token', '@Auth:keepLoggedIn']);
+
+            // Limpar header de autorização
+            delete api.defaults.headers.common['Authorization'];
+
+            // Notificar sobre sessão expirada
+            error.sessionExpired = true;
+            error.userMessage = 'Sua sessão expirou ou você fez login em outro dispositivo. Por favor, faça login novamente.';
+          } catch (logoutError) {
+            if (__DEV__) console.error('[API] Erro ao fazer logout automático:', logoutError);
+          }
+        } else {
+          // Em modo dev, apenas avisa mas não desconecta
+          if (__DEV__) console.warn('[API] Token inválido (não desconectando pois está em DEV mode)');
+          error.userMessage = 'Sessão inválida. Em produção, você seria desconectado automaticamente.';
+        }
+      }
     } else if (error.response?.status === 403) {
       error.userMessage = 'Acesso negado.';
     } else if (error.response?.status >= 500) {

@@ -6,11 +6,13 @@ import { Input } from '@/components/ui/Input';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import api, { settings } from '@/services/api.config';
+import { cepMask, cpfMask, dateMask, phoneMask } from '@/utils/masks';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -21,13 +23,22 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+// Helper para obter avatar padrão da API
+const getDefaultAvatar = (userName?: string) => {
+  if (userName) {
+    // Gera avatar baseado no nome do usuário
+    return `https://avatar.iran.liara.run/username?username=${encodeURIComponent(userName)}`;
+  }
+  // Avatar público aleatório
+  return 'https://avatar.iran.liara.run/public';
+};
+
 export default function PerfilScreen() {
   const router = useRouter();
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, setUser } = useAuth();
   const [editing, setEditing] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -51,18 +62,18 @@ export default function PerfilScreen() {
     const loadUserData = async () => {
       if (!user?.id) return;
 
+      // Converter data_nascimento de YYYY-MM-DD para DD/MM/AAAA
+      let dataNascimentoFormatted = '';
+      if (user.data_nascimento) {
+        const [year, month, day] = user.data_nascimento.split('-');
+        dataNascimentoFormatted = `${day}/${month}/${year}`;
+      }
+
       try {
         // Buscar endereço da API
         const response = await api.post('/monitora/endereco_usuario', { id: user.id });
         if (response.status === 200 && response.data?.data?.length > 0) {
           const addressData = response.data.data[0];
-
-          // Converter data_nascimento de YYYY-MM-DD para DD/MM/AAAA
-          let dataNascimentoFormatted = '';
-          if (user.data_nascimento) {
-            const [year, month, day] = user.data_nascimento.split('-');
-            dataNascimentoFormatted = `${day}/${month}/${year}`;
-          }
 
           setFormData((prev) => ({
             ...prev,
@@ -78,19 +89,44 @@ export default function PerfilScreen() {
             uf: addressData.uf || '',
             complemento: addressData.complemento || '',
           }));
+        } else {
+          // Sem endereço cadastrado, usar apenas dados do usuário
+          setFormData((prev) => ({
+            ...prev,
+            name: user.name || '',
+            email: user.email || '',
+            telefone: user.telefone || '',
+            data_nascimento: dataNascimentoFormatted,
+          }));
         }
-      } catch (error) {
-        if (__DEV__) console.error('[Perfil] Erro ao carregar dados:', error);
+      } catch (error: any) {
+        // Se erro 400 ou 404, significa que não tem endereço cadastrado ainda (comportamento esperado para novos usuários)
+        // Apenas loga se for um erro diferente de 400/404
+        const status = error?.response?.status;
+        if (__DEV__ && status !== 400 && status !== 404) {
+          console.error('[Perfil] Erro inesperado ao carregar endereço:', error);
+        }
+
+        // Preencher apenas com dados pessoais do usuário
+        setFormData((prev) => ({
+          ...prev,
+          name: user.name || '',
+          email: user.email || '',
+          telefone: user.telefone || '',
+          data_nascimento: dataNascimentoFormatted,
+        }));
       }
     };
 
     loadUserData();
-  }, [user?.id, user?.data_nascimento, user?.telefone, user?.name, user?.email, user?.phone]);
+  }, [user?.id, user?.data_nascimento, user?.telefone, user?.name, user?.email]);
 
   // Buscar endereço por CEP
   const handleCEPSearch = async (cep: string) => {
+    // Aplicar máscara
+    const maskedCEP = cepMask(cep);
     const cleanCEP = cep.replace(/\D/g, '');
-    setFormData((prev) => ({ ...prev, cep }));
+    setFormData((prev) => ({ ...prev, cep: maskedCEP }));
 
     if (cleanCEP.length === 8) {
       setLoadingAddress(true);
@@ -178,6 +214,37 @@ export default function PerfilScreen() {
     setShowPhotoOptions(true);
   };
 
+  // Salvar foto no banco de dados
+  const savePhotoToDatabase = async (filename: string) => {
+    try {
+      if (__DEV__) console.log('[Perfil] Salvando foto no banco:', filename);
+
+      // Atualizar perfil no banco de dados
+      const response = await api.post('/monitora/editar_usuario', {
+        id: user?.id,
+        name: user?.name || '',
+        email: user?.email || '',
+        cpf_cnpj: user?.cpf_cnpj || user?.cpf || '',
+        data_nascimento: user?.data_nascimento || '',
+        telefone: user?.telefone || '',
+        perfil: filename, // Campo que salva a foto no banco
+      });
+
+      if (response.status === 200) {
+        // Atualizar APENAS a foto no estado (não salva no AsyncStorage até próximo login)
+        if (user) {
+          setUser({ ...user, picture: filename });
+        }
+        Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+
+        if (__DEV__) console.log('[Perfil] Foto atualizada no estado (não persistido no AsyncStorage)');
+      }
+    } catch (error) {
+      if (__DEV__) console.error('[Perfil] Erro ao salvar foto no banco:', error);
+      Alert.alert('Erro', 'Foto enviada mas não foi possível salvar no perfil.');
+    }
+  };
+
   const handleTakePhoto = async () => {
     setShowPhotoOptions(false);
 
@@ -199,9 +266,8 @@ export default function PerfilScreen() {
       const filename = await uploadPhotoToServer(result.assets[0].uri);
 
       if (filename) {
-        // Atualizar o usuário com o nome do arquivo
-        await updateUser({ picture: filename });
-        Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+        // Salvar foto no banco de dados
+        await savePhotoToDatabase(filename);
       }
     }
   };
@@ -228,9 +294,8 @@ export default function PerfilScreen() {
       const filename = await uploadPhotoToServer(result.assets[0].uri);
 
       if (filename) {
-        // Atualizar o usuário com o nome do arquivo
-        await updateUser({ picture: filename });
-        Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+        // Salvar foto no banco de dados
+        await savePhotoToDatabase(filename);
       }
     }
   };
@@ -250,8 +315,33 @@ export default function PerfilScreen() {
           text: 'Remover',
           style: 'destructive',
           onPress: async () => {
-            await updateUser({ picture: '' });
-            Alert.alert('Sucesso', 'Foto de perfil removida!');
+            try {
+              if (__DEV__) console.log('[Perfil] Removendo foto do banco...');
+
+              // Remover foto do banco de dados
+              const response = await api.post('/monitora/editar_usuario', {
+                id: user?.id,
+                name: user?.name || '',
+                email: user?.email || '',
+                cpf_cnpj: user?.cpf_cnpj || user?.cpf || '',
+                data_nascimento: user?.data_nascimento || '',
+                telefone: user?.telefone || '',
+                perfil: '', // Remove foto
+              });
+
+              if (response.status === 200) {
+                // Atualizar APENAS no estado (não salva no AsyncStorage)
+                if (user) {
+                  setUser({ ...user, picture: '' });
+                }
+                Alert.alert('Sucesso', 'Foto de perfil removida!');
+
+                if (__DEV__) console.log('[Perfil] Foto removida do estado (não persistido no AsyncStorage)');
+              }
+            } catch (error) {
+              if (__DEV__) console.error('[Perfil] Erro ao remover foto:', error);
+              Alert.alert('Erro', 'Não foi possível remover a foto.');
+            }
           },
         },
       ]
@@ -305,6 +395,11 @@ export default function PerfilScreen() {
     }
   };
 
+  const handleDeleteAccount = () => {
+    // Navegar para tela de exclusão de conta (será criada)
+    router.push('/delete-account' as any);
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <StatusBar
@@ -319,20 +414,16 @@ export default function PerfilScreen() {
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
-            {user?.picture ? (
-              <Image
-                source={{
-                  uri: user.picture.startsWith('http') || user.picture.startsWith('file')
+            <Image
+              source={{
+                uri: user?.picture
+                  ? (user.picture.startsWith('http') || user.picture.startsWith('file')
                     ? user.picture
-                    : settings.FILES_URL + user.picture
-                }}
-                style={styles.avatar}
-              />
-            ) : (
-              <View style={styles.avatarPlaceholder}>
-                <IconSymbol name="person.fill" size={48} color={AppColors.white} />
-              </View>
-            )}
+                    : settings.FILES_URL + user.picture)
+                  : getDefaultAvatar(user?.name)
+              }}
+              style={styles.avatar}
+            />
             <View style={styles.cameraButton}>
               <IconSymbol name="camera.fill" size={16} color={AppColors.white} />
             </View>
@@ -378,7 +469,7 @@ export default function PerfilScreen() {
               label="CPF"
               placeholder="CPF"
               icon="creditcard.fill"
-              value={user?.cpf_cnpj || user?.cpf || ''}
+              value={cpfMask(user?.cpf_cnpj || user?.cpf || '')}
               editable={false}
             />
 
@@ -387,7 +478,7 @@ export default function PerfilScreen() {
               placeholder="(00) 00000-0000"
               icon="phone.fill"
               value={formData.telefone}
-              onChangeText={(value) => setFormData({ ...formData, telefone: value })}
+              onChangeText={(value) => setFormData({ ...formData, telefone: phoneMask(value) })}
               keyboardType="phone-pad"
               editable={editing}
             />
@@ -397,7 +488,7 @@ export default function PerfilScreen() {
               placeholder="DD/MM/AAAA"
               icon="calendar"
               value={formData.data_nascimento}
-              onChangeText={(value) => setFormData({ ...formData, data_nascimento: value })}
+              onChangeText={(value) => setFormData({ ...formData, data_nascimento: dateMask(value) })}
               keyboardType="numeric"
               editable={editing}
             />
@@ -518,6 +609,28 @@ export default function PerfilScreen() {
               fullWidth
               style={{ marginTop: 12 }}
             />
+          </View>
+        )}
+
+        {/* Danger Zone */}
+        {!editing && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Zona de Perigo</Text>
+            <Card style={styles.card}>
+              <TouchableOpacity
+                style={styles.deleteAccountButton}
+                onPress={handleDeleteAccount}
+              >
+                <IconSymbol name="trash.fill" size={20} color="#DC3545" />
+                <View style={styles.deleteAccountContent}>
+                  <Text style={styles.deleteAccountTitle}>Excluir Conta</Text>
+                  <Text style={styles.deleteAccountText}>
+                    Remover permanentemente sua conta e todos os dados
+                  </Text>
+                </View>
+                <IconSymbol name="chevron.right" size={20} color="#DC3545" />
+              </TouchableOpacity>
+            </Card>
           </View>
         )}
       </ScrollView>
@@ -784,5 +897,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.medium,
     color: AppColors.text.primary,
+  },
+  deleteAccountButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    gap: 12,
+  },
+  deleteAccountContent: {
+    flex: 1,
+  },
+  deleteAccountTitle: {
+    fontSize: 16,
+    fontFamily: Fonts.semiBold,
+    color: '#DC3545',
+    marginBottom: 4,
+  },
+  deleteAccountText: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: AppColors.text.secondary,
   },
 });

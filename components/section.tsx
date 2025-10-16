@@ -11,6 +11,16 @@ import { IconSymbol } from './ui/icon-symbol';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { DebtCard } from './cards/DebtCardEye';
 
+// Helper para obter avatar padrão da API
+const getDefaultAvatar = (userName?: string) => {
+    if (userName) {
+        // Gera avatar baseado no nome do usuário
+        return `https://avatar.iran.liara.run/username?username=${encodeURIComponent(userName)}`;
+    }
+    // Avatar público aleatório
+    return 'https://avatar.iran.liara.run/public';
+};
+
 export interface SectionProps {
     /** Used to override the default root style. */
     style?: StyleProp<ViewStyle>;
@@ -66,21 +76,16 @@ export function Section(props: SectionProps) {
                         onPress={() => router.push('/perfil')}
                         activeOpacity={0.7}
                     >
-                        {user?.picture ? (
-                            <Image
-                                source={{
-                                    uri: user.picture.startsWith('http') || user.picture.startsWith('file')
+                        <Image
+                            source={{
+                                uri: user?.picture
+                                    ? (user.picture.startsWith('http') || user.picture.startsWith('file')
                                         ? user.picture
-                                        : settings.FILES_URL + user.picture
-                                }}
-                                style={styles.avatar}
-                            />
-                        ) : (
-                            <Image
-                                source={require('@/assets/images/Mask.png')}
-                                style={styles.avatar}
-                            />
-                        )}
+                                        : settings.FILES_URL + user.picture)
+                                    : getDefaultAvatar(user?.name)
+                            }}
+                            style={styles.avatar}
+                        />
                     </TouchableOpacity>
                 </View>
 

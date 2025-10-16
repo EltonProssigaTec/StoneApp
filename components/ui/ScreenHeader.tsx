@@ -7,6 +7,16 @@ import React from 'react';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from './icon-symbol';
 
+// Helper para obter avatar padrão da API
+const getDefaultAvatar = (userName?: string) => {
+  if (userName) {
+    // Gera avatar baseado no nome do usuário
+    return `https://avatar.iran.liara.run/username?username=${encodeURIComponent(userName)}`;
+  }
+  // Avatar público aleatório
+  return 'https://avatar.iran.liara.run/public';
+};
+
 interface ScreenHeaderProps {
   title: string;
   showBack?: boolean;
@@ -91,18 +101,16 @@ export function ScreenHeader({
           rightAction
         ) : showAvatar ? (
           <TouchableOpacity style={styles.avatar}>
-            {user?.picture ? (
-              <Image
-                source={{
-                  uri: user.picture.startsWith('http') || user.picture.startsWith('file')
+            <Image
+              source={{
+                uri: user?.picture
+                  ? (user.picture.startsWith('http') || user.picture.startsWith('file')
                     ? user.picture
-                    : settings.FILES_URL + user.picture
-                }}
-                style={styles.avatarImage}
-              />
-            ) : (
-              <IconSymbol name="person.fill" size={24} color={AppColors.white} />
-            )}
+                    : settings.FILES_URL + user.picture)
+                  : getDefaultAvatar(user?.name)
+              }}
+              style={styles.avatarImage}
+            />
           </TouchableOpacity>
         ) : (
           <View style={styles.placeholder} />
