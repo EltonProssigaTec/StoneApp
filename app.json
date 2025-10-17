@@ -39,7 +39,7 @@
       },
       "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.StoneApp"
+      "package": "br.com.stoneup.stoneapp"
     },
     "web": {
       "output": "static",
