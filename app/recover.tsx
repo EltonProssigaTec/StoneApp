@@ -1,13 +1,13 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
+import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import api from '@/services/api.config';
 import { cpfMask, removeMask, validateCPF } from '@/utils/masks';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,6 +21,7 @@ type RecoverStep = 'cpf' | 'code' | 'password';
 
 export default function RecoverScreen() {
   const router = useRouter();
+  const { showAlert, AlertComponent } = useAlert();
   const [cpf, setCpf] = useState('');
   const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -34,7 +35,7 @@ export default function RecoverScreen() {
     const cleanCPF = removeMask(cpf);
 
     if (!validateCPF(cpf)) {
-      Alert.alert('Erro', 'CPF inválido.');
+      showAlert('Erro', 'CPF inválido.', [{text: 'OK'}], 'error');
       return;
     }
 
@@ -52,13 +53,15 @@ export default function RecoverScreen() {
         email: userData.email,
       });
 
-      Alert.alert('Sucesso', `Um código foi enviado para ${userData.email}`);
+      showAlert('Sucesso', `Um código foi enviado para ${userData.email}`, [{text: 'OK'}], 'success');
       setStep('code');
     } catch (error: any) {
       if (__DEV__) console.error('[Recover] Erro ao verificar CPF:', error);
-      Alert.alert(
+      showAlert(
         'Erro',
-        error.response?.data?.message || 'CPF não encontrado ou erro ao enviar código.'
+        error.response?.data?.message || 'CPF não encontrado ou erro ao enviar código.',
+        [{text: 'OK'}],
+        'error'
       );
     } finally {
       setLoading(false);
@@ -68,7 +71,7 @@ export default function RecoverScreen() {
   // Verifica código e avança para alteração de senha
   const handleVerifyCode = async () => {
     if (!code.trim()) {
-      Alert.alert('Erro', 'Digite o código recebido.');
+      showAlert('Erro', 'Digite o código recebido.', [{text: 'OK'}], 'error');
       return;
     }
 
@@ -82,7 +85,7 @@ export default function RecoverScreen() {
       setStep('password');
     } catch (error: any) {
       if (__DEV__) console.error('[Recover] Erro ao verificar código:', error);
-      Alert.alert('Erro', 'Código inválido ou expirado.');
+      showAlert('Erro', 'Código inválido ou expirado.', [{text: 'OK'}], 'error');
     } finally {
       setLoading(false);
     }
@@ -91,17 +94,17 @@ export default function RecoverScreen() {
   // Altera a senha
   const handleChangePassword = async () => {
     if (!newPassword.trim() || !confirmPassword.trim()) {
-      Alert.alert('Erro', 'Preencha todos os campos.');
+      showAlert('Erro', 'Preencha todos os campos.', [{text: 'OK'}], 'error');
       return;
     }
 
     if (newPassword.length < 6) {
-      Alert.alert('Erro', 'A senha deve ter pelo menos 6 caracteres.');
+      showAlert('Erro', 'A senha deve ter pelo menos 6 caracteres.', [{text: 'OK'}], 'error');
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert('Erro', 'As senhas não coincidem.');
+      showAlert('Erro', 'As senhas não coincidem.', [{text: 'OK'}], 'error');
       return;
     }
 
@@ -112,16 +115,19 @@ export default function RecoverScreen() {
         nova_senha: newPassword,
       });
 
-      Alert.alert(
+      showAlert(
         'Sucesso',
         'Senha alterada com sucesso!',
-        [{ text: 'OK', onPress: () => router.replace('/login') }]
+        [{ text: 'OK', onPress: () => router.replace('/login') }],
+        'success'
       );
     } catch (error: any) {
       if (__DEV__) console.error('[Recover] Erro ao alterar senha:', error);
-      Alert.alert(
+      showAlert(
         'Erro',
-        error.response?.data?.message || 'Não foi possível alterar a senha.'
+        error.response?.data?.message || 'Não foi possível alterar a senha.',
+        [{text: 'OK'}],
+        'error'
       );
     } finally {
       setLoading(false);

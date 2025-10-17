@@ -4,16 +4,18 @@ import { Button } from '@/components/ui/Button';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
+import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import Checkbox from 'expo-checkbox';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { Alert, BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
   const { signIn, signOut } = useAuth();
+  const { showAlert, AlertComponent } = useAlert();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({ email: '', password: '' });
@@ -68,7 +70,7 @@ export default function LoginScreen() {
       } else {
         // Mostra erro de forma segura
         setTimeout(() => {
-          Alert.alert('Erro de Login', 'Email ou senha incorretos. Verifique seus dados e tente novamente.');
+          showAlert('Erro de Login', 'Email ou senha incorretos. Verifique seus dados e tente novamente.', [{ text: 'OK' }], 'error');
         }, 100);
       }
     } catch (error) {
@@ -78,9 +80,11 @@ export default function LoginScreen() {
       }
 
       setTimeout(() => {
-        Alert.alert(
+        showAlert(
           'Erro de Conexão',
-          'Não foi possível realizar o login. Verifique sua conexão com a internet e tente novamente.'
+          'Não foi possível realizar o login. Verifique sua conexão com a internet e tente novamente.',
+          [{ text: 'OK' }],
+          'error'
         );
       }, 100);
     } finally {
@@ -173,6 +177,9 @@ export default function LoginScreen() {
           <Text style={styles.termsText}>Política de privacidade</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Alert Modal */}
+      <AlertComponent />
     </AuthLayout>
   );
 }

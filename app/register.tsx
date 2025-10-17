@@ -1,13 +1,13 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
+import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import { AuthService } from '@/services';
 import { cpfMask, dateMask, phoneMask, removeMask, validateCPF, validateDate } from '@/utils/masks';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -19,6 +19,7 @@ import {
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { showAlert, AlertComponent } = useAlert();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -68,7 +69,7 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!validateForm()) {
-      Alert.alert('Erro', 'Por favor, preencha todos os campos corretamente');
+      showAlert('Erro', 'Por favor, preencha todos os campos corretamente', [{text: 'OK'}], 'error');
       return;
     }
 
@@ -95,7 +96,7 @@ export default function RegisterScreen() {
 
       console.log('[Register] Cadastro criado:', response);
 
-      Alert.alert(
+      showAlert(
         'Sucesso',
         'Cadastro realizado! Verifique seu email para confirmar.',
         [
@@ -103,7 +104,8 @@ export default function RegisterScreen() {
             text: 'OK',
             onPress: () => router.replace('/login'),
           },
-        ]
+        ],
+        'success'
       );
     } catch (error: any) {
       console.error('[Register] Erro:', error);
@@ -111,7 +113,7 @@ export default function RegisterScreen() {
       const message =
         error?.response?.data?.message || 'Erro ao cadastrar. Tente novamente.';
 
-      Alert.alert('Erro', message);
+      showAlert('Erro', message, [{text: 'OK'}], 'error');
     } finally {
       setLoading(false);
     }
@@ -233,6 +235,7 @@ export default function RegisterScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </View>
+      <AlertComponent />
     </AuthLayout>);
 }
 

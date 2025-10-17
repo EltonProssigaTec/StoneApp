@@ -122,8 +122,7 @@ const styles = StyleSheet.create({
     borderColor: AppColors.status.error,
   },
   inputDisabled: {
-    backgroundColor: AppColors.gray[50],
-    opacity: 0.8,
+    opacity: 0.5,
   },
   input: {
     flex: 1,

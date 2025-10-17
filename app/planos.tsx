@@ -1,15 +1,13 @@
-import { LogoImage } from '@/components/LogoImage';
+import { PlanCard } from '@/components/cards/PlanCard';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
 import { AppColors } from '@/constants/theme';
-import { useRouter } from 'expo-router';
 import React from 'react';
 import {
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
-  Text,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,12 +17,13 @@ interface Plan {
   name: string;
   period: string;
   price: number;
-  discount?: string;
-  featured?: boolean;
+  badge?: {
+    text: string;
+    color?: string;
+  };
 }
 
 export default function PlanosScreen() {
-  const router = useRouter();
 
   const plans: Plan[] = [
     {
@@ -32,14 +31,20 @@ export default function PlanosScreen() {
       name: 'Monitora Ano',
       period: 'PLANO ANUAL',
       price: 59.99,
-      discount: 'VÁRIOS DESCONTOS',
-      featured: true,
+      badge: {
+        text: 'MAIOR DESCONTO',
+        color: '#FF9500',
+      },
     },
     {
       id: '2',
       name: 'Monitora Trimestre',
       period: 'PLANO TRIMESTRAL',
       price: 35.00,
+      badge: {
+        text: 'MAIS POPULAR',
+        color: '#FF9500',
+      },
     },
     {
       id: '3',
@@ -63,24 +68,14 @@ export default function PlanosScreen() {
         {/* Plans List */}
         <View style={styles.plansList}>
           {plans.map((plan) => (
-            <Card key={plan.id} style={styles.planCard}>
-              {plan.discount && (
-                <View style={styles.discountBadge}>
-                  <Text style={styles.discountText}>{plan.discount}</Text>
-                </View>
-              )}
-
-              <View style={styles.planContent}>
-                <Text style={styles.planName}>{plan.name}</Text>
-                <Text style={styles.planPeriod}>{plan.period}</Text>
-                <Text style={styles.planPrice}>R$ {plan.price.toFixed(2)}</Text>
-                <Text style={styles.planRenewal}>RENOVAÇÃO AUTOMÁTICA</Text>
-              </View>
-
-              <View style={styles.logoContainer}>
-                <LogoImage size="small" />
-              </View>
-            </Card>
+            <PlanCard
+              key={plan.id}
+              name={plan.name}
+              period={plan.period}
+              price={plan.price}
+              badge={plan.badge}
+              onPress={() => console.log('Plano selecionado:', plan.name)}
+            />
           ))}
         </View>
 
@@ -100,21 +95,14 @@ export default function PlanosScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    alignSelf: 'center',
+    width: '100%',
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
     backgroundColor: AppColors.background.secondary,
-  },
-  header: {
-    backgroundColor: AppColors.primary,
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: AppColors.white,
   },
   content: {
     flex: 1,
@@ -122,56 +110,6 @@ const styles = StyleSheet.create({
   plansList: {
     paddingHorizontal: 20,
     paddingTop: 24,
-  },
-  planCard: {
-    marginBottom: 20,
-    overflow: 'visible',
-    position: 'relative',
-  },
-  discountBadge: {
-    position: 'absolute',
-    top: -8,
-    right: 20,
-    backgroundColor: AppColors.secondary,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 4,
-    zIndex: 1,
-    transform: [{ rotate: '2deg' }],
-  },
-  discountText: {
-    fontSize: 11,
-    fontWeight: 'bold',
-    color: AppColors.white,
-  },
-  planContent: {
-    paddingTop: 12,
-  },
-  planName: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: AppColors.primary,
-    marginBottom: 4,
-  },
-  planPeriod: {
-    fontSize: 12,
-    color: AppColors.text.secondary,
-    marginBottom: 12,
-  },
-  planPrice: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: AppColors.text.primary,
-    marginBottom: 8,
-  },
-  planRenewal: {
-    fontSize: 11,
-    color: AppColors.text.secondary,
-  },
-  logoContainer: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
   },
   buttonContainer: {
     paddingHorizontal: 20,

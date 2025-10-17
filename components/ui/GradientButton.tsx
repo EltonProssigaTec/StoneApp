@@ -1,13 +1,13 @@
+import { AppColors, Fonts, Gradients } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
   ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
   TouchableOpacityProps,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { AppColors, Fonts, Gradients } from '@/constants/theme';
 
 interface GradientButtonProps extends TouchableOpacityProps {
   title: string;
@@ -55,9 +55,11 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 8,
     overflow: 'hidden',
+    alignSelf: 'center',
   },
   fullWidth: {
     width: '100%',
+
   },
   halfWidth: {
     width: '50%',

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/Input';
+import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api.config';
@@ -10,7 +11,6 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Modal,
   Platform,
   ScrollView,
@@ -32,6 +32,7 @@ interface DeletionReason {
 export default function DeleteAccountScreen() {
   const router = useRouter();
   const { signOut } = useAuth();
+  const { showAlert, AlertComponent } = useAlert();
   const [loading, setLoading] = useState(false);
   const [loadingReasons, setLoadingReasons] = useState(true);
   const [reasons, setReasons] = useState<DeletionReason[]>([]);
@@ -60,7 +61,7 @@ export default function DeleteAccountScreen() {
       }
     } catch (error) {
       if (__DEV__) console.error('[DeleteAccount] Erro ao carregar motivos:', error);
-      Alert.alert('Erro', 'Não foi possível carregar os motivos de exclusão.');
+      showAlert('Erro', 'Não foi possível carregar os motivos de exclusão.', [{ text: 'OK' }], 'error');
     } finally {
       setLoadingReasons(false);
     }
@@ -83,22 +84,22 @@ export default function DeleteAccountScreen() {
 
   const handleDeleteAccount = async () => {
     if (!selectedReason) {
-      Alert.alert('Atenção', 'Por favor, selecione um motivo para a exclusão.');
+      showAlert('Atenção', 'Por favor, selecione um motivo para a exclusão.', [{ text: 'OK' }], 'warning');
       return;
     }
 
     // Se for "Outros", validar se preencheu o comentário
     if (isOtherReason() && !customReason.trim()) {
-      Alert.alert('Atenção', 'Por favor, informe o motivo da exclusão.');
+      showAlert('Atenção', 'Por favor, informe o motivo da exclusão.', [{ text: 'OK' }], 'warning');
       return;
     }
 
     if (!password.trim()) {
-      Alert.alert('Atenção', 'Por favor, informe sua senha para confirmar.');
+      showAlert('Atenção', 'Por favor, informe sua senha para confirmar.', [{ text: 'OK' }], 'warning');
       return;
     }
 
-    Alert.alert(
+    showAlert(
       'Confirmar exclusão',
       'Esse processo é irreversível.',
       [
@@ -129,7 +130,7 @@ export default function DeleteAccountScreen() {
               const response = await api.put('/monitora/user/solictarexlusao', body);
 
               if (response.status === 200) {
-                Alert.alert(
+                showAlert(
                   'Recebemos sua solicitação',
                   'Em até 30 dias você receberá um e-mail confirmando a exclusão dos seus dados.',
                   [
@@ -140,7 +141,8 @@ export default function DeleteAccountScreen() {
                         router.replace('/login');
                       },
                     },
-                  ]
+                  ],
+                  'success'
                 );
               }
             } catch (error: any) {
@@ -149,13 +151,14 @@ export default function DeleteAccountScreen() {
               const message = error?.response?.data?.message ||
                              'Não foi possível processar sua solicitação. Verifique sua senha e tente novamente.';
 
-              Alert.alert('Erro', message);
+              showAlert('Erro', message, [{ text: 'OK' }], 'error');
             } finally {
               setLoading(false);
             }
           },
         },
-      ]
+      ],
+      'warning'
     );
   };
 
@@ -297,6 +300,9 @@ export default function DeleteAccountScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {/* Alert Modal */}
+      <AlertComponent />
     </SafeAreaView>
   );
 }

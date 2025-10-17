@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/Input';
+import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import api, { settings } from '@/services/api.config';
@@ -13,7 +14,6 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   Modal,
   Platform,
@@ -39,6 +39,7 @@ const getDefaultAvatar = (userName?: string) => {
 export default function PerfilScreen() {
   const router = useRouter();
   const { user, updateUser, setUser } = useAuth();
+  const { showAlert, AlertComponent } = useAlert();
   const [editing, setEditing] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -162,7 +163,7 @@ export default function PerfilScreen() {
 
       if (!user?.email) {
         if (__DEV__) console.error('[Perfil] Email do usuário não encontrado');
-        Alert.alert('Erro', 'Dados do usuário não encontrados');
+        showAlert('Erro', 'Dados do usuário não encontrados', [{ text: 'OK' }], 'error');
         return null;
       }
 
@@ -198,12 +199,12 @@ export default function PerfilScreen() {
           return uriLocal;
         }
       } else {
-        Alert.alert('Erro', 'Erro ao enviar foto');
+        showAlert('Erro', 'Erro ao enviar foto', [{ text: 'OK' }], 'error');
         return null;
       }
     } catch (error: any) {
       if (__DEV__) console.error('[Perfil] Erro no upload:', error);
-      Alert.alert('Erro', 'Falha ao enviar foto. Verifique sua conexão.');
+      showAlert('Erro', 'Falha ao enviar foto. Verifique sua conexão.', [{ text: 'OK' }], 'error');
       return null;
     } finally {
       setUploading(false);
@@ -235,13 +236,13 @@ export default function PerfilScreen() {
         if (user) {
           setUser({ ...user, picture: filename });
         }
-        Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+        showAlert('Sucesso', 'Foto de perfil atualizada!', [{ text: 'OK' }], 'success');
 
         if (__DEV__) console.log('[Perfil] Foto atualizada no estado (não persistido no AsyncStorage)');
       }
     } catch (error) {
       if (__DEV__) console.error('[Perfil] Erro ao salvar foto no banco:', error);
-      Alert.alert('Erro', 'Foto enviada mas não foi possível salvar no perfil.');
+      showAlert('Erro', 'Foto enviada mas não foi possível salvar no perfil.', [{ text: 'OK' }], 'error');
     }
   };
 
@@ -251,7 +252,7 @@ export default function PerfilScreen() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permissão Necessária', 'Precisamos de permissão para acessar a câmera.');
+      showAlert('Permissão Necessária', 'Precisamos de permissão para acessar a câmera.', [{ text: 'OK' }], 'warning');
       return;
     }
 
@@ -278,7 +279,7 @@ export default function PerfilScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (status !== 'granted') {
-      Alert.alert('Permissão Necessária', 'Precisamos de permissão para acessar suas fotos.');
+      showAlert('Permissão Necessária', 'Precisamos de permissão para acessar suas fotos.', [{ text: 'OK' }], 'warning');
       return;
     }
 
@@ -303,7 +304,7 @@ export default function PerfilScreen() {
   const handleRemovePhoto = () => {
     setShowPhotoOptions(false);
 
-    Alert.alert(
+    showAlert(
       'Remover Foto',
       'Tem certeza que deseja remover sua foto de perfil?',
       [
@@ -334,17 +335,18 @@ export default function PerfilScreen() {
                 if (user) {
                   setUser({ ...user, picture: '' });
                 }
-                Alert.alert('Sucesso', 'Foto de perfil removida!');
+                showAlert('Sucesso', 'Foto de perfil removida!', [{ text: 'OK' }], 'success');
 
                 if (__DEV__) console.log('[Perfil] Foto removida do estado (não persistido no AsyncStorage)');
               }
             } catch (error) {
               if (__DEV__) console.error('[Perfil] Erro ao remover foto:', error);
-              Alert.alert('Erro', 'Não foi possível remover a foto.');
+              showAlert('Erro', 'Não foi possível remover a foto.', [{ text: 'OK' }], 'error');
             }
           },
         },
-      ]
+      ],
+      'warning'
     );
   };
 
@@ -387,11 +389,11 @@ export default function PerfilScreen() {
         });
 
         setEditing(false);
-        Alert.alert('Sucesso', 'Perfil atualizado com sucesso!');
+        showAlert('Sucesso', 'Perfil atualizado com sucesso!', [{ text: 'OK' }], 'success');
       }
     } catch (error) {
       if (__DEV__) console.error('[Perfil] Erro ao salvar:', error);
-      Alert.alert('Erro', 'Não foi possível atualizar o perfil.');
+      showAlert('Erro', 'Não foi possível atualizar o perfil.', [{ text: 'OK' }], 'error');
     }
   };
 
@@ -462,7 +464,7 @@ export default function PerfilScreen() {
               onChangeText={(value) => setFormData({ ...formData, email: value })}
               keyboardType="email-address"
               autoCapitalize="none"
-              editable={editing}
+              editable={false}
             />
 
             <Input
@@ -701,6 +703,9 @@ export default function PerfilScreen() {
           </View>
         </View>
       )}
+
+      {/* Alert Modal */}
+      <AlertComponent />
     </SafeAreaView>
   );
 }
