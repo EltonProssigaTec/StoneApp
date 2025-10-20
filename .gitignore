@@ -44,6 +44,7 @@ yarn-error.*
 android/gradle.properties
 android/local.properties
 android/app/google-services.json
+credentials.json
 
 # typescript
 *.tsbuildinfo
