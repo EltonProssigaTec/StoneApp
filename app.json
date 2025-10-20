@@ -40,7 +40,7 @@
       },
       "edgeToEdgeEnabled": false,
       "predictiveBackGestureEnabled": false,
-      "package": "br.com.stoneup.stoneapp"
+      "package": "br.com.stoneup.monitora.app"
     },
     "web": {
       "output": "static",
