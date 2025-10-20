@@ -53,6 +53,8 @@ const MAPPING = {
 
   // Alerts
   'exclamationmark.triangle.fill': 'warning',
+  'checkmark.circle.fill': 'check-circle',
+  'xmark.circle.fill': 'cancel',
 
   // Calendar
   'calendar': 'calendar-today',
