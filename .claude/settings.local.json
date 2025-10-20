@@ -7,7 +7,10 @@
       "Bash(rm:*)",
       "Read(//c/Users/pross/PROJETOS_PROSSIGA/monitora_mobile/**)",
       "Bash(git checkout:*)",
-      "Bash(npx eas-cli build:*)"
+      "Bash(npx eas-cli build:*)",
+      "Bash(where java)",
+      "Bash(java -version)",
+      "Bash(./gradlew signingReport --configuration release)"
     ],
     "deny": [],
     "ask": []

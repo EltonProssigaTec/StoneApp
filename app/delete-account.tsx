@@ -25,8 +25,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 interface DeletionReason {
   id: number;
   descricao: string;
-  ativo: number;
-  sequencia: number;
+  ativo: number | string; // Pode vir como string da API
+  sequencia: number | string; // Pode vir como string da API
 }
 
 export default function DeleteAccountScreen() {
@@ -50,17 +50,55 @@ export default function DeleteAccountScreen() {
   const loadReasons = async () => {
     try {
       setLoadingReasons(true);
+      if (__DEV__) console.log('[DeleteAccount] Buscando motivos de exclusão...');
+
       const response = await api.get('/monitora/user/motivosexclusao');
 
-      if (response.status === 200 && response.data) {
-        const activeReasons = response.data
-          .filter((item: DeletionReason) => item.ativo === 1)
-          .sort((a: DeletionReason, b: DeletionReason) => a.sequencia - b.sequencia);
-
-        setReasons(activeReasons);
+      if (__DEV__) {
+        console.log('[DeleteAccount] Resposta da API:', {
+          status: response.status,
+          data: response.data,
+          dataType: typeof response.data,
+          isArray: Array.isArray(response.data),
+        });
       }
-    } catch (error) {
-      if (__DEV__) console.error('[DeleteAccount] Erro ao carregar motivos:', error);
+
+      if (response.status === 200 && response.data) {
+        // A API pode retornar os dados em diferentes formatos
+        let reasonsData = response.data;
+
+        // Se vier dentro de um objeto .data
+        if (response.data.data && Array.isArray(response.data.data)) {
+          reasonsData = response.data.data;
+        }
+
+        if (__DEV__) console.log('[DeleteAccount] Dados extraídos:', reasonsData);
+
+        if (Array.isArray(reasonsData)) {
+          const activeReasons = reasonsData
+            .filter((item: DeletionReason) => item.ativo === 1 || item.ativo === '1')
+            .sort((a: DeletionReason, b: DeletionReason) => {
+              const seqA = typeof a.sequencia === 'string' ? parseInt(a.sequencia, 10) : a.sequencia;
+              const seqB = typeof b.sequencia === 'string' ? parseInt(b.sequencia, 10) : b.sequencia;
+              return seqA - seqB;
+            });
+
+          if (__DEV__) console.log('[DeleteAccount] Motivos ativos filtrados:', activeReasons);
+          setReasons(activeReasons);
+        } else {
+          if (__DEV__) console.warn('[DeleteAccount] Dados não são um array:', reasonsData);
+          showAlert('Atenção', 'Formato de dados inesperado da API.', [{ text: 'OK' }], 'warning');
+        }
+      }
+    } catch (error: any) {
+      if (__DEV__) {
+        console.error('[DeleteAccount] Erro ao carregar motivos:', error);
+        console.error('[DeleteAccount] Detalhes do erro:', {
+          message: error.message,
+          status: error.response?.status,
+          data: error.response?.data,
+        });
+      }
       showAlert('Erro', 'Não foi possível carregar os motivos de exclusão.', [{ text: 'OK' }], 'error');
     } finally {
       setLoadingReasons(false);
