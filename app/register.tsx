@@ -110,8 +110,53 @@ export default function RegisterScreen() {
     } catch (error: any) {
       console.error('[Register] Erro:', error);
 
-      const message =
-        error?.response?.data?.message || 'Erro ao cadastrar. Tente novamente.';
+      let message = 'Erro ao cadastrar. Tente novamente.';
+
+      // Tratar diferentes tipos de erro
+      if (error?.response) {
+        const status = error.response.status;
+        const apiMessage = error.response.data?.message;
+
+        // Erro 400 - Usuário já cadastrado
+        if (status === 400) {
+          message = 'Este CPF ou e-mail já está cadastrado no sistema.';
+        }
+        // Erro 401 - Não autorizado (não deveria acontecer no registro)
+        else if (status === 401) {
+          message = 'Erro de autenticação. Tente novamente.';
+        }
+        // Erro 500 - Erro no servidor
+        else if (status >= 500) {
+          // Verificar se é erro de foreign key (dados órfãos)
+          if (apiMessage && typeof apiMessage === 'object' && apiMessage.errorInfo) {
+            const errorInfo = apiMessage.errorInfo;
+            if (errorInfo[0] === '23000' && errorInfo[2]?.includes('foreign key constraint')) {
+              message =
+                'Detectamos dados inconsistentes no sistema. ' +
+                'Por favor, entre em contato com o suporte ou tente com outro CPF/e-mail.';
+            } else {
+              message = `Erro no servidor: ${errorInfo[2] || 'Erro desconhecido'}`;
+            }
+          } else if (typeof apiMessage === 'string') {
+            message = apiMessage;
+          } else {
+            message = 'Erro no servidor. Tente novamente mais tarde.';
+          }
+        }
+        // Outros erros com mensagem da API
+        else if (apiMessage) {
+          if (typeof apiMessage === 'string') {
+            message = apiMessage;
+          } else if (apiMessage.errorInfo && Array.isArray(apiMessage.errorInfo)) {
+            message = apiMessage.errorInfo[2] || message;
+          } else if (typeof apiMessage === 'object') {
+            message = JSON.stringify(apiMessage);
+          }
+        }
+      } else if (error?.message) {
+        // Erro de rede ou timeout
+        message = error.message;
+      }
 
       showAlert('Erro', message, [{text: 'OK'}], 'error');
     } finally {

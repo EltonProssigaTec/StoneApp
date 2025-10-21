@@ -1,0 +1,40 @@
+📱 StoneUP Monitora v3.0.0
+
+🎉 NOVIDADES DESTA VERSÃO
+
+✨ Nova identidade visual StoneUP
+🔐 Sistema de login e cadastro completo
+👤 Perfil com upload de foto
+💰 Dashboard financeiro atualizado
+📊 Consulta de CPF/CNPJ e score
+💳 Visualização de pendências e débitos
+🤝 Geração de acordos de pagamento
+🎁 Catálogo de ofertas personalizadas
+💬 ChatBot para atendimento
+🔔 Central de notificações
+⚙️ Gerenciamento completo de conta
+
+🔧 MELHORIAS
+
+✅ Interface modernizada
+✅ Performance otimizada
+✅ Navegação mais fluida
+✅ Segurança aprimorada
+✅ Correções de bugs
+
+📱 REQUISITOS
+
+• Android 6.0 ou superior
+• Conexão com internet
+
+---
+
+VERSÃO CURTA (para atualização rápida):
+
+Nova versão 3.0.0 com visual renovado, perfil de usuário completo, dashboard financeiro, gestão de pendências e acordos, ofertas personalizadas, chatbot integrado e diversas melhorias de performance e segurança.
+
+---
+
+VERSÃO MÍNIMA (140 caracteres para Play Store):
+
+Visual renovado, perfil completo, dashboard financeiro, gestão de pendências/acordos, ofertas e melhorias de performance.
