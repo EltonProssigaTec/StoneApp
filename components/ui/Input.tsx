@@ -127,6 +127,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     paddingVertical: 16,
+    paddingHorizontal: 14,
     fontSize: 16,
     fontFamily: Fonts.regular,
     color: AppColors.text.primary,

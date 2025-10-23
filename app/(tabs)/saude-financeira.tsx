@@ -1,7 +1,7 @@
 import { AppHeader } from '@/components';
 import { AppColors } from '@/constants/theme';
 import React from 'react';
-import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SaudeFinanceiraScreen() {
@@ -24,7 +24,14 @@ export default function SaudeFinanceiraScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    alignSelf: 'center',
     flex: 1,
+    width: '100%',
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
     backgroundColor: AppColors.background.secondary,
   },
   content: {

@@ -3,9 +3,10 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors, Fonts } from '@/constants/theme';
-import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Image,
+  ImageSourcePropType,
   Platform,
   Pressable,
   ScrollView,
@@ -13,7 +14,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -21,19 +22,18 @@ interface Debt {
   id: string;
   company: string;
   amount: number;
-  icon: string;
+  logo: ImageSourcePropType;
 }
 
 export default function PendenciasScreen() {
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'tudo' | 'negociacoes' | 'promocoes'>('tudo');
 
   const debts: Debt[] = [
-    { id: '1', company: 'BEMOL', amount: 1000.00, icon: 'B' },
-    { id: '2', company: 'TIM', amount: 1044.00, icon: 'T' },
-    { id: '3', company: 'AMERICANAS', amount: 1000.00, icon: 'A' },
-    { id: '4', company: 'MARISA', amount: 1000.00, icon: 'M' },
-    { id: '5', company: 'RIACHUELO', amount: 1100.00, icon: 'R' },
+    { id: '1', company: 'BEMOL', amount: 1000.00, logo: require('@/assets/images/bemol1.png') },
+    { id: '2', company: 'TIM', amount: 1044.00, logo: require('@/assets/images/tim.png') },
+    { id: '3', company: 'AMERICANAS', amount: 1000.00, logo: require('@/assets/images/americanas.png') },
+    { id: '4', company: 'MARISA', amount: 1000.00, logo: require('@/assets/images/marisa.png') },
+    { id: '5', company: 'RIACHUELO', amount: 1100.00, logo: require('@/assets/images/riachuelo.png') },
   ];
 
   const totalDebt = debts.reduce((sum, debt) => sum + debt.amount, 0);
@@ -92,7 +92,11 @@ export default function PendenciasScreen() {
                 <Card style={styles.debtCard} elevated={false}>
                   <View style={styles.debtContent}>
                     <View style={styles.debtIcon}>
-                      <Text style={styles.debtIconText}>{debt.icon}</Text>
+                      <Image
+                        source={debt.logo}
+                        style={styles.debtLogo}
+                        resizeMode="contain"
+                      />
                     </View>
                     <View style={styles.debtInfo}>
                       <Text style={styles.debtCompany}>{debt.company}</Text>
@@ -134,7 +138,14 @@ export default function PendenciasScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    alignSelf: 'center',
     flex: 1,
+    width: '100%',
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
     backgroundColor: AppColors.background.secondary,
   },
   header: {
@@ -215,15 +226,15 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: AppColors.white,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
   },
-  debtIconText: {
-    fontSize: 20,
-    fontFamily: Fonts.semiBold,
-    color: AppColors.primary,
+  debtLogo: {
+    width: 48,
+    height: 48,
   },
   debtInfo: {
     flex: 1,

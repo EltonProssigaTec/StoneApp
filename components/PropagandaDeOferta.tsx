@@ -1,7 +1,7 @@
 import { Fonts } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 import type { StyleProp, ViewStyle } from 'react-native';
 
@@ -14,7 +14,7 @@ export interface PropagandaDeOfertaProps {
 
 export function PropagandaDeOferta(props: PropagandaDeOfertaProps) {
   return (
-    <View testID={props.testID ?? '301:321'} style={[styles.root, props.style]}>
+    <TouchableOpacity testID={props.testID ?? '301:321'} style={[styles.root, props.style]} activeOpacity={0.8}>
       <LinearGradient
         colors={['#0195D8', '#0164AE', '#0898D9']}
         start={{ x: 0, y: 0 }}
@@ -25,7 +25,7 @@ export function PropagandaDeOferta(props: PropagandaDeOfertaProps) {
         {/* Imagem Bemol à esquerda */}
         <Image
           source={require('@/assets/images/Bemol.png')}
-          style={styles.bemolImage}
+          style={styles.empresaImage}
           resizeMode="contain"
         />
 
@@ -36,7 +36,7 @@ export function PropagandaDeOferta(props: PropagandaDeOfertaProps) {
           </Text>
         </View>
       </LinearGradient>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -54,9 +54,10 @@ const styles = StyleSheet.create({
     gap: 21,
     overflow: 'hidden',
   },
-  bemolImage: {
+  empresaImage: {
     width: 108,
     height: 108,
+    borderRadius: 14,
     flexShrink: 0,
   },
   textContainer: {
