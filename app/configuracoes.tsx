@@ -5,6 +5,7 @@ import { AppColors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Platform,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -144,7 +145,14 @@ export default function ConfiguracoesScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    alignSelf: 'center',
     flex: 1,
+    width: '100%',
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
     backgroundColor: AppColors.background.secondary,
   },
   scrollView: {

@@ -2,7 +2,7 @@ import { AppHeader } from '@/components/ui/AppHeader';
 import { AppColors } from '@/constants/theme';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function GerarAcordosScreen() {
@@ -16,7 +16,7 @@ export default function GerarAcordosScreen() {
       />
 
       {/* Header */}
-      <AppHeader title='Pendências Financeiras' />
+      <AppHeader title='Geração de Acordos' />
       <View style={styles.content}>
         <Text style={styles.title}>Geração de Acordos</Text>
         <Text style={styles.subtitle}>Em desenvolvimento...</Text>
@@ -27,7 +27,14 @@ export default function GerarAcordosScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    alignSelf: 'center',
     flex: 1,
+    width: '100%',
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
     backgroundColor: AppColors.background.secondary,
   },
   header: {

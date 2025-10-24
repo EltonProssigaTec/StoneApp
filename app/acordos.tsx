@@ -1,7 +1,7 @@
 import { AppHeader } from "@/components/ui/AppHeader";
 import { AppColors } from "@/constants/theme";
 import React, { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { FilterTabs } from "../components/ui/FilterTabs";
 import { PaymentCard } from "../components/ui/PaymentCard";
 import { StatusFilter } from "../components/ui/StatusFilter";
@@ -48,7 +48,14 @@ export default function AcordosScreen() {
 
 const styles = StyleSheet.create({
   container: {
+    alignSelf: 'center',
     flex: 1,
+    width: '100%',
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
     backgroundColor: AppColors.background.secondary,
   },
 });

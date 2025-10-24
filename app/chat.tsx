@@ -189,13 +189,22 @@ export default function ChatScreen() {
 
 const styles = StyleSheet.create({
   safeArea: {
+    alignSelf: 'center',
     flex: 1,
+    width: '100%',
+    ...Platform.select({
+      web: {
+        maxWidth: 720,
+      },
+    }),
     backgroundColor: AppColors.white,
   },
   header: {
     backgroundColor: AppColors.primary,
     paddingVertical: 16,
     paddingHorizontal: 20,
+    borderBottomEndRadius: 25,
+    borderBottomStartRadius: 25,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -292,6 +301,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   sendButton: {
-    marginBottom: 2,
+    marginVertical: 'auto',
   },
 });
