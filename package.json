@@ -11,7 +11,17 @@
     "android:clean": "cd android && ./gradlew clean && cd ..",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "run-emulator": "adb kill-server && yarn android",
+    "clean-gradlew": "cd android && ./gradlew clean",
+    "build-debug:apk": "cd android  && ./gradlew assembleDebug",
+    "build-release:aab": "cd android  && ./gradlew  bundleRelease",
+    "build-release:apk": "cd android  && ./gradlew  assembleRelease ",
+    "open-path-from-apk-genereted": "cd android/app/build/ && start .",
+    "release-aab": "yarn clean-gradlew  && yarn build-release:aab",
+    "release-apk": "yarn clean-gradlew  && yarn build-release:apk",
+    "run-adb-reverse": "adb reverse tcp:8081 tcp:8081",
+    "run-adb-reverse-device": "adb -s emulator-5554 reverse tcp:8081 tcp:8081"
   },
   "dependencies": {
     "@expo-google-fonts/montserrat": "^0.4.2",
