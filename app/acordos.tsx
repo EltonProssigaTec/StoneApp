@@ -56,6 +56,6 @@ const styles = StyleSheet.create({
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: AppColors.background.primary,
   },
 });

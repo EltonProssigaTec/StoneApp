@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     width: 46,
     height: 46,
     borderRadius: 14,
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: AppColors.background.primary,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: AppColors.background.primary,
   },
   header: {
     backgroundColor: AppColors.primary,
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flexDirection: 'row',
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
     marginHorizontal: 20,
     marginTop: 12,
     borderRadius: 16,

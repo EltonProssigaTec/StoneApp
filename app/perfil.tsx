@@ -713,7 +713,7 @@ export default function PerfilScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: AppColors.background.primary,
     width: '100%',
     ...Platform.select({
       web: {
@@ -854,7 +854,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: AppColors.background.primary,
     marginBottom: 12,
   },
   modalOptionDanger: {

@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
   },
   flexContainer: {
     flex: 1,
-    backgroundColor: AppColors.background.secondary,
+    backgroundColor: AppColors.background.primary,
   },
   messagesContainer: {
     flex: 1,
