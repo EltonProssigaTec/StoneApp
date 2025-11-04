@@ -5,6 +5,11 @@
     "version": "3.0.0",
     "private": true,
     "orientation": "portrait",
+    "splash": {
+      "image": "./assets/images/logo.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#ffffff"
+    },
     "icon": "./assets/images/ic_launcher.png",
     "scheme": "stoneapp",
     "userInterfaceStyle": "light",
@@ -19,12 +24,7 @@
     },
     "android": {
       "versionCode": 60,
-      "adaptiveIcon": {
-        "backgroundColor": "#fff",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
-      },
+      "icon": "./assets/images/ic_launcher.png",
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

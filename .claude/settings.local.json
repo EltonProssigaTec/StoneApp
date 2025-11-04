@@ -10,7 +10,13 @@
       "Bash(npx eas-cli build:*)",
       "Bash(where java)",
       "Bash(java -version)",
-      "Bash(./gradlew signingReport --configuration release)"
+      "Bash(./gradlew signingReport --configuration release)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(test:*)",
+      "Bash(find:*)",
+      "Bash(./gradlew clean:*)",
+      "Bash(./gradlew assembleRelease:*)"
     ],
     "deny": [],
     "ask": []
