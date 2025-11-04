@@ -52,11 +52,21 @@ export function Section(props: SectionProps) {
         return 'Bom dia';
     };
 
-    // Debug: Log da foto do usuário
-    React.useEffect(() => {
-        console.log('[Section] User picture:', user?.picture);
-        console.log('[Section] User data:', JSON.stringify(user, null, 2));
-    }, [user]);
+    // Função para gerar URL da foto com cache-busting (sincroniza com mudanças no user.picture)
+    const getPhotoUri = React.useMemo(() => {
+        if (!user?.picture) {
+            return getDefaultAvatar(user?.name);
+        }
+
+        // Se for URL completa (http/https) ou arquivo local
+        if (user.picture.startsWith('http') || user.picture.startsWith('file')) {
+            return user.picture;
+        }
+
+        // Se for nome de arquivo do servidor, adicionar timestamp para cache-busting
+        const timestamp = user.picture ? new Date().getTime() : 0;
+        return `${settings.FILES_URL}${user.picture}?t=${timestamp}`;
+    }, [user?.picture, user?.name]);
 
     return (
         <View testID={props.testID ?? "312:432"} style={[styles.root, props.style]}>
@@ -77,14 +87,9 @@ export function Section(props: SectionProps) {
                         activeOpacity={0.7}
                     >
                         <Image
-                            source={{
-                                uri: user?.picture
-                                    ? (user.picture.startsWith('http') || user.picture.startsWith('file')
-                                        ? user.picture
-                                        : settings.FILES_URL + user.picture)
-                                    : getDefaultAvatar(user?.name)
-                            }}
+                            source={{ uri: getPhotoUri }}
                             style={styles.avatar}
+                            key={user?.picture || 'default'}
                         />
                     </TouchableOpacity>
                 </View>
@@ -153,7 +158,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 10,
     },
     avatarContainer: {
         width: 43,
@@ -175,7 +179,6 @@ const styles = StyleSheet.create({
         fontFamily: Fonts.semiBold,
         color: AppColors.white,
         letterSpacing: 0,
-        marginBottom: 4,
     },
     planText: {
         fontSize: 16,

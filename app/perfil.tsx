@@ -42,7 +42,9 @@ export default function PerfilScreen() {
   const { showAlert, AlertComponent } = useAlert();
   const [editing, setEditing] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [showPhotoPreview, setShowPhotoPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -150,7 +152,7 @@ export default function PerfilScreen() {
     }
   };
 
-  // Upload de foto para o servidor
+  // Upload de foto para o servidor (seguindo padrão monitora_mobile)
   const uploadPhotoToServer = async (uriLocal: string): Promise<string | null> => {
     if (uploading) {
       if (__DEV__) console.log('[Perfil] Upload já em andamento, ignorando...');
@@ -159,27 +161,36 @@ export default function PerfilScreen() {
 
     try {
       if (__DEV__) console.log('[Perfil] Iniciando upload da imagem:', uriLocal);
+      if (__DEV__) console.log('[Perfil] Platform:', Platform.OS);
       setUploading(true);
 
-      if (!user?.email) {
-        if (__DEV__) console.error('[Perfil] Email do usuário não encontrado');
-        showAlert('Erro', 'Dados do usuário não encontrados', [{ text: 'OK' }], 'error');
-        return null;
+      // Criar FormData seguindo EXATAMENTE o padrão do monitora_mobile
+      const formData = new FormData();
+
+      // No web, o URI pode ser um blob URL
+      if (Platform.OS === 'web') {
+        if (__DEV__) console.log('[Perfil] Processando upload para WEB...');
+
+        // Fetch do blob
+        const response = await fetch(uriLocal);
+        const blob = await response.blob();
+
+        if (__DEV__) console.log('[Perfil] Blob obtido:', blob.type, blob.size, 'bytes');
+
+        formData.append('doc', blob, 'image.jpg');
+      } else {
+        // Mobile - usar formato normal
+        formData.append('doc', {
+          uri: uriLocal,
+          name: 'image.jpg', // Nome usado no projeto antecessor
+          type: 'image/jpeg',
+        } as any);
       }
 
-      // Criar FormData seguindo o padrão do monitora_mobile
-      const formData = new FormData();
-      formData.append('doc', {
-        uri: uriLocal,
-        name: 'perfil.jpg',
-        type: 'image/jpeg',
-      } as any);
-      formData.append('email', user.email);
+      if (__DEV__) console.log('[Perfil] FormData criado, enviando para API (endpoint: monitora/anexar_doc)...');
 
-      if (__DEV__) console.log('[Perfil] Enviando para API...');
-
-      // Fazer upload para o servidor
-      const response = await api.post('monitora/anexar_foto_perfil', formData, {
+      // Usar endpoint correto do projeto antecessor: monitora/anexar_doc
+      const response = await api.post('monitora/anexar_doc', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -192,11 +203,13 @@ export default function PerfilScreen() {
         const filename = response.data?.data;
 
         if (filename) {
-          // Retornar apenas o nome do arquivo (será combinado com FILES_URL na exibição)
+          if (__DEV__) console.log('[Perfil] Filename recebido:', filename);
+          // Retornar apenas o nome do arquivo (será salvo no banco e combinado com FILES_URL na exibição)
           return filename;
         } else {
-          // Se não retornou filename, usar a URI local temporariamente
-          return uriLocal;
+          if (__DEV__) console.warn('[Perfil] API não retornou filename');
+          showAlert('Erro', 'Erro ao processar foto no servidor', [{ text: 'OK' }], 'error');
+          return null;
         }
       } else {
         showAlert('Erro', 'Erro ao enviar foto', [{ text: 'OK' }], 'error');
@@ -204,6 +217,7 @@ export default function PerfilScreen() {
       }
     } catch (error: any) {
       if (__DEV__) console.error('[Perfil] Erro no upload:', error);
+      if (__DEV__) console.error('[Perfil] Detalhes do erro:', JSON.stringify(error, null, 2));
       showAlert('Erro', 'Falha ao enviar foto. Verifique sua conexão.', [{ text: 'OK' }], 'error');
       return null;
     } finally {
@@ -215,12 +229,32 @@ export default function PerfilScreen() {
     setShowPhotoOptions(true);
   };
 
-  // Salvar foto no banco de dados
+  const handleViewPhoto = () => {
+    setShowPhotoOptions(false);
+    setShowPhotoPreview(true);
+  };
+
+  // Função para gerar URL da foto com cache-busting
+  const getPhotoUri = () => {
+    if (!user?.picture) {
+      return getDefaultAvatar(user?.name);
+    }
+
+    // Se for URL completa (http/https) ou arquivo local
+    if (user.picture.startsWith('http') || user.picture.startsWith('file')) {
+      return user.picture;
+    }
+
+    // Se for nome de arquivo do servidor, adicionar timestamp para cache-busting
+    return `${settings.FILES_URL}${user.picture}?t=${imageRefreshKey}`;
+  };
+
+  // Salvar foto no banco de dados (seguindo padrão monitora_mobile)
   const savePhotoToDatabase = async (filename: string) => {
     try {
       if (__DEV__) console.log('[Perfil] Salvando foto no banco:', filename);
 
-      // Atualizar perfil no banco de dados
+      // Atualizar perfil no banco de dados seguindo EXATAMENTE o padrão do monitora_mobile
       const response = await api.post('/monitora/editar_usuario', {
         id: user?.id,
         name: user?.name || '',
@@ -228,17 +262,34 @@ export default function PerfilScreen() {
         cpf_cnpj: user?.cpf_cnpj || user?.cpf || '',
         data_nascimento: user?.data_nascimento || '',
         telefone: user?.telefone || '',
-        perfil: filename, // Campo que salva a foto no banco
+        perfil: filename, // Campo que salva a foto no banco (retornado por monitora/anexar_doc)
+        // Campos de comprovantes (mantidos do cadastro)
+        comprovante_rg_frente: user?.comprovante_rg_frente || '',
+        comprovante_rg_verso: user?.comprovante_rg_verso || '',
+        comprovante_cnh: user?.comprovante_cnh || '',
+        comprovante_endereco: user?.comprovante_endereco || '',
       });
 
       if (response.status === 200) {
-        // Atualizar APENAS a foto no estado (não salva no AsyncStorage até próximo login)
+        // Atualizar foto no contexto e AsyncStorage (seguindo padrão do monitora_mobile)
         if (user) {
-          setUser({ ...user, picture: filename });
-        }
-        showAlert('Sucesso', 'Foto de perfil atualizada!', [{ text: 'OK' }], 'success');
+          const updatedUser = { ...user, picture: filename };
+          setUser(updatedUser);
 
-        if (__DEV__) console.log('[Perfil] Foto atualizada no estado (não persistido no AsyncStorage)');
+          // Forçar reload da imagem (cache-busting)
+          setImageRefreshKey(Date.now());
+
+          // Persistir no AsyncStorage como faz o projeto antecessor
+          try {
+            const AsyncStorage = await import('@react-native-async-storage/async-storage').then(m => m.default);
+            await AsyncStorage.setItem('@Auth:user', JSON.stringify(updatedUser));
+            if (__DEV__) console.log('[Perfil] Foto atualizada no estado e AsyncStorage');
+          } catch (storageError) {
+            if (__DEV__) console.warn('[Perfil] Erro ao salvar no AsyncStorage:', storageError);
+          }
+        }
+
+        showAlert('Sucesso', 'Foto de perfil atualizada!', [{ text: 'OK' }], 'success');
       }
     } catch (error) {
       if (__DEV__) console.error('[Perfil] Erro ao salvar foto no banco:', error);
@@ -260,6 +311,7 @@ export default function PerfilScreen() {
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.5, // Mesma qualidade do monitora_mobile
+      cameraType: ImagePicker.CameraType.front, // Inicia com câmera frontal para selfie
     });
 
     if (!result.canceled && result.assets[0]) {
@@ -276,28 +328,46 @@ export default function PerfilScreen() {
   const handlePickFromGallery = async () => {
     setShowPhotoOptions(false);
 
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    try {
+      if (__DEV__) console.log('[Perfil] Iniciando seleção de imagem...');
 
-    if (status !== 'granted') {
-      showAlert('Permissão Necessária', 'Precisamos de permissão para acessar suas fotos.', [{ text: 'OK' }], 'warning');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.5, // Mesma qualidade do monitora_mobile
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      // Fazer upload para o servidor
-      const filename = await uploadPhotoToServer(result.assets[0].uri);
-
-      if (filename) {
-        // Salvar foto no banco de dados
-        await savePhotoToDatabase(filename);
+      // No web, a permissão é garantida automaticamente
+      if (Platform.OS !== 'web') {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+          showAlert('Permissão Necessária', 'Precisamos de permissão para acessar suas fotos.', [{ text: 'OK' }], 'warning');
+          return;
+        }
       }
+
+      if (__DEV__) console.log('[Perfil] Abrindo seletor de imagens...');
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.5, // Mesma qualidade do monitora_mobile
+        base64: false,
+      });
+
+      if (__DEV__) console.log('[Perfil] Resultado da seleção:', JSON.stringify(result, null, 2));
+
+      if (!result.canceled && result.assets[0]) {
+        if (__DEV__) console.log('[Perfil] Imagem selecionada:', result.assets[0].uri);
+
+        // Fazer upload para o servidor
+        const filename = await uploadPhotoToServer(result.assets[0].uri);
+
+        if (filename) {
+          // Salvar foto no banco de dados
+          await savePhotoToDatabase(filename);
+        }
+      } else {
+        if (__DEV__) console.log('[Perfil] Seleção cancelada ou sem assets');
+      }
+    } catch (error) {
+      if (__DEV__) console.error('[Perfil] Erro ao selecionar imagem:', error);
+      showAlert('Erro', 'Não foi possível selecionar a imagem.', [{ text: 'OK' }], 'error');
     }
   };
 
@@ -319,7 +389,7 @@ export default function PerfilScreen() {
             try {
               if (__DEV__) console.log('[Perfil] Removendo foto do banco...');
 
-              // Remover foto do banco de dados
+              // Remover foto do banco de dados (seguindo padrão monitora_mobile)
               const response = await api.post('/monitora/editar_usuario', {
                 id: user?.id,
                 name: user?.name || '',
@@ -328,16 +398,33 @@ export default function PerfilScreen() {
                 data_nascimento: user?.data_nascimento || '',
                 telefone: user?.telefone || '',
                 perfil: '', // Remove foto
+                // Campos de comprovantes (mantidos do cadastro)
+                comprovante_rg_frente: user?.comprovante_rg_frente || '',
+                comprovante_rg_verso: user?.comprovante_rg_verso || '',
+                comprovante_cnh: user?.comprovante_cnh || '',
+                comprovante_endereco: user?.comprovante_endereco || '',
               });
 
               if (response.status === 200) {
-                // Atualizar APENAS no estado (não salva no AsyncStorage)
+                // Atualizar no estado e AsyncStorage (seguindo padrão do monitora_mobile)
                 if (user) {
-                  setUser({ ...user, picture: '' });
-                }
-                showAlert('Sucesso', 'Foto de perfil removida!', [{ text: 'OK' }], 'success');
+                  const updatedUser = { ...user, picture: '' };
+                  setUser(updatedUser);
 
-                if (__DEV__) console.log('[Perfil] Foto removida do estado (não persistido no AsyncStorage)');
+                  // Forçar reload da imagem (cache-busting)
+                  setImageRefreshKey(Date.now());
+
+                  // Persistir no AsyncStorage
+                  try {
+                    const AsyncStorage = await import('@react-native-async-storage/async-storage').then(m => m.default);
+                    await AsyncStorage.setItem('@Auth:user', JSON.stringify(updatedUser));
+                    if (__DEV__) console.log('[Perfil] Foto removida do estado e AsyncStorage');
+                  } catch (storageError) {
+                    if (__DEV__) console.warn('[Perfil] Erro ao atualizar AsyncStorage:', storageError);
+                  }
+                }
+
+                showAlert('Sucesso', 'Foto de perfil removida!', [{ text: 'OK' }], 'success');
               }
             } catch (error) {
               if (__DEV__) console.error('[Perfil] Erro ao remover foto:', error);
@@ -417,14 +504,9 @@ export default function PerfilScreen() {
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
             <Image
-              source={{
-                uri: user?.picture
-                  ? (user.picture.startsWith('http') || user.picture.startsWith('file')
-                    ? user.picture
-                    : settings.FILES_URL + user.picture)
-                  : getDefaultAvatar(user?.name)
-              }}
+              source={{ uri: getPhotoUri() }}
               style={styles.avatar}
+              key={imageRefreshKey}
             />
             <View style={styles.cameraButton}>
               <IconSymbol name="camera.fill" size={16} color={AppColors.white} />
@@ -652,14 +734,17 @@ export default function PerfilScreen() {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Foto de Perfil</Text>
 
-            <TouchableOpacity
-              style={styles.modalOption}
-              onPress={handleTakePhoto}
-              disabled={uploading}
-            >
-              <IconSymbol name="camera.fill" size={24} color={AppColors.primary} />
-              <Text style={styles.modalOptionText}>Tirar Foto</Text>
-            </TouchableOpacity>
+            {/* Ocultar câmera no web (não funciona bem em navegadores) */}
+            {Platform.OS !== 'web' && (
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={handleTakePhoto}
+                disabled={uploading}
+              >
+                <IconSymbol name="camera.fill" size={24} color={AppColors.primary} />
+                <Text style={styles.modalOptionText}>Tirar Foto</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={styles.modalOption}
@@ -667,20 +752,31 @@ export default function PerfilScreen() {
               disabled={uploading}
             >
               <IconSymbol name="photo.fill" size={24} color={AppColors.primary} />
-              <Text style={styles.modalOptionText}>Escolher da Galeria</Text>
+              <Text style={styles.modalOptionText}>{Platform.OS === 'web' ? 'Selecionar Arquivo' : 'Escolher da Galeria'}</Text>
             </TouchableOpacity>
 
             {user?.picture && (
-              <TouchableOpacity
-                style={[styles.modalOption, styles.modalOptionDanger]}
-                onPress={handleRemovePhoto}
-                disabled={uploading}
-              >
-                <IconSymbol name="trash.fill" size={24} color="#DC3545" />
-                <Text style={[styles.modalOptionText, styles.modalOptionTextDanger]}>
-                  Remover Foto
-                </Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  style={styles.modalOption}
+                  onPress={handleViewPhoto}
+                  disabled={uploading}
+                >
+                  <IconSymbol name="eye.fill" size={24} color={AppColors.primary} />
+                  <Text style={styles.modalOptionText}>Visualizar Foto</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.modalOption, styles.modalOptionDanger]}
+                  onPress={handleRemovePhoto}
+                  disabled={uploading}
+                >
+                  <IconSymbol name="trash.fill" size={24} color="#DC3545" />
+                  <Text style={[styles.modalOptionText, styles.modalOptionTextDanger]}>
+                    Remover Foto
+                  </Text>
+                </TouchableOpacity>
+              </>
             )}
 
             <TouchableOpacity
@@ -692,6 +788,30 @@ export default function PerfilScreen() {
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
+      </Modal>
+
+      {/* Photo Preview Modal */}
+      <Modal
+        visible={showPhotoPreview}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowPhotoPreview(false)}
+      >
+        <View style={styles.previewOverlay}>
+          <TouchableOpacity
+            style={styles.previewCloseButton}
+            onPress={() => setShowPhotoPreview(false)}
+          >
+            <IconSymbol name="xmark.circle.fill" size={36} color={AppColors.white} />
+          </TouchableOpacity>
+
+          <Image
+            source={{ uri: getPhotoUri() }}
+            style={styles.previewImage}
+            resizeMode="contain"
+            key={imageRefreshKey}
+          />
+        </View>
       </Modal>
 
       {/* Loading Overlay durante upload */}
@@ -922,5 +1042,21 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontFamily: Fonts.regular,
     color: AppColors.text.secondary,
+  },
+  previewOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.95)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  previewCloseButton: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    zIndex: 10,
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
   },
 });

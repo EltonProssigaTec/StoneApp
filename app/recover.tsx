@@ -1,22 +1,21 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
+import { useAlert } from '@/components/ui/AlertModal';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
-import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import api from '@/services/api.config';
-import { cpfCnpjMask, removeMask, validateCPF, validateCNPJ } from '@/utils/masks';
+import { cpfCnpjMask, removeMask, validateCNPJ, validateCPF } from '@/utils/masks';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
-  Image,
+  View
 } from 'react-native';
 
 type RecoverType = 'email' | 'password';
@@ -493,29 +492,27 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     flex: 1,
-    paddingHorizontal: 20,
   },
   content: {
     flex: 1,
-    paddingTop: 40,
   },
   illustration: {
     width: 200,
     height: 200,
     alignSelf: 'center',
-    marginBottom: 32,
+    marginBottom: 20,
   },
   title: {
     fontSize: 22,
     fontFamily: Fonts.bold,
     color: AppColors.primary,
-    marginBottom: 24,
+    marginBottom: 20,
     textAlign: 'center',
   },
   optionButton: {
     backgroundColor: AppColors.primary,
     paddingVertical: 16,
-    borderRadius: 16,
+    borderRadius: 12,
     marginBottom: 16,
     alignItems: 'center',
   },

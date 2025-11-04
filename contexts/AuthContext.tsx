@@ -25,6 +25,11 @@ export interface User {
   picture?: string;
   plano?: string;
   data_nascimento?: string; // Campo da API (formato: YYYY-MM-DD)
+  // Campos de comprovantes (usados no cadastro e edição de perfil)
+  comprovante_rg_frente?: string;
+  comprovante_rg_verso?: string;
+  comprovante_cnh?: string;
+  comprovante_endereco?: string;
   // Adicione outros campos conforme necessário
 }
 

@@ -72,7 +72,7 @@ export function DebtCard(props: DebtCardProps) {
 
 const styles = StyleSheet.create({
     card: {
-        marginTop: 30,
+        marginTop: 10,
         paddingVertical: 21,
         paddingHorizontal: 14,
         borderRadius: 19,

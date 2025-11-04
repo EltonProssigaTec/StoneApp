@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
   },
   gradient: {
     width: '100%',
-    borderBottomLeftRadius: 25,
-    borderBottomRightRadius: 25,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
     paddingTop: 20
   },
   content: {
