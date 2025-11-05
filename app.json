@@ -21,7 +21,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "Este app precisa de acesso à câmera para você tirar fotos do perfil.",
         "NSPhotoLibraryUsageDescription": "Este app precisa de acesso à galeria de fotos para você escolher uma foto de perfil.",
-        "NSPhotoLibraryAddUsageDescription": "Este app precisa de acesso para salvar fotos na galeria."
+        "NSPhotoLibraryAddUsageDescription": "Este app precisa de acesso para salvar fotos na galeria.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -31,7 +32,9 @@
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES"
+        "READ_MEDIA_IMAGES",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
       ],
       "navigationBar": {
         "visible": "sticky-immersive",

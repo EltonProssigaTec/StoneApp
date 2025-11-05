@@ -28,6 +28,31 @@ interface UserContactInfo {
 }
 
 export default function RecoverScreen() {
+  // Função para mascarar e-mail: mostra 3 primeiros e 3 últimos caracteres do usuário
+function maskEmail(email: string): string {
+  if (!email || !email.includes('@')) return email;
+  const [user, domain] = email.split('@');
+  if (user.length <= 6) {
+    return `${user[0]}***@${domain}`;
+  }
+  const prefix = user.slice(0, 3);
+  const suffix = user.slice(-3);
+  return `${prefix}***${suffix}@${domain}`;
+}
+
+// Função para mascarar telefone: mantém DDD e últimos 3 dígitos
+function maskPhone(phone: string): string {
+  if (!phone) return '';
+  // Remove tudo que não for número
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 8) return phone;
+
+  const ddd = digits.slice(0, 2);
+  const middle = digits.slice(2, -3);
+  const end = digits.slice(-3);
+  const maskedMiddle = middle.slice(0, 3) + '***';
+  return `+55 ${ddd} ${maskedMiddle}${end}`;
+}
   const router = useRouter();
   const { showAlert, AlertComponent } = useAlert();
 
@@ -126,9 +151,9 @@ export default function RecoverScreen() {
       }
 
       setContactInfo({
-        email: userData.email || '',
-        phone: userData.telefone || ''
-      });
+        email: maskEmail(userData.email || ''),
+        phone: maskPhone(userData.telefone || '')
+      });      
 
       setStep('contact');
     } catch (error: any) {
@@ -226,7 +251,7 @@ export default function RecoverScreen() {
         <View style={styles.contactOptionContent}>
           <Text style={styles.contactOptionLabel}>SMS</Text>
           <Text style={styles.contactOptionValue}>
-            {contactInfo.phone ? `+55 ${contactInfo.phone}` : 'Telefone não cadastrado'}
+            {contactInfo.phone ? `${contactInfo.phone}` : 'Telefone não cadastrado'}
           </Text>
         </View>
         <View style={[
