@@ -20,7 +20,10 @@
       "Bash(node:*)",
       "Bash(npx tsc:*)",
       "Bash(npx expo start:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

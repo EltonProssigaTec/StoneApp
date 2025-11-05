@@ -1,16 +1,16 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { Button } from '@/components/ui/Button';
 
+import { useAlert } from '@/components/ui/AlertModal';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
 import { Text } from '@/components/ui/Text';
-import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import Checkbox from 'expo-checkbox';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
-import { BackHandler, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { BackHandler, Linking, Platform, StatusBar, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -107,6 +107,7 @@ export default function LoginScreen() {
           autoCapitalize="none"
           autoCorrect={false}
           editable={!loading}
+          style={styles.input}
         />
 
         <Input
@@ -157,6 +158,7 @@ export default function LoginScreen() {
           loading={loading}
           disabled={loading}
           fullWidth
+          style={styles.button}
         />
 
         <View style={styles.registerSection}>
@@ -170,12 +172,32 @@ export default function LoginScreen() {
             disabled={loading}
           />
         </View>
-        <TouchableOpacity onPress={() => undefined}>
-          <Text style={styles.termsText}>Ler termos de uso</Text>
+        <TouchableOpacity
+          onPress={() => {
+            const url = 'https://api.stoneup.com.br/storage/termos/CONTRATO_DE%20PRESTAC%CC%A7A%CC%83O_DE%20SERVIC%CC%A7OS_STONE_UP_MONITORA.pdf';
+            if (Platform.OS === 'web') {
+              window.open(url, '_blank');
+            } else {
+              Linking.openURL(url);
+            }
+          }}
+          disabled={loading}
+        >
+          <Text style={[styles.termsText,  loading && styles.disabledText]}>Ler termos de uso</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => undefined}>
-          <Text style={styles.termsText}>Política de privacidade</Text>
-        </TouchableOpacity>
+        {/* <TouchableOpacity
+          onPress={() => {
+            const url = 'https://api.stoneup.com.br/storage/termos/CONTRATO_DE%20PRESTAC%CC%A7A%CC%83O_DE%20SERVIC%CC%A7OS_STONE_UP_MONITORA.pdf';
+            if (Platform.OS === 'web') {
+              window.open(url, '_blank');
+            } else {
+              Linking.openURL(url);
+            }
+          }}
+          disabled={loading}
+        >
+          <Text style={[styles.termsText,  loading && styles.disabledText]}>Política de privacidade</Text>
+        </TouchableOpacity> */}
       </View>
 
       {/* Alert Modal */}
@@ -206,6 +228,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.regular,
     color: AppColors.text.secondary,
   },
+  button: {
+    width: 250,
+  },
+  input: {
+
+  },
   linksContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -227,6 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   createAccountButton: {
+    width: 250,
     borderWidth: 1.5,
   },
   termsText: {

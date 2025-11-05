@@ -1,5 +1,6 @@
 import { AuthLayout } from '@/components/layouts/AuthLayout';
 import { useAlert } from '@/components/ui/AlertModal';
+import { Button } from '@/components/ui/Button';
 import { GradientButton } from '@/components/ui/GradientButton';
 import { Input } from '@/components/ui/Input';
 import { AppColors, Fonts } from '@/constants/theme';
@@ -73,25 +74,33 @@ export default function RecoverScreen() {
       />
       <Text style={styles.title}>O que deseja recuperar?</Text>
 
-      <TouchableOpacity
-        style={styles.optionButton}
+      <GradientButton
+        title="Recuperar e-mail"
         onPress={() => {
           setRecoverType('email');
           setStep('cpf');
         }}
-      >
-        <Text style={styles.optionButtonText}>Recuperar e-mail</Text>
-      </TouchableOpacity>
+        fullWidth
+        style={styles.button}
 
-      <TouchableOpacity
-        style={[styles.optionButton, styles.optionButtonSecondary]}
+      />
+      <GradientButton
+        title="Recuperar senha"
         onPress={() => {
           setRecoverType('password');
           setStep('cpf');
         }}
-      >
-        <Text style={styles.optionButtonText}>Recuperar senha</Text>
-      </TouchableOpacity>
+        style={styles.button}
+        variant='secondary'
+      />
+      <Button
+        title="Voltar"
+        variant="outline"
+        onPress={() => router.push('/login')}
+        fullWidth
+        style={[styles.createAccountButton, { position: 'absolute', bottom: 75 }]}
+        disabled={loading}
+      />
     </View>
   );
 
@@ -111,16 +120,22 @@ export default function RecoverScreen() {
       });
 
       const userData = response.data.data;
+
+      if (__DEV__) {
+        console.log('[Recover] Dados do usuário:', userData);
+      }
+
       setContactInfo({
-        email: userData.email,
-        phone: userData.telefone || '+55 ***0000'
+        email: userData.email || '',
+        phone: userData.telefone || ''
       });
 
       setStep('contact');
     } catch (error: any) {
+      if (__DEV__) console.error('[Recover] Erro ao verificar CPF:', error);
       showAlert(
         'Erro',
-        'CPF/CNPJ não encontrado no sistema.',
+        error.response?.data?.message || 'CPF/CNPJ não encontrado no sistema.',
         [{ text: 'OK' }],
         'error'
       );
@@ -158,16 +173,23 @@ export default function RecoverScreen() {
   const handleSendCode = async () => {
     setLoading(true);
     try {
-      await api.post('/confirmCodeEmail', {
-        email: contactInfo.email,
-        tipo: selectedContact
-      });
+      // Usar endpoint correto baseado no tipo de contato selecionado
+      if (selectedContact === 'email') {
+        await api.post('/sendCodeEmail', {
+          email: contactInfo.email
+        });
+      } else {
+        await api.post('/sendCodeSms', {
+          telefone: contactInfo.phone
+        });
+      }
 
-      setTimer(90); // 1min e 30s
+      setTimer(120); // 2 minutos (igual ao projeto antecessor)
       setCanResend(false);
       setStep('code');
     } catch (error: any) {
-      showAlert('Erro', 'Erro ao enviar código.', [{ text: 'OK' }], 'error');
+      if (__DEV__) console.error('[Recover] Erro ao enviar código:', error);
+      showAlert('Erro', 'Erro ao enviar código. Tente novamente.', [{ text: 'OK' }], 'error');
     } finally {
       setLoading(false);
     }
@@ -203,7 +225,9 @@ export default function RecoverScreen() {
       >
         <View style={styles.contactOptionContent}>
           <Text style={styles.contactOptionLabel}>SMS</Text>
-          <Text style={styles.contactOptionValue}>{contactInfo.phone}</Text>
+          <Text style={styles.contactOptionValue}>
+            {contactInfo.phone ? `+55 ${contactInfo.phone}` : 'Telefone não cadastrado'}
+          </Text>
         </View>
         <View style={[
           styles.radio,
@@ -223,8 +247,8 @@ export default function RecoverScreen() {
   );
 
   // Passo 4: Digite o código
-  const handleVerifyCode = async () => {
-    const fullCode = code.join('');
+  const handleVerifyCode = async (codeToVerify?: string) => {
+    const fullCode = codeToVerify || code.join('');
 
     if (fullCode.length !== 6) {
       showAlert('Erro', 'Digite o código de 6 dígitos.', [{ text: 'OK' }], 'error');
@@ -233,26 +257,44 @@ export default function RecoverScreen() {
 
     setLoading(true);
     try {
-      await api.post('/confirmCodeEmail', {
-        email: contactInfo.email,
-        codigo: fullCode
-      });
-
-      if (recoverType === 'email') {
-        // Mostrar email encontrado
-        setStep('result');
+      // Usar endpoint correto baseado no tipo de contato usado
+      let response;
+      if (selectedContact === 'email') {
+        response = await api.post('/confirmCodeEmail', {
+          email: contactInfo.email,
+          codigo: fullCode
+        });
       } else {
-        // Ir para alteração de senha
-        setStep('result');
+        response = await api.post('/confirmCodeSms', {
+          telefone: contactInfo.phone,
+          codigo: fullCode
+        });
+      }
+
+      // Verificar resposta do servidor (igual ao projeto antecessor)
+      if (response.data?.message === 'Confirmado com sucesso!' || response.status === 200) {
+        if (recoverType === 'email') {
+          // Mostrar email encontrado
+          setStep('result');
+        } else {
+          // Ir para alteração de senha
+          setStep('result');
+        }
+      } else {
+        throw new Error('Código inválido');
       }
     } catch (error: any) {
+      if (__DEV__) console.error('[Recover] Erro ao verificar código:', error);
       showAlert('Erro', 'Código inválido ou expirado.', [{ text: 'OK' }], 'error');
+      // Limpar código em caso de erro
+      setCode(['', '', '', '', '', '']);
     } finally {
       setLoading(false);
     }
   };
 
   const handleResendCode = async () => {
+    setCode(['', '', '', '', '', '']); // Limpar código anterior
     await handleSendCode();
   };
 
@@ -263,26 +305,37 @@ export default function RecoverScreen() {
     newCode[index] = value;
     setCode(newCode);
 
-    // Auto-focus próximo input
-    if (value && index < 5) {
-      // Focus próximo campo (você precisará implementar refs)
+    // Verificar se o código está completo e validar automaticamente
+    const fullCode = newCode.join('');
+    if (fullCode.length === 6) {
+      // Aguarda um momento para o usuário ver o código completo
+      setTimeout(() => {
+        handleVerifyCode(fullCode);
+      }, 300);
     }
   };
 
   const renderCodeStep = () => (
-    <View style={styles.content}>
-      <Text style={styles.title}>Digite o código enviado</Text>
+    <View style={styles.codeStepContainer}>
+      <View style={styles.codeHeaderSection}>
+        <Text style={styles.title}>Digite o código enviado</Text>
+        <Text style={styles.subtitle}>
+          Enviado via {selectedContact === 'email' ? 'Email' : 'SMS'} para{' '}
+          {selectedContact === 'email' ? contactInfo.email : `+55 ${contactInfo.phone}`}
+        </Text>
 
-      <View style={styles.codeContainer}>
-        {code.map((digit, index) => (
-          <View key={index} style={styles.codeDigit}>
-            <Text style={styles.codeDigitText}>{digit}</Text>
-          </View>
-        ))}
+        <View style={styles.codeContainer}>
+          {code.map((digit, index) => (
+            <View key={index} style={styles.codeDigit}>
+              <Text style={styles.codeDigitText}>{digit}</Text>
+            </View>
+          ))}
+        </View>
       </View>
 
       <View style={styles.numpad}>
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+        {/* Linha 1: 1, 2, 3 */}
+        {[1, 2, 3].map((num) => (
           <TouchableOpacity
             key={num}
             style={styles.numpadButton}
@@ -292,10 +345,47 @@ export default function RecoverScreen() {
                 handleCodeChange(num.toString(), emptyIndex);
               }
             }}
+            disabled={loading}
           >
             <Text style={styles.numpadText}>{num}</Text>
           </TouchableOpacity>
         ))}
+
+        {/* Linha 2: 4, 5, 6 */}
+        {[4, 5, 6].map((num) => (
+          <TouchableOpacity
+            key={num}
+            style={styles.numpadButton}
+            onPress={() => {
+              const emptyIndex = code.findIndex(d => d === '');
+              if (emptyIndex !== -1) {
+                handleCodeChange(num.toString(), emptyIndex);
+              }
+            }}
+            disabled={loading}
+          >
+            <Text style={styles.numpadText}>{num}</Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Linha 3: 7, 8, 9 */}
+        {[7, 8, 9].map((num) => (
+          <TouchableOpacity
+            key={num}
+            style={styles.numpadButton}
+            onPress={() => {
+              const emptyIndex = code.findIndex(d => d === '');
+              if (emptyIndex !== -1) {
+                handleCodeChange(num.toString(), emptyIndex);
+              }
+            }}
+            disabled={loading}
+          >
+            <Text style={styles.numpadText}>{num}</Text>
+          </TouchableOpacity>
+        ))}
+
+        {/* Linha 4: vazio, 0, backspace */}
         <View style={styles.numpadButton} />
         <TouchableOpacity
           style={styles.numpadButton}
@@ -305,6 +395,7 @@ export default function RecoverScreen() {
               handleCodeChange('0', emptyIndex);
             }
           }}
+          disabled={loading}
         >
           <Text style={styles.numpadText}>0</Text>
         </TouchableOpacity>
@@ -318,6 +409,7 @@ export default function RecoverScreen() {
               handleCodeChange('', 5);
             }
           }}
+          disabled={loading}
         >
           <Text style={styles.numpadText}>⌫</Text>
         </TouchableOpacity>
@@ -331,9 +423,15 @@ export default function RecoverScreen() {
         {timer > 0 ? (
           <Text style={styles.timerText}>Aguarde {formatTime(timer)}</Text>
         ) : (
-          <TouchableOpacity onPress={handleResendCode} disabled={loading}>
-            <Text style={styles.resendButton}>Reenviar código</Text>
-          </TouchableOpacity>
+          <GradientButton
+            title="Reenviar código"
+            onPress={handleResendCode}
+            loading={loading}
+            disabled={loading}
+            variant="secondary"
+            fullWidth
+            style={styles.resendButtonGradient}
+          />
         )}
       </View>
     </View>
@@ -390,12 +488,13 @@ export default function RecoverScreen() {
             Seu e-mail cadastrado é:{'\n\n'}
             <Text style={styles.resultEmail}>{contactInfo.email}</Text>
           </Text>
-
-          <GradientButton
-            title="Voltar para o login"
-            onPress={() => router.replace('/login')}
+          <Button
+            title="Voltar"
+            variant="outline"
+            onPress={() => router.push('/login')}
             fullWidth
-            style={styles.button}
+            style={[styles.createAccountButton, { position: 'absolute', bottom: 75 }]}
+            disabled={loading}
           />
         </View>
       );
@@ -434,6 +533,14 @@ export default function RecoverScreen() {
           fullWidth
           style={styles.button}
         />
+        <Button
+          title="Voltar"
+          variant="outline"
+          onPress={() => router.push('/login')}
+          fullWidth
+          style={[styles.createAccountButton, { position: 'absolute', bottom: 75 }]}
+          disabled={loading}
+        />
       </View>
     );
   };
@@ -457,24 +564,19 @@ export default function RecoverScreen() {
             {step === 'result' && renderResultStep()}
 
             {step !== 'choose' && step !== 'result' && (
-              <TouchableOpacity
-                style={styles.backLink}
+              <Button
+                title="Voltar"
+                variant="outline"
                 onPress={() => {
                   if (step === 'cpf') setStep('choose');
                   else if (step === 'contact') setStep('cpf');
                   else if (step === 'code') setStep('contact');
                 }}
-              >
-                <Text style={styles.backLinkText}>← Voltar</Text>
-              </TouchableOpacity>
+                fullWidth
+                style={[styles.createAccountButton, { position: 'relative', marginTop: 0, marginBottom: 20 }]}
+                disabled={loading}
+              />
             )}
-
-            <TouchableOpacity
-              style={styles.termsContainer}
-              onPress={() => router.back()}
-            >
-              <Text style={styles.backText}>Voltar para o login</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -506,6 +608,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: Fonts.bold,
     color: AppColors.primary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: AppColors.text.secondary,
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -525,7 +634,14 @@ const styles = StyleSheet.create({
     color: AppColors.white,
   },
   button: {
-    marginTop: 24,
+    marginBottom: 16,
+    width: 250,
+  },
+  createAccountButton: {
+    borderWidth: 1.5,
+    alignSelf: 'center',
+    width: 250,
+    marginTop: 32
   },
   contactOption: {
     flexDirection: 'row',
@@ -571,19 +687,18 @@ const styles = StyleSheet.create({
   codeContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: 12,
-    marginBottom: 40,
+    gap: 8,
   },
   codeDigit: {
-    width: 50,
-    height: 60,
+    width: Platform.OS === 'web' ? 50 : 45,
+    height: Platform.OS === 'web' ? 60 : 55,
     backgroundColor: AppColors.gray[200],
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
   },
   codeDigitText: {
-    fontSize: 28,
+    fontSize: Platform.OS === 'web' ? 28 : 24,
     fontFamily: Fonts.bold,
     color: AppColors.primary,
   },
@@ -591,45 +706,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    gap: 16,
-    marginBottom: 32,
+    maxWidth: Platform.OS === 'web' ? 280 : 250,
+    alignSelf: 'center',
+    marginVertical: 24,
   },
   numpadButton: {
-    width: 80,
-    height: 60,
+    width: Platform.OS === 'web' ? 80 : 70,
+    height: Platform.OS === 'web' ? 60 : 55,
     backgroundColor: AppColors.gray[100],
     borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    margin: Platform.OS === 'web' ? 6 : 5,
   },
   numpadText: {
-    fontSize: 24,
+    fontSize: Platform.OS === 'web' ? 24 : 22,
     fontFamily: Fonts.bold,
     color: AppColors.primary,
   },
   resendContainer: {
-    backgroundColor: AppColors.secondary,
-    padding: 20,
     borderRadius: 16,
+    marginTop: 0,
     alignItems: 'center',
   },
   resendText: {
     fontSize: 14,
     fontFamily: Fonts.medium,
-    color: AppColors.white,
+    color: AppColors.text.secondary,
     textAlign: 'center',
-    marginBottom: 12,
-  },
+    marginBottom: 16,
+    },
   timerText: {
     fontSize: 16,
     fontFamily: Fonts.bold,
-    color: AppColors.white,
+    color: AppColors.secondary,
   },
   resendButton: {
     fontSize: 16,
     fontFamily: Fonts.bold,
     color: AppColors.white,
     textDecorationLine: 'underline',
+  },
+  resendButtonGradient: {
+    marginTop: 0,
+    maxWidth: 250,
   },
   resultText: {
     fontSize: 16,
@@ -662,5 +782,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
     marginBottom: 40,
+  },
+  codeStepContainer: {
+    ...Platform.select({
+      web: {
+        paddingVertical: 20,
+      },
+      default: {
+        paddingVertical: 20,
+      },
+    }),
+  },
+  codeHeaderSection: {
   },
 });

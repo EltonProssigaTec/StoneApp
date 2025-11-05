@@ -14,6 +14,7 @@ interface GradientButtonProps extends TouchableOpacityProps {
   loading?: boolean;
   fullWidth?: boolean;
   halfWidth?: boolean;
+  variant?: 'primary' | 'secondary';
 }
 
 export function GradientButton({
@@ -21,10 +22,13 @@ export function GradientButton({
   loading = false,
   fullWidth = false,
   halfWidth = false,
+  variant = 'primary',
   disabled,
   style,
   ...props
 }: GradientButtonProps) {
+  const gradientConfig = variant === 'secondary' ? Gradients.secondary : Gradients.primary;
+
   return (
     <TouchableOpacity
       style={[
@@ -38,7 +42,7 @@ export function GradientButton({
       {...props}
     >
       <LinearGradient
-        {...Gradients.primary}
+        {...gradientConfig}
         style={[styles.gradient, disabled && styles.disabled]}
       >
         {loading ? (

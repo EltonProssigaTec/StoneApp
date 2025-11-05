@@ -8,6 +8,8 @@ import { cpfMask, dateMask, phoneMask, removeMask, validateCPF, validateDate } f
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  Linking,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -260,7 +262,17 @@ export default function RegisterScreen() {
           style={styles.button}
         />
 
-        <TouchableOpacity style={styles.termsContainer}>
+        <TouchableOpacity
+          style={styles.termsContainer}
+          onPress={() => {
+            const url = 'https://api.stoneup.com.br/storage/termos/CONTRATO_DE%20PRESTAC%CC%A7A%CC%83O_DE%20SERVIC%CC%A7OS_STONE_UP_MONITORA.pdf';
+            if (Platform.OS === 'web') {
+              window.open(url, '_blank');
+            } else {
+              Linking.openURL(url);
+            }
+          }}
+        >
           <Text style={styles.termsText}>Ler termos de uso</Text>
         </TouchableOpacity>
       </View>
