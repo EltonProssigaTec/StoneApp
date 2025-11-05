@@ -2,7 +2,7 @@
   "expo": {
     "name": "StoneUP",
     "slug": "StoneApp",
-    "version": "3.0.0",
+    "version": "3.1.0",
     "private": true,
     "orientation": "portrait",
     "splash": {
@@ -16,7 +16,7 @@
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "br.com.stoneup.monitora.app",
-      "buildNumber": "3.0.0",
+      "buildNumber": "3.1.0",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Este app precisa de acesso à câmera para você tirar fotos do perfil.",
@@ -25,7 +25,7 @@
       }
     },
     "android": {
-      "versionCode": 60,
+      "versionCode": 61,
       "icon": "./assets/images/ic_launcher.png",
       "permissions": [
         "CAMERA",
