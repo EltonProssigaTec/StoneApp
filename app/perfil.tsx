@@ -15,6 +15,7 @@ import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -499,7 +500,12 @@ export default function PerfilScreen() {
       {/* Header */}
       <AppHeader title='Meu Perfil' />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
@@ -717,7 +723,8 @@ export default function PerfilScreen() {
             </Card>
           </View>
         )}
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Photo Options Modal */}
       <Modal
@@ -850,6 +857,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,

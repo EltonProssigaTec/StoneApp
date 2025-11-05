@@ -1,7 +1,7 @@
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import {
   Animated,
   Dimensions,
@@ -16,6 +16,7 @@ import {
   View,
 } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { IconSymbol } from './icon-symbol';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -48,7 +49,10 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
 
   useEffect(() => {
     if (visible) {
-      // Animar entrada (da esquerda para direita)
+      // Reset e animar entrada (da esquerda para direita)
+      slideAnim.setValue(-MENU_WIDTH);
+      fadeAnim.setValue(0);
+
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
@@ -76,7 +80,7 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
         }),
       ]).start();
     }
-  }, [visible]);
+  }, [visible, slideAnim, fadeAnim]);
 
   const handleNavigate = async (route: string) => {
     onClose();
@@ -93,32 +97,43 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
 
   // Gesture para fechar arrastando para a esquerda
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-10, 999999]) // Ativa em qualquer direção
-    .onBegin(() => {
-      console.log('[SideMenu] Pan gesture begin');
-    })
+    .activeOffsetX([-10, 10]) // Mais sensível para detectar gestos
+    .failOffsetY([-10, 10]) // Falha se mover muito verticalmente
     .onUpdate((event) => {
-      console.log('[SideMenu] Pan update', { translationX: event.translationX });
       // Só permite arrastar para a esquerda (valores negativos)
       if (event.translationX < 0) {
         slideAnim.setValue(Math.max(event.translationX, -MENU_WIDTH));
+        // Atualiza o fade proporcionalmente
+        const progress = Math.max(0, 1 + (event.translationX / MENU_WIDTH));
+        fadeAnim.setValue(progress);
       }
     })
     .onEnd((event) => {
-      console.log('[SideMenu] Pan end', { translationX: event.translationX, velocityX: event.velocityX });
-      // Se arrastou mais de 50px ou velocidade rápida, fecha o menu
-      if (event.translationX < -50 || event.velocityX < -500) {
-        console.log('[SideMenu] Fechando menu');
+      // Se arrastou mais de 30% da largura ou velocidade rápida, fecha o menu
+      if (event.translationX < -MENU_WIDTH * 0.3 || event.velocityX < -500) {
         onClose();
       } else {
-        console.log('[SideMenu] Voltando para posição aberta');
         // Senão, volta para posição aberta
-        Animated.spring(slideAnim, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
+        Animated.parallel([
+          Animated.spring(slideAnim, {
+            toValue: 0,
+            useNativeDriver: true,
+            damping: 20,
+            stiffness: 90,
+          }),
+          Animated.spring(fadeAnim, {
+            toValue: 1,
+            useNativeDriver: true,
+            damping: 20,
+            stiffness: 90,
+          }),
+        ]).start();
       }
     });
+
+  if (!visible) {
+    return null;
+  }
 
   return (
     <Modal
@@ -126,8 +141,20 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
       transparent
       animationType="none"
       onRequestClose={onClose}
+      statusBarTranslucent
     >
-      <View style={styles.overlay}>
+      <>
+        <View style={styles.overlay}>
+          {/* Backdrop atrás */}
+          <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={onClose}
+              activeOpacity={1}
+            />
+          </Animated.View>
+
+        {/* Menu na frente */}
         <GestureDetector gesture={panGesture}>
           <Animated.View
             style={[
@@ -137,61 +164,43 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
               },
             ]}
           >
-            {/* Header with Gradient */}
-            {/* <LinearGradient
-              colors={['#0195D8', '#0164AE']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.header}
-            > */}
-            <View style={styles.header}>
-              <Image
-                source={require('@/assets/images/logo.png')}
-                style={styles.logo}
-                resizeMode="contain"
-              />
-            </View>
-            {/* <TouchableOpacity style={styles.avatarContainer}>
-                <IconSymbol name="person.fill" size={32} color={AppColors.white} />
-              </TouchableOpacity>
+            <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'bottom']}>
+              {/* Header */}
+              <View style={styles.header}>
+                <Image
+                  source={require('@/assets/images/logo.png')}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
 
-              <TouchableOpacity style={styles.eyeButton}>
-                <IconSymbol name="eye.fill" size={24} color={AppColors.white} />
-              </TouchableOpacity> */}
-            {/* </LinearGradient> */}
-
-            {/* Menu Items */}
-            <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
-              {menuItems.map((item, index) => (
-                <Pressable
-                  key={index}
-                  style={styles.menuItem}
-                  onPress={() => handleNavigate(item.route)}
-                >
-                  {({ pressed }) => (
-                    <>
-                      <View style={[
-                        styles.iconContainer,
-                        { backgroundColor: pressed ? '#FFF3E0' : '#E3F2FD' }
-                      ]}>
-                        <IconSymbol name={item.icon as any} size={20} color={pressed ? AppColors.secondary : item.color} />
-                      </View>
-                      <Text style={[styles.menuItemText, pressed && { color: AppColors.secondary }]}>{item.title}</Text>
-                    </>
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
+              {/* Menu Items */}
+              <ScrollView style={styles.menuList} showsVerticalScrollIndicator={false}>
+                {menuItems.map((item, index) => (
+                  <Pressable
+                    key={index}
+                    style={styles.menuItem}
+                    onPress={() => handleNavigate(item.route)}
+                  >
+                    {({ pressed }) => (
+                      <>
+                        <View style={[
+                          styles.iconContainer,
+                          { backgroundColor: pressed ? '#FFF3E0' : '#E3F2FD' }
+                        ]}>
+                          <IconSymbol name={item.icon as any} size={20} color={pressed ? AppColors.secondary : item.color} />
+                        </View>
+                        <Text style={[styles.menuItemText, pressed && { color: AppColors.secondary }]}>{item.title}</Text>
+                      </>
+                    )}
+                  </Pressable>
+                ))}
+              </ScrollView>
+            </SafeAreaView>
           </Animated.View>
         </GestureDetector>
-        <Animated.View style={[styles.backdrop, { opacity: fadeAnim }]}>
-          <TouchableOpacity
-            style={{ flex: 1 }}
-            onPress={onClose}
-            activeOpacity={1}
-          />
-        </Animated.View>
-      </View>
+        </View>
+      </>
     </Modal>
   );
 }
@@ -199,31 +208,47 @@ export function SideMenu({ visible, onClose }: SideMenuProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    flexDirection: 'row',
   },
   menuContainer: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
     width: MENU_WIDTH,
     height: '100%',
     backgroundColor: AppColors.white,
-    elevation: 5,
+    ...Platform.select({
+      android: {
+        marginTop: 35,
+      },
+    }),
+    elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 2, height: 0 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
+    zIndex: 2,
   },
   backdrop: {
-    flex: 1,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1,
+  },
+  safeArea: {
+    flex: 1,
   },
   header: {
-    paddingTop: 30,
+    paddingTop: 20,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
   },
   logo: {
     width: 200,
-    height: 150,
+    height: 140,
   },
   avatarContainer: {
     width: 64,

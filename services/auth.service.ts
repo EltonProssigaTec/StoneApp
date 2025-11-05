@@ -3,7 +3,7 @@
  * Endpoints de registro, login e recuperação de senha
  */
 
-import api from './api.config';
+import api, { apiFree, settings } from './api.config';
 
 export interface RegisterData {
   name: string;
@@ -42,7 +42,8 @@ export const AuthService = {
     };
 
     try {
-      const response = await api.post('/pre_register_monitora', body);
+      // Usa apiFree porque não precisa de autenticação para cadastro
+      const response = await apiFree.post('/pre_register_monitora', body);
 
       if (__DEV__) console.log('[AuthService] Resposta pré-registro:', response.data);
 
@@ -62,7 +63,8 @@ export const AuthService = {
    */
   verifySecureCode: async (idCadastro: string, code: string): Promise<boolean> => {
     try {
-      const response = await api.post('/verify_secure_code', {
+      // Usa apiFree porque não precisa de autenticação para verificar código
+      const response = await apiFree.post('/verify_secure_code', {
         id: idCadastro,
         code,
       });
@@ -79,7 +81,8 @@ export const AuthService = {
    */
   consultarTermos: async (tipo: 'cadastro' | 'politica') => {
     try {
-      const response = await api.post('/consultar_termos', { tipo });
+      // Usa apiFree porque não precisa de autenticação para consultar termos
+      const response = await apiFree.post('/consultar_termos', { tipo });
 
       if (response.data?.data && response.data.data.length > 0) {
         return response.data.data[0];
@@ -97,7 +100,8 @@ export const AuthService = {
    */
   recoverPassword: async (email: string): Promise<boolean> => {
     try {
-      const response = await api.post('/recover_password', { email });
+      // Usa apiFree porque não precisa de autenticação para recuperar senha
+      const response = await apiFree.post('/recover_password', { email });
       return response.data?.success || false;
     } catch (error: any) {
       if (__DEV__) console.error('[AuthService] Erro ao recuperar senha:', error.response?.data || error.message);

@@ -25,34 +25,34 @@ export function AuthLayout({
   waveVariant = 'small',
 }: AuthLayoutProps) {
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.wrapper}>
-        <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
-          <View style={styles.waveContainer}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <KeyboardAvoidingView
+        style={styles.wrapper}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={styles.waveContainer}>
           <WaveDecoration variant={waveVariant} />
+        </View>
+
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
+          <View style={styles.responsiveContainer}>
+            {showLogo && (
+              <View style={styles.logoContainer}>
+                <LogoImage size={logoSize} />
+              </View>
+            )}
+
+            <View style={styles.content}>{children}</View>
           </View>
-
-
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.responsiveContainer}>
-              {showLogo && (
-                <View style={styles.logoContainer}>
-                  <LogoImage size={logoSize} />
-                </View>
-              )}
-
-              <View style={styles.content}>{children}</View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -62,35 +62,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: AppColors.white,
   },
-  waveContainer: {
-    width: '100%',
-    height: 70,
-    backgroundColor: AppColors.white,
-  },
   wrapper: {
     flex: 1,
     ...Platform.select({
       web: {
         justifyContent: 'center',
         alignItems: 'center',
+        maxWidth: 720,
+        marginHorizontal: 'auto',
+        width: '100%',
       },
     }),
   },
-  keyboardView: {
-    flex: 1,
+  waveContainer: {
     width: '100%',
+    height: 65,
+    backgroundColor: AppColors.white,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: 20,
+  },
+  responsiveContainer: {
+    paddingHorizontal: 32,
     ...Platform.select({
       web: {
         maxWidth: 720,
       },
     }),
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  responsiveContainer: {
-    flex: 1,
-    paddingHorizontal: 32,
   },
   logoContainer: {
     alignItems: 'center',

@@ -128,27 +128,44 @@ api.interceptors.response.use(
 
 // Instância da API sem autenticação (livre)
 export const apiFree = axios.create({
+  baseURL: settings.API_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
+  timeout: 30000, // 30 segundos
 });
 
 apiFree.interceptors.request.use(
   async (config) => {
+    if (__DEV__) {
+      console.log('[API Free Request]', config.method?.toUpperCase(), config.url);
+    }
     return config;
   },
   (error) => {
+    if (__DEV__) {
+      console.log('[API Free Request Error]', error);
+    }
     return Promise.reject(error);
   }
 );
 
 apiFree.interceptors.response.use(
   async (response) => {
+    if (__DEV__) {
+      console.log('[API Free Response Success]', response.status, response.config.url);
+    }
     return response;
   },
   (error) => {
     if (__DEV__) {
-      console.log('[API Free Error]', error);
+      console.error('[API Free Response Error]', {
+        url: error.config?.url,
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message,
+      });
     }
     return Promise.reject(error);
   }

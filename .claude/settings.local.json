@@ -16,7 +16,11 @@
       "Bash(test:*)",
       "Bash(find:*)",
       "Bash(./gradlew clean:*)",
-      "Bash(./gradlew assembleRelease:*)"
+      "Bash(./gradlew assembleRelease:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx expo start:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

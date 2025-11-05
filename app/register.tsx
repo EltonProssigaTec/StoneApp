@@ -8,9 +8,6 @@ import { cpfMask, dateMask, phoneMask, removeMask, validateCPF, validateDate } f
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -192,110 +189,87 @@ export default function RegisterScreen() {
 
   return (
     <AuthLayout waveVariant="login">
-      <View style={styles.container}>
-        <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+      {/* Formulário */}
+      <View style={styles.formContainer}>
+        <Input
+          label="Nome"
+          placeholder="Digite seu nome completo."
+          icon="person.fill"
+          value={formData.name}
+          onChangeText={(value) => updateField('name', value)}
+          error={errors.name}
+        />
 
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Formulário */}
-            <View style={styles.formContainer}>
-              <Input
-                label="Nome"
-                placeholder="Digite seu nome completo."
-                icon="person.fill"
-                value={formData.name}
-                onChangeText={(value) => updateField('name', value)}
-                error={errors.name}
-              />
+        <Input
+          label="Email"
+          placeholder="Digite seu email."
+          icon="envelope.fill"
+          value={formData.email}
+          onChangeText={(value) => updateField('email', value)}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          error={errors.email}
+        />
 
-              <Input
-                label="Email"
-                placeholder="Digite seu email."
-                icon="envelope.fill"
-                value={formData.email}
-                onChangeText={(value) => updateField('email', value)}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                error={errors.email}
-              />
+        <Input
+          label="CPF"
+          placeholder="Digite seu CPF."
+          icon="creditcard.fill"
+          value={formData.cpf}
+          onChangeText={(value) => updateField('cpf', value)}
+          keyboardType="number-pad"
+          error={errors.cpf}
+        />
 
-              <Input
-                label="CPF"
-                placeholder="Digite seu CPF."
-                icon="creditcard.fill"
-                value={formData.cpf}
-                onChangeText={(value) => updateField('cpf', value)}
-                keyboardType="number-pad"
-                error={errors.cpf}
-              />
+        <Input
+          label="Data de nascimento"
+          placeholder="Digite sua data de nascimento."
+          icon="calendar"
+          value={formData.data_nascimento}
+          onChangeText={(value) => updateField('data_nascimento', value)}
+          keyboardType="phone-pad"
+          error={errors.data_nascimento}
+        />
 
-              <Input
-                label="Data de nascimento"
-                placeholder="Digite sua data de nascimento."
-                icon="calendar"
-                value={formData.data_nascimento}
-                onChangeText={(value) => updateField('data_nascimento', value)}
-                keyboardType="phone-pad"
-                error={errors.data_nascimento}
-              />
+        <Input
+          label="Telefone"
+          placeholder="Digite seu telefone."
+          icon="phone.fill"
+          value={formData.telefone}
+          onChangeText={(value) => updateField('telefone', value)}
+          keyboardType="phone-pad"
+          error={errors.telefone}
+        />
 
-              <Input
-                label="Telefone"
-                placeholder="Digite seu telefone."
-                icon="phone.fill"
-                value={formData.telefone}
-                onChangeText={(value) => updateField('telefone', value)}
-                keyboardType="phone-pad"
-                error={errors.telefone}
-              />
+        <Input
+          label="Senha"
+          placeholder="Crie uma senha forte."
+          icon="lock.fill"
+          value={formData.password}
+          onChangeText={(value) => updateField('password', value)}
+          secureTextEntry
+          error={errors.password}
+        />
 
-              <Input
-                label="Senha"
-                placeholder="Crie uma senha forte."
-                icon="lock.fill"
-                value={formData.password}
-                onChangeText={(value) => updateField('password', value)}
-                secureTextEntry
-                error={errors.password}
-              />
+        <GradientButton
+          title="Cadastrar"
+          onPress={handleRegister}
+          loading={loading}
+          disabled={loading}
+          fullWidth
+          style={styles.button}
+        />
 
-              <GradientButton
-                title="Cadastrar"
-                onPress={handleRegister}
-                loading={loading}
-                disabled={loading}
-                fullWidth
-                style={styles.button}
-              />
-
-              <TouchableOpacity style={styles.termsContainer}>
-                <Text style={styles.termsText}>Ler termos de uso</Text>
-              </TouchableOpacity>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
+        <TouchableOpacity style={styles.termsContainer}>
+          <Text style={styles.termsText}>Ler termos de uso</Text>
+        </TouchableOpacity>
       </View>
       <AlertComponent />
-    </AuthLayout>);
+    </AuthLayout>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "transparent",
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingBottom: 40,
-  },
   formContainer: {
     flex: 1,
   },
@@ -305,6 +279,7 @@ const styles = StyleSheet.create({
   termsContainer: {
     alignItems: 'center',
     marginTop: 24,
+    marginBottom: 20,
   },
   termsText: {
     fontSize: 12,
