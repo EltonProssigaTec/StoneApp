@@ -51,7 +51,7 @@ function maskPhone(phone: string): string {
   const middle = digits.slice(2, -3);
   const end = digits.slice(-3);
   const maskedMiddle = middle.slice(0, 3) + '***';
-  return `+55 ${ddd} ${maskedMiddle}${end}`;
+  return `${ddd} ${maskedMiddle}${end}`;
 }
   const router = useRouter();
   const { showAlert, AlertComponent } = useAlert();
