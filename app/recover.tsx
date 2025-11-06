@@ -68,6 +68,7 @@ function maskPhone(phone: string): string {
   const [canResend, setCanResend] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [userData, setUserData] = useState<any>(null);
 
   // Timer para reenvio de código
   useEffect(() => {
@@ -123,7 +124,7 @@ function maskPhone(phone: string): string {
         variant="outline"
         onPress={() => router.push('/login')}
         fullWidth
-        style={[styles.createAccountButton, { position: 'absolute', bottom: 75 }]}
+        style={[styles.createAccountButton, { position: 'relative', bottom: 0 }]}
         disabled={loading}
       />
     </View>
@@ -149,6 +150,8 @@ function maskPhone(phone: string): string {
       if (__DEV__) {
         console.log('[Recover] Dados do usuário:', userData);
       }
+
+      setUserData(response.data.data);
 
       setContactInfo({
         email: maskEmail(userData.email || ''),
@@ -198,18 +201,18 @@ function maskPhone(phone: string): string {
   const handleSendCode = async () => {
     setLoading(true);
     try {
-      // Usar endpoint correto baseado no tipo de contato selecionado
+      // Use dados reais, removendo máscara se necessário
       if (selectedContact === 'email') {
         await api.post('/sendCodeEmail', {
-          email: contactInfo.email
+          email: userData.email // <-- guarde o valor original aqui
         });
       } else {
         await api.post('/sendCodeSms', {
-          telefone: contactInfo.phone
+          telefone: userData.telefone // <-- idem
         });
       }
-
-      setTimer(120); // 2 minutos (igual ao projeto antecessor)
+  
+      setTimer(120);
       setCanResend(false);
       setStep('code');
     } catch (error: any) {
@@ -218,7 +221,7 @@ function maskPhone(phone: string): string {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const renderContactStep = () => (
     <View style={styles.content}>
@@ -282,21 +285,23 @@ function maskPhone(phone: string): string {
 
     setLoading(true);
     try {
-      // Usar endpoint correto baseado no tipo de contato usado
+      // Usar endpoint correto baseado no tipo de contato usado, com dados originais
       let response;
       if (selectedContact === 'email') {
         response = await api.post('/confirmCodeEmail', {
-          email: contactInfo.email,
+          email: userData.email, // Usar email original, não mascarado
           codigo: fullCode
         });
       } else {
         response = await api.post('/confirmCodeSms', {
-          telefone: contactInfo.phone,
+          telefone: userData.telefone, // Usar telefone original, não mascarado
           codigo: fullCode
         });
       }
 
-      // Verificar resposta do servidor (igual ao projeto antecessor)
+      // Verificar resposta do servidor
+      if (__DEV__) console.log('[Recover] Resposta da verificação de código:', response.data);
+
       if (response.data?.message === 'Confirmado com sucesso!' || response.status === 200) {
         if (recoverType === 'email') {
           // Mostrar email encontrado
@@ -310,7 +315,11 @@ function maskPhone(phone: string): string {
       }
     } catch (error: any) {
       if (__DEV__) console.error('[Recover] Erro ao verificar código:', error);
-      showAlert('Erro', 'Código inválido ou expirado.', [{ text: 'OK' }], 'error');
+
+      // Mensagem mais específica baseada no erro
+      const errorMessage = error.response?.data?.message || 'Código inválido ou expirado. Tente novamente.';
+      showAlert('Código Incorreto', errorMessage, [{ text: 'OK' }], 'error');
+
       // Limpar código em caso de erro
       setCode(['', '', '', '', '', '']);
     } finally {
@@ -482,7 +491,7 @@ function maskPhone(phone: string): string {
     setLoading(true);
     try {
       await api.post('/recuperar_senha', {
-        email: contactInfo.email,
+        email: userData.email, // Usar email original, não mascarado
         nova_senha: newPassword,
       });
 
@@ -511,7 +520,7 @@ function maskPhone(phone: string): string {
           <Text style={styles.title}>E-mail Encontrado!</Text>
           <Text style={styles.resultText}>
             Seu e-mail cadastrado é:{'\n\n'}
-            <Text style={styles.resultEmail}>{contactInfo.email}</Text>
+            <Text style={styles.resultEmail}>{userData.email}</Text>
           </Text>
           <Button
             title="Voltar"
@@ -572,7 +581,7 @@ function maskPhone(phone: string): string {
 
   return (
     <AuthLayout waveVariant="login">
-      {AlertComponent}
+      <AlertComponent />
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -666,7 +675,6 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     alignSelf: 'center',
     width: 250,
-    marginTop: 32
   },
   contactOption: {
     flexDirection: 'row',
