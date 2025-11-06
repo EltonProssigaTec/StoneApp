@@ -23,7 +23,9 @@
       "Bash(echo:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(npm install)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -26,27 +26,20 @@
       }
     },
     "android": {
-      "versionCode": 61,
-      "icon": "./assets/images/ic_launcher.png",
+      "package": "br.com.stoneup.monitora.app",
+      "versionCode": 62,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/ic_launcher.png",
+        "backgroundColor": "#ffffff"
+      },
       "permissions": [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "READ_MEDIA_IMAGES",
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES"
       ],
-      "navigationBar": {
-        "visible": "sticky-immersive",
-        "barStyle": "light-content"
-      },
-      "statusBar": {
-        "barStyle": "light-content",
-        "translucent": true
-      },
-      "edgeToEdgeEnabled": false,
-      "predictiveBackGestureEnabled": false,
-      "package": "br.com.stoneup.monitora.app"
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "static",

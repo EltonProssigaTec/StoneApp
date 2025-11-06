@@ -16,6 +16,8 @@ O **StoneApp** (StoneUP Monitora) é uma solução mobile completa para ajudar u
 - 💳 Consultar informações de CPF/CNPJ
 - 🔔 Receber notificações de vencimentos
 
+**Versão Atual:** 3.1.0 (versionCode: 62)
+
 ## 🚀 Tecnologias
 
 - **React Native** 0.81.4
@@ -28,13 +30,15 @@ O **StoneApp** (StoneUP Monitora) é uma solução mobile completa para ajudar u
 - **AsyncStorage** - Armazenamento local persistente
 - **Expo Linear Gradient** - Gradientes nativos
 - **React Native SVG** - Ícones e gráficos vetoriais
+- **Gradle** 8.14.3 - Build Android
+- **New Architecture** - Habilitado (Fabric + Hermes)
 
 ## ✨ Funcionalidades
 
 ### 🔐 Autenticação
 - ✅ Login com email/senha
 - ✅ Cadastro de novos usuários com validação de CPF/CNPJ
-- ✅ Recuperação de senha
+- ✅ Recuperação de senha com verificação por código
 - ✅ Manter logado (sessão persistente)
 - ✅ Verificação de código de segurança
 
@@ -57,6 +61,7 @@ O **StoneApp** (StoneUP Monitora) é uma solução mobile completa para ajudar u
 - ✅ Componentes reutilizáveis e tipados
 - ✅ Animações fluídas com Reanimated
 - ✅ Splash screen animada
+- ✅ Design responsivo
 
 ## 📋 Pré-requisitos
 
@@ -65,6 +70,7 @@ Antes de começar, você precisa ter instalado:
 - **Node.js** 18+ ([Download](https://nodejs.org/))
 - **npm** ou **yarn**
 - **Git** ([Download](https://git-scm.com/))
+- **Java JDK** 17+ (para build Android)
 - **Expo Go** no celular ([Android](https://play.google.com/store/apps/details?id=host.exp.exponent) / [iOS](https://apps.apple.com/app/expo-go/id982107779))
 - **Android Studio** (para emulador Android) ou **Xcode** (para emulador iOS)
 - **EAS CLI** (para builds de produção): `npm install -g eas-cli`
@@ -82,7 +88,7 @@ cd StoneApp
 npm install
 ```
 
-### 3️⃣ Configure as variáveis de ambiente (opcional)
+### 3️⃣ Configure as variáveis de ambiente
 O app já está configurado para usar a API de produção da StoneUP:
 ```typescript
 // services/api.config.ts
@@ -156,13 +162,15 @@ eas build -p android -e production
 eas build -p ios -e production
 ```
 
-### Build Local (sem EAS)
+### Build Local (Gradle)
+
+Para builds locais, consulte a documentação detalhada em [GRADLE_BUILD_CONFIG.md](GRADLE_BUILD_CONFIG.md).
 
 ```bash
 # Gerar template nativo
 npx expo prebuild
 
-# Build Android local
+# Build Android local (Release)
 cd android
 ./gradlew assembleRelease
 
@@ -176,15 +184,16 @@ Certifique-se de configurar:
 ```json
 {
   "expo": {
-    "name": "StoneApp",
-    "slug": "stoneapp",
-    "version": "1.0.0",
+    "name": "StoneUP",
+    "slug": "StoneApp",
+    "version": "3.1.0",
     "android": {
-      "package": "com.stoneup.monitora",
-      "versionCode": 1
+      "versionCode": 62,
+      "package": "br.com.stoneup.monitora.app"
     },
     "ios": {
-      "bundleIdentifier": "com.stoneup.monitora"
+      "bundleIdentifier": "br.com.stoneup.monitora.app",
+      "buildNumber": "3.1.0"
     }
   }
 }
@@ -195,7 +204,7 @@ Perfis de build já configurados:
 - **preview**: Gera APK para testes internos
 - **production**: Gera AAB/IPA para stores
 
-## Estrutura do Projeto
+## 📂 Estrutura do Projeto
 
 ```
 StoneApp/
@@ -207,6 +216,7 @@ StoneApp/
 │   │   └── notificacoes.tsx
 │   ├── login.tsx
 │   ├── register.tsx
+│   ├── recover.tsx
 │   └── _layout.tsx
 ├── components/              # Componentes reutilizáveis
 │   ├── ui/                 # Componentes de interface
@@ -223,15 +233,17 @@ StoneApp/
 │   └── dividas.service.ts # Dívidas
 ├── utils/                  # Utilitários
 │   └── masks.ts           # Máscaras de input
-└── assets/                # Imagens e recursos
+├── assets/                # Imagens e recursos
+├── android/               # Projeto Android nativo
+└── GRADLE_BUILD_CONFIG.md # Documentação do build Gradle
 ```
 
-## Recursos de UI
+## 🎨 Componentes de UI
 
 ### Componentes Principais
-- **Button** - Botão padrão
+- **Button** - Botão padrão com variantes
 - **GradientButton** - Botão com gradiente
-- **Input/FloatingInput** - Campos de entrada
+- **Input/FloatingInput** - Campos de entrada com label flutuante
 - **Card** - Container com sombra
 - **ScreenHeader** - Cabeçalho de tela
 - **SideMenu** - Menu lateral animado
@@ -249,7 +261,7 @@ StoneApp/
 - **Gradientes** - Gradientes pré-configurados
 - **Espaçamentos** - Sistema de espaçamento consistente
 
-## API Integration
+## 🌐 API Integration
 
 O app se comunica com a API StoneUP através de serviços configurados com Axios:
 
@@ -263,36 +275,16 @@ const login = await AuthService.login(email, password);
 ### Endpoints Principais
 - `POST /login_monitora` - Login
 - `POST /pre_register` - Pré-cadastro
+- `POST /recover` - Recuperação de senha
 - `GET /dividas` - Listar dívidas
 - `GET /ofertas` - Listar ofertas
 
-## 🎨 Componentes e Temas
-
-### Tema Principal
-O app utiliza um sistema de design consistente:
-
-```typescript
-// constants/theme.ts
-export const AppColors = {
-  primary: '#0066CC',
-  secondary: '#FF8C00',
-  success: '#28A745',
-  danger: '#DC3545',
-  warning: '#FFC107',
-  // ...
-};
-
-export const Gradients = {
-  primary: {
-    colors: ['#0066CC', '#004C99'],
-    start: { x: 0, y: 0 },
-    end: { x: 1, y: 1 }
-  },
-  // ...
-};
+### Base URL
+```
+https://api.stoneup.com.br/
 ```
 
-### Máscaras de Input
+## 🎨 Máscaras de Input
 
 ```typescript
 import { cpfMask, cnpjMask, phoneMask, dateMask, moneyMask } from '@/utils/masks';
@@ -330,6 +322,8 @@ npm install
 ```
 
 ### Erro no build Android
+Consulte o documento [GRADLE_BUILD_CONFIG.md](GRADLE_BUILD_CONFIG.md) para configuração detalhada.
+
 ```bash
 cd android
 ./gradlew clean
@@ -337,11 +331,10 @@ cd ..
 npx expo prebuild --clean
 ```
 
-### Crash no login (APK)
-✅ Já corrigido! Problemas relacionados a:
-- Console.log em produção
-- AsyncStorage.clear() muito agressivo
-- Alert.alert em contexto assíncrono
+### Problemas conhecidos resolvidos
+- ✅ Crash no login (APK): Console.log removidos em produção
+- ✅ AsyncStorage: Uso otimizado
+- ✅ Signing config: Configuração corrigida para release
 
 ## 📱 Funcionalidades de Navegação
 
@@ -370,6 +363,12 @@ eas submit -p android
 ```bash
 eas submit -p ios
 ```
+
+## 📋 Documentação Adicional
+
+- [GRADLE_BUILD_CONFIG.md](GRADLE_BUILD_CONFIG.md) - Configuração detalhada do build Gradle
+- [CHANGELOG.md](CHANGELOG.md) - Histórico de versões
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Guia de contribuição
 
 ## 🤝 Contribuindo
 
