@@ -30,27 +30,27 @@ export default function ChangePasswordScreen() {
 
   const validatePasswords = (): boolean => {
     if (!currentPassword.trim()) {
-      showAlert('Atenção', 'Digite sua senha atual.', 'warning');
+      showAlert('Atenção', 'Digite sua senha atual.', [{ text: 'OK' }], 'warning');
       return false;
     }
 
     if (!newPassword.trim()) {
-      showAlert('Atenção', 'Digite a nova senha.', 'warning');
+      showAlert('Atenção', 'Digite a nova senha.', [{ text: 'OK' }], 'warning');
       return false;
     }
 
     if (newPassword.length < 6) {
-      showAlert('Atenção', 'A nova senha deve ter no mínimo 6 caracteres.', 'warning');
+      showAlert('Atenção', 'A nova senha deve ter no mínimo 6 caracteres.', [{ text: 'OK' }], 'warning');
       return false;
     }
 
     if (newPassword !== confirmPassword) {
-      showAlert('Atenção', 'As senhas não conferem.', 'warning');
+      showAlert('Atenção', 'As senhas não conferem.', [{ text: 'OK' }], 'warning');
       return false;
     }
 
     if (currentPassword === newPassword) {
-      showAlert('Atenção', 'A nova senha deve ser diferente da senha atual.', 'warning');
+      showAlert('Atenção', 'A nova senha deve ser diferente da senha atual.', [{ text: 'OK' }], 'warning');
       return false;
     }
 
@@ -73,20 +73,25 @@ export default function ChangePasswordScreen() {
         showAlert(
           'Sucesso',
           'Senha alterada com sucesso! Faça login novamente.',
-          'success',
-          () => {
-            signOut();
-            router.replace('/login');
-          }
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                signOut();
+                router.replace('/login');
+              }
+            }
+          ],
+          'success'
         );
       }
     } catch (error: any) {
       console.error('Erro ao alterar senha:', error);
 
       if (error.response?.status === 401) {
-        showAlert('Erro', 'Senha atual incorreta.', 'error');
+        showAlert('Erro', 'Senha atual incorreta.', [{ text: 'OK' }], 'error');
       } else {
-        showAlert('Erro', 'Não foi possível alterar a senha. Tente novamente.', 'error');
+        showAlert('Erro', 'Não foi possível alterar a senha. Tente novamente.', [{ text: 'OK' }], 'error');
       }
     } finally {
       setLoading(false);

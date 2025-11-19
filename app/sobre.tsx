@@ -151,7 +151,7 @@ export default function SobreScreen() {
               style={styles.socialButton}
               onPress={() => handleOpenLink('https://facebook.com/stoneapp')}
             >
-              <IconSymbol name="person.2.fill" size={24} color={AppColors.primary} />
+              <Text style={styles.socialIcon}>f</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -165,14 +165,14 @@ export default function SobreScreen() {
               style={styles.socialButton}
               onPress={() => handleOpenLink('https://twitter.com/stoneapp')}
             >
-              <IconSymbol name="bubble.left.and.bubble.right.fill" size={24} color={AppColors.primary} />
+              <Text style={styles.socialIcon}>𝕏</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.socialButton}
               onPress={() => handleOpenLink('https://linkedin.com/company/stoneapp')}
             >
-              <IconSymbol name="briefcase.fill" size={24} color={AppColors.primary} />
+              <Text style={styles.socialIcon}>in</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -320,6 +320,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: AppColors.gray[200],
+  },
+  socialIcon: {
+    fontSize: 24,
+    fontFamily: Fonts.bold,
+    color: AppColors.primary,
   },
   legalText: {
     fontSize: 13,

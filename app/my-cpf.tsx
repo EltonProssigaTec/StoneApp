@@ -1,8 +1,10 @@
+import { useAlert } from '@/components/ui/AlertModal';
 import { AppHeader } from '@/components/ui/AppHeader';
+import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors, Fonts } from '@/constants/theme';
 import api from '@/services/api.config';
-import { DividasService, Divida } from '@/services/dividas.service';
+import { Divida } from '@/services/dividas.service';
 import { cpfCnpjMask, dateMask, removeMask } from '@/utils/masks';
 import React, { useState } from 'react';
 import {
@@ -19,8 +21,6 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card } from '@/components/ui/Card';
-import { useAlert } from '@/components/ui/AlertModal';
 
 interface UserData {
   id: string;
@@ -43,13 +43,8 @@ export default function MyCpfScreen() {
 
   const handlePesquisar = async () => {
     // Validação básica
-    if (!nomeCompleto.trim() && !cpfCnpj.trim()) {
-      showAlert('Atenção', 'Preencha o nome completo ou CPF/CNPJ para pesquisar.', 'warning');
-      return;
-    }
-
-    if (!dataNascimento.trim()) {
-      showAlert('Atenção', 'Preencha a data de nascimento.', 'warning');
+    if (!cpfCnpj.trim()) {
+      showAlert('Atenção', 'Por favor, informe o CPF/CNPJ para realizar a busca.', [{ text: 'OK' }], 'warning');
       return;
     }
 
@@ -59,39 +54,56 @@ export default function MyCpfScreen() {
       setUserData(null);
       setDividas([]);
 
-      // Se tiver CPF, busca por CPF
-      if (cpfCnpj.trim()) {
-        const cleanCpf = removeMask(cpfCnpj);
+      const cleanCpf = removeMask(cpfCnpj);
 
-        // Busca dados do usuário
-        const userResponse = await api.post('/verificar_cpf_cnpj', {
-          cpf_cnpj: cleanCpf
-        });
+      // Calcula a data do período (2000-12-12 = todo o período)
+      const periodDate = '2000-12-12 00:00:00';
 
-        if (userResponse.data?.dados) {
-          const user = userResponse.data.dados;
-          setUserData(user);
+      console.log('Buscando monitoramento:', `monitora/monitoramento/${cleanCpf}/${periodDate}`);
 
-          // Busca dívidas do CPF
-          const dividasData = await DividasService.listar(cleanCpf);
-          setDividas(dividasData);
-        } else {
-          showAlert('Não encontrado', 'Nenhum registro encontrado com este CPF/CNPJ.', 'info');
-        }
-      } else {
-        // Busca apenas por nome e data (implementar se houver endpoint específico)
-        showAlert('Atenção', 'Por favor, informe o CPF/CNPJ para realizar a busca.', 'warning');
+      // Busca monitoramento completo (dívidas + consultas) usando o endpoint correto
+      const monitoramentoResponse = await api.get(`monitora/monitoramento/${cleanCpf}/${periodDate}`);
+
+      if (!monitoramentoResponse.data) {
+        showAlert('Não encontrado', 'Nenhum registro encontrado com este CPF/CNPJ.', [{ text: 'OK' }], 'info');
+        return;
       }
+
+      // Processa a resposta do monitoramento
+      const { data: restricoes, consultas } = monitoramentoResponse.data;
+
+      // Filtra as restrições que devem ser exibidas
+      const dividasFiltradas = restricoes
+        .map((item: any) => ({
+          ...item,
+          exibe_monitora: item.exibe_monitora?.length ? item.exibe_monitora : 1,
+        }))
+        .filter((item: any) => parseInt(item.exibe_monitora, 10) === 1);
+
+      console.log('Restrições encontradas:', dividasFiltradas.length);
+      console.log('Consultas encontradas:', consultas?.length || 0);
+
+      // Define os dados do usuário (usa os dados do form preenchido)
+      setUserData({
+        id: cleanCpf,
+        name: nomeCompleto || 'Usuário',
+        cpf_cnpj: cleanCpf,
+        data_nascimento: dataNascimento,
+      });
+
+      setDividas(dividasFiltradas);
+
     } catch (error: any) {
       console.error('Erro ao pesquisar:', error);
-      showAlert('Erro', 'Ocorreu um erro ao realizar a pesquisa. Tente novamente.', 'error');
+      const errorMessage = error.response?.data?.message || 'Ocorreu um erro ao realizar a pesquisa. Tente novamente.';
+      showAlert('Erro', errorMessage, [{ text: 'OK' }], 'error');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={[]}>
       <StatusBar
         barStyle="light-content"
         translucent={true}
