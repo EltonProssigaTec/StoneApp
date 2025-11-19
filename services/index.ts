@@ -7,3 +7,5 @@ export { DividasService } from './dividas.service';
 export type { Divida } from './dividas.service';
 export { AuthService } from './auth.service';
 export type { RegisterData, RegisterResponse } from './auth.service';
+export { BiometricAuthService } from './biometric-auth.service';
+export type { BiometricAuthResult, LastUserInfo } from './biometric-auth.service';

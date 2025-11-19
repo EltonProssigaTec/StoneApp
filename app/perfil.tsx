@@ -11,7 +11,7 @@ import { cepMask, cpfMask, dateMask, phoneMask } from '@/utils/masks';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -46,6 +46,7 @@ export default function PerfilScreen() {
   const [showPhotoPreview, setShowPhotoPreview] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [imageRefreshKey, setImageRefreshKey] = useState(Date.now());
+  const [avatarLoading, setAvatarLoading] = useState(true);
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -60,6 +61,24 @@ export default function PerfilScreen() {
     complemento: '',
   });
   const [loadingAddress, setLoadingAddress] = useState(false);
+
+  // Resetar loading do avatar quando a foto mudar
+  useEffect(() => {
+    setAvatarLoading(true);
+  }, [user?.picture, imageRefreshKey]);
+
+  // Callbacks estáveis para o avatar
+  const handleAvatarLoadStart = useCallback(() => {
+    setAvatarLoading(true);
+  }, []);
+
+  const handleAvatarLoadEnd = useCallback(() => {
+    setAvatarLoading(false);
+  }, []);
+
+  const handleAvatarError = useCallback(() => {
+    setAvatarLoading(false);
+  }, []);
 
   // Carregar endereço do usuário e dados pessoais
   useEffect(() => {
@@ -509,11 +528,24 @@ export default function PerfilScreen() {
         {/* Avatar Section */}
         <View style={styles.avatarSection}>
           <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
+            {/* Loading Indicator */}
+            {avatarLoading && (
+              <View style={styles.avatarPlaceholder}>
+                <ActivityIndicator size="large" color={AppColors.white} />
+              </View>
+            )}
+
+            {/* Avatar Image */}
             <Image
               source={{ uri: getPhotoUri() }}
-              style={styles.avatar}
+              style={[styles.avatar, avatarLoading && styles.hiddenAvatar]}
               key={imageRefreshKey}
+              onLoadStart={handleAvatarLoadStart}
+              onLoadEnd={handleAvatarLoadEnd}
+              onError={handleAvatarError}
             />
+
+            {/* Camera Button */}
             <View style={styles.cameraButton}>
               <IconSymbol name="camera.fill" size={16} color={AppColors.white} />
             </View>
@@ -881,7 +913,11 @@ const styles = StyleSheet.create({
     borderWidth: 4,
     borderColor: AppColors.primary,
   },
+  hiddenAvatar: {
+    opacity: 0,
+  },
   avatarPlaceholder: {
+    position: 'absolute',
     width: 120,
     height: 120,
     borderRadius: 60,
@@ -890,6 +926,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 4,
     borderColor: AppColors.primary,
+    zIndex: 1,
   },
   cameraButton: {
     position: 'absolute',
@@ -903,6 +940,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 3,
     borderColor: AppColors.white,
+    zIndex: 2,
   },
   userName: {
     fontSize: 24,

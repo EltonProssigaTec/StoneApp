@@ -25,7 +25,8 @@
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
       "Bash(npm install)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

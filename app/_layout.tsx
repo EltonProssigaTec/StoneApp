@@ -66,6 +66,10 @@ export default function RootLayout() {
             <Stack.Screen name="acordos" />
             <Stack.Screen name="gerar-acordos" />
             <Stack.Screen name="configuracoes" />
+            <Stack.Screen name="perfil" />
+            <Stack.Screen name="change-password" />
+            <Stack.Screen name="termos-uso" />
+            <Stack.Screen name="sobre" />
           </Stack>
         </ThemeProvider>
       </AuthProvider>

@@ -1,8 +1,12 @@
 import { AppHeader } from '@/components/ui/AppHeader';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors, Fonts } from '@/constants/theme';
+import api from '@/services/api.config';
+import { DividasService, Divida } from '@/services/dividas.service';
+import { cpfCnpjMask, dateMask, removeMask } from '@/utils/masks';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -15,14 +19,75 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Card } from '@/components/ui/Card';
+import { useAlert } from '@/components/ui/AlertModal';
+
+interface UserData {
+  id: string;
+  name: string;
+  cpf_cnpj: string;
+  email?: string;
+  telefone?: string;
+  data_nascimento?: string;
+}
 
 export default function MyCpfScreen() {
+  const { showAlert, AlertComponent } = useAlert();
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [dataNascimento, setDataNascimento] = useState('');
+  const [cpfCnpj, setCpfCnpj] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [dividas, setDividas] = useState<Divida[]>([]);
+  const [searchPerformed, setSearchPerformed] = useState(false);
 
-  const handlePesquisar = () => {
-    console.log('Pesquisar:', { nomeCompleto, dataNascimento });
-    // Implementar lógica de pesquisa
+  const handlePesquisar = async () => {
+    // Validação básica
+    if (!nomeCompleto.trim() && !cpfCnpj.trim()) {
+      showAlert('Atenção', 'Preencha o nome completo ou CPF/CNPJ para pesquisar.', 'warning');
+      return;
+    }
+
+    if (!dataNascimento.trim()) {
+      showAlert('Atenção', 'Preencha a data de nascimento.', 'warning');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setSearchPerformed(true);
+      setUserData(null);
+      setDividas([]);
+
+      // Se tiver CPF, busca por CPF
+      if (cpfCnpj.trim()) {
+        const cleanCpf = removeMask(cpfCnpj);
+
+        // Busca dados do usuário
+        const userResponse = await api.post('/verificar_cpf_cnpj', {
+          cpf_cnpj: cleanCpf
+        });
+
+        if (userResponse.data?.dados) {
+          const user = userResponse.data.dados;
+          setUserData(user);
+
+          // Busca dívidas do CPF
+          const dividasData = await DividasService.listar(cleanCpf);
+          setDividas(dividasData);
+        } else {
+          showAlert('Não encontrado', 'Nenhum registro encontrado com este CPF/CNPJ.', 'info');
+        }
+      } else {
+        // Busca apenas por nome e data (implementar se houver endpoint específico)
+        showAlert('Atenção', 'Por favor, informe o CPF/CNPJ para realizar a busca.', 'warning');
+      }
+    } catch (error: any) {
+      console.error('Erro ao pesquisar:', error);
+      showAlert('Erro', 'Ocorreu um erro ao realizar a pesquisa. Tente novamente.', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,6 +121,25 @@ export default function MyCpfScreen() {
             />
           </View>
 
+          {/* Campo CPF/CNPJ */}
+          <View style={styles.inputContainer}>
+            <View style={styles.inputIcon}>
+              <IconSymbol name="number" size={24} color={AppColors.primary} />
+            </View>
+            <View style={styles.inputContent}>
+              <Text style={styles.inputLabel}>CPF/CNPJ:</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Digite o CPF ou CNPJ"
+                placeholderTextColor={AppColors.gray[400]}
+                value={cpfCnpj}
+                onChangeText={(text) => setCpfCnpj(cpfCnpjMask(text))}
+                keyboardType="numeric"
+                maxLength={18}
+              />
+            </View>
+          </View>
+
           {/* Campo Nome Completo */}
           <View style={styles.inputContainer}>
             <View style={styles.inputIcon}>
@@ -82,24 +166,108 @@ export default function MyCpfScreen() {
               <Text style={styles.inputLabel}>DATA DE NASCIMENTO:</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Ex.: 20/04/..."
+                placeholder="Ex.: 20/04/1990"
                 placeholderTextColor={AppColors.gray[400]}
                 value={dataNascimento}
-                onChangeText={setDataNascimento}
+                onChangeText={(text) => setDataNascimento(dateMask(text))}
                 keyboardType="numeric"
+                maxLength={10}
               />
             </View>
           </View>
 
           {/* Botão Pesquisar */}
           <TouchableOpacity
-            style={styles.searchButton}
+            style={[styles.searchButton, loading && styles.searchButtonDisabled]}
             onPress={handlePesquisar}
+            disabled={loading}
           >
-            <Text style={styles.searchButtonText}>PESQUISAR</Text>
+            {loading ? (
+              <ActivityIndicator color={AppColors.white} />
+            ) : (
+              <Text style={styles.searchButtonText}>PESQUISAR</Text>
+            )}
           </TouchableOpacity>
+
+          {/* Resultados da Pesquisa */}
+          {searchPerformed && !loading && userData && (
+            <View style={styles.resultsContainer}>
+              <Text style={styles.resultsTitle}>Resultados da Pesquisa</Text>
+
+              {/* Card com dados do usuário */}
+              <Card style={styles.userCard}>
+                <View style={styles.userInfoRow}>
+                  <Text style={styles.userInfoLabel}>Nome:</Text>
+                  <Text style={styles.userInfoValue}>{userData.name}</Text>
+                </View>
+                <View style={styles.userInfoRow}>
+                  <Text style={styles.userInfoLabel}>CPF/CNPJ:</Text>
+                  <Text style={styles.userInfoValue}>{cpfCnpjMask(userData.cpf_cnpj)}</Text>
+                </View>
+                {userData.email && (
+                  <View style={styles.userInfoRow}>
+                    <Text style={styles.userInfoLabel}>Email:</Text>
+                    <Text style={styles.userInfoValue}>{userData.email}</Text>
+                  </View>
+                )}
+                {userData.telefone && (
+                  <View style={styles.userInfoRow}>
+                    <Text style={styles.userInfoLabel}>Telefone:</Text>
+                    <Text style={styles.userInfoValue}>{userData.telefone}</Text>
+                  </View>
+                )}
+              </Card>
+
+              {/* Resumo de Dívidas */}
+              {dividas.length > 0 ? (
+                <>
+                  <Text style={styles.debtTitle}>Pendências Encontradas ({dividas.length})</Text>
+                  {dividas.map((divida) => (
+                    <Card key={divida.id} style={styles.debtCard}>
+                      <View style={styles.debtCardContent}>
+                        <View style={styles.debtCardInfo}>
+                          <Text style={styles.debtCardCredor}>{divida.credor}</Text>
+                          <Text style={styles.debtCardDescricao}>{divida.descricao}</Text>
+                          <Text style={styles.debtCardValor}>
+                            R$ {divida.valor?.toFixed(2) || '0,00'}
+                          </Text>
+                        </View>
+                        <View style={[
+                          styles.debtCardStatus,
+                          divida.status === 'quitado' && styles.debtCardStatusPaid
+                        ]}>
+                          <Text style={styles.debtCardStatusText}>
+                            {divida.status || 'Pendente'}
+                          </Text>
+                        </View>
+                      </View>
+                    </Card>
+                  ))}
+                  <View style={styles.totalContainer}>
+                    <Text style={styles.totalLabel}>Total:</Text>
+                    <Text style={styles.totalValue}>
+                      R$ {dividas.reduce((sum, d) => sum + (d.valor || 0), 0).toFixed(2)}
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.noDividas}>
+                  <IconSymbol name="checkmark.circle" size={48} color={AppColors.success} />
+                  <Text style={styles.noDividasText}>Nenhuma pendência encontrada</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {searchPerformed && !loading && !userData && (
+            <View style={styles.noResults}>
+              <IconSymbol name="magnifyingglass" size={48} color={AppColors.gray[400]} />
+              <Text style={styles.noResultsText}>Nenhum resultado encontrado</Text>
+            </View>
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
+      <AlertComponent />
     </SafeAreaView>
   );
 }
@@ -203,5 +371,130 @@ const styles = StyleSheet.create({
     fontSize: 15,
     letterSpacing: 1,
     textAlign: 'center',
+  },
+  searchButtonDisabled: {
+    opacity: 0.6,
+  },
+  resultsContainer: {
+    marginTop: 32,
+    gap: 16,
+  },
+  resultsTitle: {
+    fontSize: 18,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.text.primary,
+    marginBottom: 8,
+  },
+  userCard: {
+    padding: 16,
+    gap: 12,
+  },
+  userInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  userInfoLabel: {
+    fontSize: 14,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.secondary,
+  },
+  userInfoValue: {
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.text.primary,
+    flex: 1,
+    textAlign: 'right',
+  },
+  debtTitle: {
+    fontSize: 16,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.text.primary,
+    marginTop: 8,
+  },
+  debtCard: {
+    padding: 12,
+  },
+  debtCardContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  debtCardInfo: {
+    flex: 1,
+    gap: 4,
+  },
+  debtCardCredor: {
+    fontSize: 15,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.text.primary,
+  },
+  debtCardDescricao: {
+    fontSize: 13,
+    fontFamily: Fonts.regular,
+    color: AppColors.text.secondary,
+  },
+  debtCardValor: {
+    fontSize: 16,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.primary,
+    marginTop: 4,
+  },
+  debtCardStatus: {
+    backgroundColor: AppColors.error + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  debtCardStatusPaid: {
+    backgroundColor: AppColors.success + '20',
+  },
+  debtCardStatusText: {
+    fontSize: 12,
+    fontFamily: Fonts.medium,
+    color: AppColors.error,
+    textTransform: 'capitalize',
+  },
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: AppColors.background.primary,
+    padding: 16,
+    borderRadius: 14,
+    marginTop: 8,
+  },
+  totalLabel: {
+    fontSize: 18,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.text.primary,
+  },
+  totalValue: {
+    fontSize: 20,
+    fontFamily: Fonts.bold,
+    color: AppColors.primary,
+  },
+  noDividas: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+    gap: 12,
+  },
+  noDividasText: {
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.success,
+  },
+  noResults: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+    gap: 12,
+  },
+  noResultsText: {
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.secondary,
   },
 });

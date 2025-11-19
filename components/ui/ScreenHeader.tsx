@@ -3,8 +3,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { settings } from '@/services/api.config';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { IconSymbol } from './icon-symbol';
 
 // Helper para obter avatar padrão da API
@@ -42,6 +42,14 @@ export function ScreenHeader({
 }: ScreenHeaderProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const [imageLoading, setImageLoading] = useState(true);
+  const [imageError, setImageError] = useState(false);
+
+  // Resetar loading quando a foto do usuário mudar
+  useEffect(() => {
+    setImageLoading(true);
+    setImageError(false);
+  }, [user?.picture]);
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -50,6 +58,21 @@ export function ScreenHeader({
       router.back();
     }
   };
+
+  // Callbacks estáveis para evitar re-renders
+  const handleImageLoadStart = useCallback(() => {
+    setImageLoading(true);
+    setImageError(false);
+  }, []);
+
+  const handleImageLoadEnd = useCallback(() => {
+    setImageLoading(false);
+  }, []);
+
+  const handleImageError = useCallback(() => {
+    setImageLoading(false);
+    setImageError(true);
+  }, []);
 
   // Pega o primeiro nome do usuário
   const firstName = user?.name?.split(' ')[0] || 'Usuário';
@@ -101,6 +124,14 @@ export function ScreenHeader({
           rightAction
         ) : showAvatar ? (
           <TouchableOpacity style={styles.avatar}>
+            {/* Loading Indicator */}
+            {imageLoading && !imageError && (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={AppColors.white} />
+              </View>
+            )}
+
+            {/* Avatar Image */}
             <Image
               source={{
                 uri: user?.picture
@@ -109,8 +140,18 @@ export function ScreenHeader({
                     : settings.FILES_URL + user.picture)
                   : getDefaultAvatar(user?.name)
               }}
-              style={styles.avatarImage}
+              style={[styles.avatarImage, imageLoading && styles.hiddenImage]}
+              onLoadStart={handleImageLoadStart}
+              onLoadEnd={handleImageLoadEnd}
+              onError={handleImageError}
             />
+
+            {/* Fallback Icon se houver erro */}
+            {imageError && (
+              <View style={styles.errorContainer}>
+                <IconSymbol name="person.fill" size={20} color={AppColors.white} />
+              </View>
+            )}
           </TouchableOpacity>
         ) : (
           <View style={styles.placeholder} />
@@ -176,6 +217,27 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 20,
+  },
+  hiddenImage: {
+    opacity: 0,
+  },
+  loadingContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.secondary,
+    zIndex: 1,
+  },
+  errorContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: AppColors.secondary,
+    zIndex: 1,
   },
   placeholder: {
     width: 24,

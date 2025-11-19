@@ -3,8 +3,11 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors, Fonts } from '@/constants/theme';
-import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { DividasService, Divida } from '@/services/dividas.service';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Image,
   ImageSourcePropType,
   Platform,
@@ -25,16 +28,53 @@ interface Debt {
   logo: ImageSourcePropType;
 }
 
-export default function PendenciasScreen() {
-  const [activeTab, setActiveTab] = useState<'tudo' | 'negociacoes' | 'promocoes'>('tudo');
+// Mapeamento de logos por credor
+const LOGO_MAP: Record<string, any> = {
+  'BEMOL': require('@/assets/images/bemol1.png'),
+  'TIM': require('@/assets/images/tim.png'),
+  'AMERICANAS': require('@/assets/images/americanas.png'),
+  'MARISA': require('@/assets/images/marisa.png'),
+  'RIACHUELO': require('@/assets/images/riachuelo.png'),
+};
 
-  const debts: Debt[] = [
-    { id: '1', company: 'BEMOL', amount: 1000.00, logo: require('@/assets/images/bemol1.png') },
-    { id: '2', company: 'TIM', amount: 1044.00, logo: require('@/assets/images/tim.png') },
-    { id: '3', company: 'AMERICANAS', amount: 1000.00, logo: require('@/assets/images/americanas.png') },
-    { id: '4', company: 'MARISA', amount: 1000.00, logo: require('@/assets/images/marisa.png') },
-    { id: '5', company: 'RIACHUELO', amount: 1100.00, logo: require('@/assets/images/riachuelo.png') },
-  ];
+export default function PendenciasScreen() {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<'tudo' | 'negociacoes' | 'promocoes'>('tudo');
+  const [dividas, setDividas] = useState<Divida[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadDividas();
+  }, [user]);
+
+  const loadDividas = async () => {
+    if (!user?.cpf_cnpj) {
+      setError('CPF/CNPJ não encontrado');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await DividasService.listar(user.cpf_cnpj);
+      setDividas(data);
+    } catch (err: any) {
+      console.error('Erro ao carregar dívidas:', err);
+      setError('Erro ao carregar pendências');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Converte dívidas da API para o formato Debt
+  const debts: Debt[] = dividas.map((divida) => ({
+    id: divida.id,
+    company: divida.credor?.toUpperCase() || 'EMPRESA',
+    amount: divida.valor || 0,
+    logo: LOGO_MAP[divida.credor?.toUpperCase()] || require('@/assets/images/bemol1.png'),
+  }));
 
   const totalDebt = debts.reduce((sum, debt) => sum + debt.amount, 0);
 
@@ -49,8 +89,39 @@ export default function PendenciasScreen() {
       <AppHeader title='Pendências Financeiras' />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Tabs */}
-        <View style={styles.tabsContainer}>
+        {/* Loading State */}
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={AppColors.primary} />
+            <Text style={styles.loadingText}>Carregando pendências...</Text>
+          </View>
+        )}
+
+        {/* Error State */}
+        {!loading && error && (
+          <View style={styles.errorContainer}>
+            <IconSymbol name="exclamationmark.triangle" size={48} color={AppColors.error} />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity style={styles.retryButton} onPress={loadDividas}>
+              <Text style={styles.retryButtonText}>Tentar novamente</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Empty State */}
+        {!loading && !error && debts.length === 0 && (
+          <View style={styles.emptyContainer}>
+            <IconSymbol name="checkmark.circle" size={64} color={AppColors.success} />
+            <Text style={styles.emptyTitle}>Nenhuma pendência encontrada</Text>
+            <Text style={styles.emptyText}>Você não possui dívidas no momento.</Text>
+          </View>
+        )}
+
+        {/* Content - só renderiza se não estiver carregando, sem erro e com dívidas */}
+        {!loading && !error && debts.length > 0 && (
+          <>
+            {/* Tabs */}
+            <View style={styles.tabsContainer}>
           <TouchableOpacity
             style={[styles.tab, activeTab === 'tudo' && styles.activeTab]}
             onPress={() => setActiveTab('tudo')}
@@ -131,6 +202,8 @@ export default function PendenciasScreen() {
             />
           </View>
         </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView >
   );
@@ -278,5 +351,64 @@ const styles = StyleSheet.create({
     color: AppColors.primary,
   },
   generateButton: {
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.secondary,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  errorText: {
+    marginTop: 16,
+    marginBottom: 24,
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.secondary,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: AppColors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 14,
+  },
+  retryButtonText: {
+    color: AppColors.white,
+    fontSize: 14,
+    fontFamily: Fonts.semiBold,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    marginTop: 16,
+    fontSize: 18,
+    fontFamily: Fonts.semiBold,
+    color: AppColors.text.primary,
+    textAlign: 'center',
+  },
+  emptyText: {
+    marginTop: 8,
+    fontSize: 14,
+    fontFamily: Fonts.regular,
+    color: AppColors.text.secondary,
+    textAlign: 'center',
   },
 });
