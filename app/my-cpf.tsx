@@ -103,17 +103,18 @@ export default function MyCpfScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={[]}>
-      <StatusBar
-        barStyle="light-content"
-        translucent={true}
-      />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={[]}>
+        <StatusBar
+          barStyle="light-content"
+          translucent={true}
+        />
 
-      {/* Header */}
-      <AppHeader title='Meu CPF' />
+        {/* Header */}
+        <AppHeader title='Meu CPF' />
 
-      {/* Content */}
-      <KeyboardAvoidingView
+        {/* Content */}
+        <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
@@ -280,11 +281,17 @@ export default function MyCpfScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
       <AlertComponent />
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
   container: {
     flex: 1,
     width: '100%',
@@ -294,7 +301,6 @@ const styles = StyleSheet.create({
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
   headerTitle: {
     fontSize: 18,

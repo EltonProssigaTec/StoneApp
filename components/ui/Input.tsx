@@ -55,13 +55,14 @@ export function Input({
         ]}
       >
         <TextInput
+          // @ts-ignore - Web-specific styles for autofill
           style={[
             styles.input,
             style,
             Platform.OS === 'web' && {
-              // @ts-ignore
               WebkitBoxShadow: '0 0 0 1000px white inset',
               WebkitTextFillColor: AppColors.text.primary,
+              outline: 'none',
             },
           ]}
           placeholderTextColor={AppColors.text.placeholder}
@@ -110,9 +111,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: AppColors.white,
-    borderWidth: 1,
-    borderColor: AppColors.border.light,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: AppColors.primary,
+    overflow: 'hidden',
   },
   inputFocused: {
     borderColor: AppColors.primary,
@@ -131,13 +133,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: Fonts.regular,
     color: AppColors.text.primary,
-    ...(Platform.OS === 'web' && {
-      // @ts-ignore
-      outlineStyle: 'none',
-    }),
+    borderWidth: 0,
   },
   eyeIcon: {
-    padding: 8,
+    padding: 12,
+    paddingRight: 14,
   },
   errorText: {
     marginTop: 4,

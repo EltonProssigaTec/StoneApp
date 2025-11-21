@@ -55,16 +55,17 @@ export default function PlanosScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar
-        barStyle="light-content"
-        translucent={true}
-      />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar
+          barStyle="light-content"
+          translucent={true}
+        />
 
-      {/* Header */}
-      <AppHeader title='Planos' />
+        {/* Header */}
+        <AppHeader title='Planos' />
 
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
         {/* Plans List */}
         <View style={styles.plansList}>
           {plans.map((plan) => (
@@ -87,22 +88,27 @@ export default function PlanosScreen() {
             fullWidth
           />
         </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
   container: {
     flex: 1,
-    alignSelf: 'center',
     width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
   content: {
     flex: 1,

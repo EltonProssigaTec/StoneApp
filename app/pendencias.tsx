@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
-import { DividasService, Divida } from '@/services/dividas.service';
+import { Divida, DividasService } from '@/services/dividas.service';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -79,16 +79,17 @@ export default function PendenciasScreen() {
   const totalDebt = debts.reduce((sum, debt) => sum + debt.amount, 0);
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar
-        barStyle="light-content"
-        translucent={true}
-      />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar
+          barStyle="light-content"
+          translucent={true}
+        />
 
-      {/* Header */}
-      <AppHeader title='Pendências Financeiras' />
+        {/* Header */}
+        <AppHeader title='Pendências Financeiras' />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false}>
         {/* Loading State */}
         {loading && (
           <View style={styles.loadingContainer}>
@@ -204,22 +205,27 @@ export default function PendenciasScreen() {
         </View>
           </>
         )}
-      </ScrollView>
-    </SafeAreaView >
+        </ScrollView>
+      </SafeAreaView >
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignSelf: 'center',
+  wrapper: {
     flex: 1,
     width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
   header: {
     backgroundColor: AppColors.primary,

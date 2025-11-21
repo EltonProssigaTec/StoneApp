@@ -18,15 +18,16 @@ export default function AcordosScreen() {
   const total = boletos.reduce((acc, b) => acc + b.value, 0);
 
   return (
-    <View style={styles.container}>
-      {/* Header vem do seu componente existente */}
-      {/* <Header title="ACORDOS/BOLETOS" /> */}
-      {/* Header */}
-      <AppHeader title='Meus Acordos' />
+    <View style={styles.wrapper}>
+      <View style={styles.container}>
+        {/* Header vem do seu componente existente */}
+        {/* <Header title="ACORDOS/BOLETOS" /> */}
+        {/* Header */}
+        <AppHeader title='Meus Acordos' />
 
-      <FilterTabs selected={selectedTab} onChange={setSelectedTab} />
+        <FilterTabs selected={selectedTab} onChange={setSelectedTab} />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+        <ScrollView showsVerticalScrollIndicator={false}>
         <StatusFilter total={total} />
 
         {boletos.map((b) => (
@@ -40,22 +41,27 @@ export default function AcordosScreen() {
         ))}
       </ScrollView>
 
-      {/* BottomNavigation vem do seu componente existente */}
-      {/* <BottomNavigation /> */}
+        {/* BottomNavigation vem do seu componente existente */}
+        {/* <BottomNavigation /> */}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    alignSelf: 'center',
+  wrapper: {
     flex: 1,
     width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
 });

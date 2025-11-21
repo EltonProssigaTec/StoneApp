@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     top: 0,
     width: MENU_WIDTH,
     height: '100%',
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
     ...Platform.select({
       android: {
         marginTop: 35,

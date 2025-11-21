@@ -60,7 +60,7 @@ export function AuthLayout({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
   },
   wrapper: {
     flex: 1,
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
   waveContainer: {
     width: '100%',
     height: 70,
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
   },
   scrollContent: {
     flexGrow: 1,

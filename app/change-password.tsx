@@ -1,5 +1,5 @@
-import { AppHeader } from '@/components/ui/AppHeader';
 import { useAlert } from '@/components/ui/AlertModal';
+import { AppHeader } from '@/components/ui/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AppColors, Fonts } from '@/constants/theme';
@@ -99,12 +99,13 @@ export default function ChangePasswordScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar barStyle="light-content" translucent={true} />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar barStyle="light-content" translucent={true} />
 
-      <AppHeader title="Alterar Senha" />
+        <AppHeader title="Alterar Senha" />
 
-      <KeyboardAvoidingView
+        <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
@@ -169,12 +170,18 @@ export default function ChangePasswordScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      <AlertComponent />
-    </SafeAreaView>
+        <AlertComponent />
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
   container: {
     flex: 1,
     width: '100%',
@@ -184,7 +191,6 @@ const styles = StyleSheet.create({
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
   keyboardView: {
     flex: 1,

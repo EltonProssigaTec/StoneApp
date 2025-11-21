@@ -50,16 +50,17 @@ export default function OfertasScreen() {
   const totalDebt = 2500.00;
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar barStyle={'light-content'} translucent={true}/>
-          {/* Offers Section with Debt Card */}
-          <OffersSection
-          amount={totalDebt}
-          updatedAt="02/09/2025"
-          onPayPress={() => console.log('Pagar pressionado')}
-          onMenuPress={() => console.log('Menu pressionado')}
-        />
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar barStyle={'light-content'} translucent={true}/>
+            {/* Offers Section with Debt Card */}
+            <OffersSection
+            amount={totalDebt}
+            updatedAt="02/09/2025"
+            onPayPress={() => console.log('Pagar pressionado')}
+            onMenuPress={() => console.log('Menu pressionado')}
+          />
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
 
         {/* Offers List */}
         <View style={styles.offersList}>
@@ -102,11 +103,17 @@ export default function OfertasScreen() {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
   container: {
     flex: 1,
     width: '100%',
@@ -116,7 +123,6 @@ const styles = StyleSheet.create({
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
   content: {
     flex: 1,

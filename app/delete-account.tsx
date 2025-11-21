@@ -1,9 +1,9 @@
+import { useAlert } from '@/components/ui/AlertModal';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Input } from '@/components/ui/Input';
-import { useAlert } from '@/components/ui/AlertModal';
 import { AppColors, Fonts } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api.config';
@@ -201,12 +201,13 @@ export default function DeleteAccountScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar barStyle="light-content" translucent={true} />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar barStyle="light-content" translucent={true} />
 
-      <AppHeader title="Exclusão de conta" showBack onBackPress={() => router.back()} />
+        <AppHeader title="Exclusão de conta" showBack onBackPress={() => router.back()} />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
           <Text style={styles.description}>
             Lamentamos por qualquer inconveniente. Antes de prosseguir, poderia nos informar o
@@ -341,19 +342,24 @@ export default function DeleteAccountScreen() {
 
       {/* Alert Modal */}
       <AlertComponent />
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
   container: {
     flex: 1,
-    backgroundColor: AppColors.background.primary,
     width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
         maxWidth: 720,
-        marginHorizontal: 'auto',
       },
     }),
   },

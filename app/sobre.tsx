@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
+    backgroundColor: AppColors.background.secondary,
   },
   scrollView: {
     flex: 1,

@@ -26,7 +26,13 @@
       "Bash(taskkill:*)",
       "Bash(npm install)",
       "Bash(git add:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(cat:*)",
+      "Bash(npm cache clean:*)",
+      "Bash(npm start -- --clear)",
+      "Bash(npm start)",
+      "Bash(npx expo export:*)",
+      "Bash(where:*)"
     ],
     "deny": [],
     "ask": []

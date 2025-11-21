@@ -107,16 +107,17 @@ export default function ConfiguracoesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar
-        barStyle="light-content"
-        translucent={true}
-      />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar
+          barStyle="light-content"
+          translucent={true}
+        />
 
-      {/* Header */}
-      <AppHeader title='Configurações' />
+        {/* Header */}
+        <AppHeader title='Configurações' />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Notificações */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Notificações</Text>
@@ -240,24 +241,29 @@ export default function ConfiguracoesScreen() {
             </TouchableOpacity>
           </Card>
         </View>
-      </ScrollView>
+        </ScrollView>
 
-      <AlertComponent />
-    </SafeAreaView>
+        <AlertComponent />
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignSelf: 'center',
+  wrapper: {
     flex: 1,
     width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
   scrollView: {
     flex: 1,

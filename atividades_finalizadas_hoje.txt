@@ -1,0 +1,29 @@
+ATIVIDADES FINALIZADAS - 19/11/2025
+
+Boa tarde!
+
+Trabalhamos na responsividade para o modelo web base em relação às novas funções e telas,
+também fizemos diversos testes como a inserção de fotos no banco.
+
+CORREÇÕES E MELHORIAS REALIZADAS:
+
+1. Sistema de Alertas
+   - Corrigido erro "buttons.map is not a function" em todas as telas
+   - Ajustados parâmetros do AlertModal para funcionamento correto
+
+2. Tela Meu CPF - Busca de Pendências
+   - Corrigido erro 500 ao pesquisar CPF/CNPJ
+   - Implementado endpoint correto de monitoramento
+   - Melhorada eficiência: agora busca restrições e consultas em uma única requisição
+   - Validação simplificada: apenas CPF/CNPJ obrigatório
+
+3. Integração Backend
+   - Endpoints validados e funcionando corretamente
+   - Sistema alinhado com o projeto antecessor (monitora_mobile)
+
+4. Preparação para Play Store
+   - Funcionalidades testadas e validadas
+   - Correções críticas aplicadas
+   - App pronto para build de produção
+
+A seguir algumas prints relacionadas ao modelo web:

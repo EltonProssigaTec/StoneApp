@@ -9,33 +9,39 @@ export default function GerarAcordosScreen() {
   const router = useRouter();
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar
-        barStyle="light-content"
-        translucent={true}
-      />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar
+          barStyle="light-content"
+          translucent={true}
+        />
 
-      {/* Header */}
-      <AppHeader title='Geração de Acordos' />
-      <View style={styles.content}>
+        {/* Header */}
+        <AppHeader title='Geração de Acordos' />
+        <View style={styles.content}>
         <Text style={styles.title}>Geração de Acordos</Text>
         <Text style={styles.subtitle}>Em desenvolvimento...</Text>
-      </View>
-    </SafeAreaView>
+        </View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    alignSelf: 'center',
+  wrapper: {
     flex: 1,
     width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
+  container: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.background.primary,
   },
   header: {
     backgroundColor: AppColors.primary,

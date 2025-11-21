@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    backgroundColor: AppColors.background.primary,
+    backgroundColor: AppColors.background.secondary,
     ...Platform.select({
       web: {
 

@@ -510,379 +510,388 @@ export default function PerfilScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <StatusBar
-        barStyle="light-content"
-        translucent={true}
-      />
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.container} edges={['bottom']}>
+        <StatusBar
+          barStyle="light-content"
+          translucent={true}
+        />
 
-      {/* Header */}
-      <AppHeader title='Meu Perfil' />
+        {/* Header */}
+        <AppHeader title='Meu Perfil' />
 
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-      >
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
-        {/* Avatar Section */}
-        <View style={styles.avatarSection}>
-          <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
-            {/* Loading Indicator */}
-            {avatarLoading && (
-              <View style={styles.avatarPlaceholder}>
-                <ActivityIndicator size="large" color={AppColors.white} />
-              </View>
-            )}
+        <KeyboardAvoidingView
+          style={styles.keyboardView}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+        >
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
+            {/* Avatar Section */}
+            <View style={styles.avatarSection}>
+              <TouchableOpacity onPress={handlePhotoOptions} style={styles.avatarContainer}>
+                {/* Loading Indicator */}
+                {avatarLoading && (
+                  <View style={styles.avatarPlaceholder}>
+                    <ActivityIndicator size="large" color={AppColors.white} />
+                  </View>
+                )}
 
-            {/* Avatar Image */}
-            <Image
-              source={{ uri: getPhotoUri() }}
-              style={[styles.avatar, avatarLoading && styles.hiddenAvatar]}
-              key={imageRefreshKey}
-              onLoadStart={handleAvatarLoadStart}
-              onLoadEnd={handleAvatarLoadEnd}
-              onError={handleAvatarError}
-            />
+                {/* Avatar Image */}
+                <Image
+                  source={{ uri: getPhotoUri() }}
+                  style={[styles.avatar, avatarLoading && styles.hiddenAvatar]}
+                  key={imageRefreshKey}
+                  onLoadStart={handleAvatarLoadStart}
+                  onLoadEnd={handleAvatarLoadEnd}
+                  onError={handleAvatarError}
+                />
 
-            {/* Camera Button */}
-            <View style={styles.cameraButton}>
-              <IconSymbol name="camera.fill" size={16} color={AppColors.white} />
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.userName}>{user?.name || 'Usuário'}</Text>
-          <Text style={styles.userPlan}>{user?.plano || 'Plano Gratuito'}</Text>
-        </View>
-
-        {/* Info Section */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Informações Pessoais</Text>
-            {!editing && (
-              <TouchableOpacity onPress={() => setEditing(true)} style={styles.editButton}>
-                <IconSymbol name="pencil" size={18} color={AppColors.primary} />
-                <Text style={styles.editButtonText}>Editar</Text>
+                {/* Camera Button */}
+                <View style={styles.cameraButton}>
+                  <IconSymbol name="camera.fill" size={16} color={AppColors.white} />
+                </View>
               </TouchableOpacity>
-            )}
-          </View>
+              <Text style={styles.userName}>{user?.name || 'Usuário'}</Text>
+              <Text style={styles.userPlan}>{user?.plano || 'Plano Gratuito'}</Text>
+            </View>
 
-          <Card style={styles.card}>
-            <Input
-              label="Nome"
-              placeholder="Digite seu nome"
-              icon="person.fill"
-              value={formData.name}
-              onChangeText={(value) => setFormData({ ...formData, name: value })}
-              editable={editing}
-            />
+            {/* Info Section */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Informações Pessoais</Text>
+                {!editing && (
+                  <TouchableOpacity onPress={() => setEditing(true)} style={styles.editButton}>
+                    <IconSymbol name="pencil" size={18} color={AppColors.primary} />
+                    <Text style={styles.editButtonText}>Editar</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
 
-            <Input
-              label="Email"
-              placeholder="Digite seu email"
-              icon="envelope.fill"
-              value={formData.email}
-              onChangeText={(value) => setFormData({ ...formData, email: value })}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              editable={false}
-            />
-
-            <Input
-              label="CPF"
-              placeholder="CPF"
-              icon="creditcard.fill"
-              value={cpfMask(user?.cpf_cnpj || user?.cpf || '')}
-              editable={false}
-            />
-
-            <Input
-              label="Telefone"
-              placeholder="(00) 00000-0000"
-              icon="phone.fill"
-              value={formData.telefone}
-              onChangeText={(value) => setFormData({ ...formData, telefone: phoneMask(value) })}
-              keyboardType="phone-pad"
-              editable={editing}
-            />
-
-            <Input
-              label="Data de Nascimento"
-              placeholder="DD/MM/AAAA"
-              icon="calendar"
-              value={formData.data_nascimento}
-              onChangeText={(value) => setFormData({ ...formData, data_nascimento: dateMask(value) })}
-              keyboardType="numeric"
-              editable={editing}
-            />
-          </Card>
-        </View>
-
-        {/* Address Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Endereço</Text>
-
-          <Card style={styles.card}>
-            <Input
-              label="CEP"
-              placeholder="00000-000"
-              icon="location.fill"
-              value={formData.cep}
-              onChangeText={handleCEPSearch}
-              keyboardType="numeric"
-              editable={editing}
-            />
-
-            <Input
-              label="Endereço"
-              placeholder="Rua, Avenida..."
-              icon="house.fill"
-              value={formData.endereco}
-              onChangeText={(value) => setFormData({ ...formData, endereco: value })}
-              editable={editing}
-            />
-
-            <View style={styles.row}>
-              <View style={styles.inputSmall}>
+              <Card style={styles.card}>
                 <Input
-                  label="Número"
-                  placeholder="Nº"
-                  value={formData.numero}
-                  onChangeText={(value) => setFormData({ ...formData, numero: value })}
+                  label="Nome"
+                  placeholder="Digite seu nome"
+                  icon="person.fill"
+                  value={formData.name}
+                  onChangeText={(value) => setFormData({ ...formData, name: value })}
+                  editable={editing}
+                />
+
+                <Input
+                  label="Email"
+                  placeholder="Digite seu email"
+                  icon="envelope.fill"
+                  value={formData.email}
+                  onChangeText={(value) => setFormData({ ...formData, email: value })}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  editable={false}
+                />
+
+                <Input
+                  label="CPF"
+                  placeholder="CPF"
+                  icon="creditcard.fill"
+                  value={cpfMask(user?.cpf_cnpj || user?.cpf || '')}
+                  editable={false}
+                />
+
+                <Input
+                  label="Telefone"
+                  placeholder="(00) 00000-0000"
+                  icon="phone.fill"
+                  value={formData.telefone}
+                  onChangeText={(value) => setFormData({ ...formData, telefone: phoneMask(value) })}
+                  keyboardType="phone-pad"
+                  editable={editing}
+                />
+
+                <Input
+                  label="Data de Nascimento"
+                  placeholder="DD/MM/AAAA"
+                  icon="calendar"
+                  value={formData.data_nascimento}
+                  onChangeText={(value) => setFormData({ ...formData, data_nascimento: dateMask(value) })}
                   keyboardType="numeric"
                   editable={editing}
                 />
-              </View>
-              <View style={styles.inputLarge}>
-                <Input
-                  label="Complemento"
-                  placeholder="Apto, Bloco..."
-                  value={formData.complemento}
-                  onChangeText={(value) => setFormData({ ...formData, complemento: value })}
-                  editable={editing}
-                />
-              </View>
+              </Card>
             </View>
 
-            <Input
-              label="Bairro"
-              placeholder="Bairro"
-              value={formData.bairro}
-              onChangeText={(value) => setFormData({ ...formData, bairro: value })}
-              editable={editing}
-            />
-
-            <View style={styles.row}>
-              <View style={styles.inputLarge}>
+            {/* Address Section */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>Endereço</Text>
+              </View>
+              <Card style={styles.card}>
                 <Input
-                  label="Cidade"
-                  placeholder="Cidade"
-                  value={formData.cidade}
-                  onChangeText={(value) => setFormData({ ...formData, cidade: value })}
+                  label="CEP"
+                  placeholder="00000-000"
+                  icon="location.fill"
+                  value={formData.cep}
+                  onChangeText={handleCEPSearch}
+                  keyboardType="numeric"
                   editable={editing}
                 />
-              </View>
-              <View style={styles.inputSmall}>
+
                 <Input
-                  label="UF"
-                  placeholder="UF"
-                  value={formData.uf}
-                  onChangeText={(value) => setFormData({ ...formData, uf: value })}
-                  autoCapitalize="characters"
-                  maxLength={2}
+                  label="Endereço"
+                  placeholder="Rua, Avenida..."
+                  icon="house.fill"
+                  value={formData.endereco}
+                  onChangeText={(value) => setFormData({ ...formData, endereco: value })}
                   editable={editing}
                 />
-              </View>
-            </View>
-          </Card>
-        </View>
 
-        {editing && (
-          <View style={styles.buttonContainer}>
-            <Button
-              title="Salvar Alterações"
-              variant="primary"
-              onPress={handleSave}
-              fullWidth
-            />
-            <Button
-              title="Cancelar"
-              variant="secondary"
-              onPress={() => {
-                setEditing(false);
-                // Recarregar dados originais
-                const dataNascimentoFormatted = user?.data_nascimento
-                  ? user.data_nascimento.split('-').reverse().join('/')
-                  : '';
-
-                setFormData({
-                  name: user?.name || '',
-                  email: user?.email || '',
-                  telefone: user?.telefone || '',
-                  data_nascimento: dataNascimentoFormatted,
-                  cep: formData.cep,
-                  endereco: formData.endereco,
-                  numero: formData.numero,
-                  bairro: formData.bairro,
-                  cidade: formData.cidade,
-                  uf: formData.uf,
-                  complemento: formData.complemento,
-                });
-              }}
-              fullWidth
-              style={{ marginTop: 12 }}
-            />
-          </View>
-        )}
-
-        {/* Danger Zone */}
-        {!editing && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Zona de Perigo</Text>
-            <Card style={styles.card}>
-              <TouchableOpacity
-                style={styles.deleteAccountButton}
-                onPress={handleDeleteAccount}
-              >
-                <IconSymbol name="trash.fill" size={20} color="#DC3545" />
-                <View style={styles.deleteAccountContent}>
-                  <Text style={styles.deleteAccountTitle}>Excluir Conta</Text>
-                  <Text style={styles.deleteAccountText}>
-                    Remover permanentemente sua conta e todos os dados
-                  </Text>
+                <View style={styles.row}>
+                  <View style={styles.inputSmall}>
+                    <Input
+                      label="Número"
+                      placeholder="Nº"
+                      value={formData.numero}
+                      onChangeText={(value) => setFormData({ ...formData, numero: value })}
+                      keyboardType="numeric"
+                      editable={editing}
+                    />
+                  </View>
+                  <View style={styles.inputLarge}>
+                    <Input
+                      label="Complemento"
+                      placeholder="Apto, Bloco..."
+                      value={formData.complemento}
+                      onChangeText={(value) => setFormData({ ...formData, complemento: value })}
+                      editable={editing}
+                    />
+                  </View>
                 </View>
-                <IconSymbol name="chevron.right" size={20} color="#DC3545" />
-              </TouchableOpacity>
-            </Card>
-          </View>
-        )}
-        </ScrollView>
-      </KeyboardAvoidingView>
 
-      {/* Photo Options Modal */}
-      <Modal
-        visible={showPhotoOptions}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowPhotoOptions(false)}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setShowPhotoOptions(false)}
-        >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Foto de Perfil</Text>
+                <Input
+                  label="Bairro"
+                  placeholder="Bairro"
+                  value={formData.bairro}
+                  onChangeText={(value) => setFormData({ ...formData, bairro: value })}
+                  editable={editing}
+                />
 
-            {/* Ocultar câmera no web (não funciona bem em navegadores) */}
-            {Platform.OS !== 'web' && (
-              <TouchableOpacity
-                style={styles.modalOption}
-                onPress={handleTakePhoto}
-                disabled={uploading}
-              >
-                <IconSymbol name="camera.fill" size={24} color={AppColors.primary} />
-                <Text style={styles.modalOptionText}>Tirar Foto</Text>
-              </TouchableOpacity>
+                <View style={styles.row}>
+                  <View style={styles.inputLarge}>
+                    <Input
+                      label="Cidade"
+                      placeholder="Cidade"
+                      value={formData.cidade}
+                      onChangeText={(value) => setFormData({ ...formData, cidade: value })}
+                      editable={editing}
+                    />
+                  </View>
+                  <View style={styles.inputSmall}>
+                    <Input
+                      label="UF"
+                      placeholder="UF"
+                      value={formData.uf}
+                      onChangeText={(value) => setFormData({ ...formData, uf: value })}
+                      autoCapitalize="characters"
+                      maxLength={2}
+                      editable={editing}
+                    />
+                  </View>
+                </View>
+              </Card>
+            </View>
+
+            {editing && (
+              <View style={styles.buttonContainer}>
+                <Button
+                  title="Salvar Alterações"
+                  variant="primary"
+                  onPress={handleSave}
+                  fullWidth
+                />
+                <Button
+                  title="Cancelar"
+                  variant="secondary"
+                  onPress={() => {
+                    setEditing(false);
+                    // Recarregar dados originais
+                    const dataNascimentoFormatted = user?.data_nascimento
+                      ? user.data_nascimento.split('-').reverse().join('/')
+                      : '';
+
+                    setFormData({
+                      name: user?.name || '',
+                      email: user?.email || '',
+                      telefone: user?.telefone || '',
+                      data_nascimento: dataNascimentoFormatted,
+                      cep: formData.cep,
+                      endereco: formData.endereco,
+                      numero: formData.numero,
+                      bairro: formData.bairro,
+                      cidade: formData.cidade,
+                      uf: formData.uf,
+                      complemento: formData.complemento,
+                    });
+                  }}
+                  fullWidth
+                  style={{ marginTop: 12 }}
+                />
+              </View>
             )}
 
-            <TouchableOpacity
-              style={styles.modalOption}
-              onPress={handlePickFromGallery}
-              disabled={uploading}
-            >
-              <IconSymbol name="photo.fill" size={24} color={AppColors.primary} />
-              <Text style={styles.modalOptionText}>{Platform.OS === 'web' ? 'Selecionar Arquivo' : 'Escolher da Galeria'}</Text>
-            </TouchableOpacity>
+            {/* Danger Zone */}
+            {!editing && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>Zona de Perigo</Text>
+                </View>
+                <Card style={styles.card}>
+                  <TouchableOpacity
+                    style={styles.deleteAccountButton}
+                    onPress={handleDeleteAccount}
+                  >
+                    <IconSymbol name="trash.fill" size={20} color="#DC3545" />
+                    <View style={styles.deleteAccountContent}>
+                      <Text style={styles.deleteAccountTitle}>Excluir Conta</Text>
+                      <Text style={styles.deleteAccountText}>
+                        Remover permanentemente sua conta e todos os dados
+                      </Text>
+                    </View>
+                    <IconSymbol name="chevron.right" size={20} color="#DC3545" />
+                  </TouchableOpacity>
+                </Card>
+              </View>
+            )}
+          </ScrollView>
+        </KeyboardAvoidingView>
 
-            {user?.picture && (
-              <>
+        {/* Photo Options Modal */}
+        <Modal
+          visible={showPhotoOptions}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowPhotoOptions(false)}
+        >
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setShowPhotoOptions(false)}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Foto de Perfil</Text>
+
+              {/* Ocultar câmera no web (não funciona bem em navegadores) */}
+              {Platform.OS !== 'web' && (
                 <TouchableOpacity
                   style={styles.modalOption}
-                  onPress={handleViewPhoto}
+                  onPress={handleTakePhoto}
                   disabled={uploading}
                 >
-                  <IconSymbol name="eye.fill" size={24} color={AppColors.primary} />
-                  <Text style={styles.modalOptionText}>Visualizar Foto</Text>
+                  <IconSymbol name="camera.fill" size={24} color={AppColors.primary} />
+                  <Text style={styles.modalOptionText}>Tirar Foto</Text>
                 </TouchableOpacity>
+              )}
 
-                <TouchableOpacity
-                  style={[styles.modalOption, styles.modalOptionDanger]}
-                  onPress={handleRemovePhoto}
-                  disabled={uploading}
-                >
-                  <IconSymbol name="trash.fill" size={24} color="#DC3545" />
-                  <Text style={[styles.modalOptionText, styles.modalOptionTextDanger]}>
-                    Remover Foto
-                  </Text>
-                </TouchableOpacity>
-              </>
-            )}
+              <TouchableOpacity
+                style={styles.modalOption}
+                onPress={handlePickFromGallery}
+                disabled={uploading}
+              >
+                <IconSymbol name="photo.fill" size={24} color={AppColors.primary} />
+                <Text style={styles.modalOptionText}>{Platform.OS === 'web' ? 'Selecionar Arquivo' : 'Escolher da Galeria'}</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.modalCancelButton}
-              onPress={() => setShowPhotoOptions(false)}
-              disabled={uploading}
-            >
-              <Text style={styles.modalCancelText}>Cancelar</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
+              {user?.picture && (
+                <>
+                  <TouchableOpacity
+                    style={styles.modalOption}
+                    onPress={handleViewPhoto}
+                    disabled={uploading}
+                  >
+                    <IconSymbol name="eye.fill" size={24} color={AppColors.primary} />
+                    <Text style={styles.modalOptionText}>Visualizar Foto</Text>
+                  </TouchableOpacity>
 
-      {/* Photo Preview Modal */}
-      <Modal
-        visible={showPhotoPreview}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowPhotoPreview(false)}
-      >
-        <View style={styles.previewOverlay}>
-          <TouchableOpacity
-            style={styles.previewCloseButton}
-            onPress={() => setShowPhotoPreview(false)}
-          >
-            <IconSymbol name="xmark.circle.fill" size={36} color={AppColors.white} />
+                  <TouchableOpacity
+                    style={[styles.modalOption, styles.modalOptionDanger]}
+                    onPress={handleRemovePhoto}
+                    disabled={uploading}
+                  >
+                    <IconSymbol name="trash.fill" size={24} color="#DC3545" />
+                    <Text style={[styles.modalOptionText, styles.modalOptionTextDanger]}>
+                      Remover Foto
+                    </Text>
+                  </TouchableOpacity>
+                </>
+              )}
+
+              <TouchableOpacity
+                style={styles.modalCancelButton}
+                onPress={() => setShowPhotoOptions(false)}
+                disabled={uploading}
+              >
+                <Text style={styles.modalCancelText}>Cancelar</Text>
+              </TouchableOpacity>
+            </View>
           </TouchableOpacity>
+        </Modal>
 
-          <Image
-            source={{ uri: getPhotoUri() }}
-            style={styles.previewImage}
-            resizeMode="contain"
-            key={imageRefreshKey}
-          />
-        </View>
-      </Modal>
+        {/* Photo Preview Modal */}
+        <Modal
+          visible={showPhotoPreview}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowPhotoPreview(false)}
+        >
+          <View style={styles.previewOverlay}>
+            <TouchableOpacity
+              style={styles.previewCloseButton}
+              onPress={() => setShowPhotoPreview(false)}
+            >
+              <IconSymbol name="xmark.circle.fill" size={36} color={AppColors.white} />
+            </TouchableOpacity>
 
-      {/* Loading Overlay durante upload */}
-      {uploading && (
-        <View style={styles.loadingOverlay}>
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={AppColors.primary} />
-            <Text style={styles.loadingText}>Enviando foto...</Text>
+            <Image
+              source={{ uri: getPhotoUri() }}
+              style={styles.previewImage}
+              resizeMode="contain"
+              key={imageRefreshKey}
+            />
           </View>
-        </View>
-      )}
+        </Modal>
 
-      {/* Alert Modal */}
-      <AlertComponent />
-    </SafeAreaView>
+        {/* Loading Overlay durante upload */}
+        {uploading && (
+          <View style={styles.loadingOverlay}>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={AppColors.primary} />
+              <Text style={styles.loadingText}>Enviando foto...</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Alert Modal */}
+        <AlertComponent />
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
   container: {
     flex: 1,
-    backgroundColor: AppColors.background.primary,
     width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
-          maxWidth: 720,
-          marginHorizontal: 'auto',
+        maxWidth: 720,
       },
-  }),
+    }),
   },
   header: {
-    backgroundColor: AppColors.primary,
+    backgroundColor: AppColors.background.secondary,
     paddingTop: 20,
     paddingBottom: 20,
     paddingHorizontal: 20,
@@ -899,7 +908,7 @@ const styles = StyleSheet.create({
   avatarSection: {
     alignItems: 'center',
     paddingVertical: 32,
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
     marginBottom: 20,
   },
   avatarContainer: {
@@ -921,7 +930,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: AppColors.primary,
+    backgroundColor: AppColors.background.secondary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
@@ -939,7 +948,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
-    borderColor: AppColors.white,
+    borderColor: AppColors.background.secondary,
     zIndex: 2,
   },
   userName: {
@@ -1002,7 +1011,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   modalContent: {
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingTop: 20,
@@ -1022,11 +1031,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 16,
     borderRadius: 12,
-    backgroundColor: AppColors.background.primary,
+    backgroundColor: AppColors.background.secondary,
     marginBottom: 12,
   },
   modalOptionDanger: {
-    backgroundColor: '#FEE',
+    backgroundColor: AppColors.background.secondary,
   },
   modalOptionText: {
     fontSize: 16,
@@ -1059,7 +1068,7 @@ const styles = StyleSheet.create({
     zIndex: 9999,
   },
   loadingContainer: {
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',

@@ -76,15 +76,16 @@ export default function ChatScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['bottom']}>
-      <StatusBar
-        backgroundColor={AppColors.primary} // cor do header no Android
-        barStyle="light-content" // texto branco
-        translucent={false}
-      />
-  
-      {/* Header fixo */}
-      <View style={styles.header}>
+    <View style={styles.wrapper}>
+      <SafeAreaView style={styles.safeArea} edges={['bottom']}>
+        <StatusBar
+          backgroundColor={AppColors.primary} // cor do header no Android
+          barStyle="light-content" // texto branco
+          translucent={false}
+        />
+
+        {/* Header fixo */}
+        <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.logoContainer}>
             <LogoImage size="small" />
@@ -160,7 +161,7 @@ export default function ChatScreen() {
         >
           <TextInput
             style={styles.input}
-            placeholder="Digite sua dúvida:"
+            placeholder="Mensagem"
             placeholderTextColor={AppColors.text.placeholder}
             value={inputText}
             onChangeText={setInputText}
@@ -183,21 +184,26 @@ export default function ChatScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    alignSelf: 'center',
+  wrapper: {
     flex: 1,
     width: '100%',
+    backgroundColor: AppColors.background.secondary,
+  },
+  safeArea: {
+    flex: 1,
+    width: '100%',
+    alignSelf: 'center',
     ...Platform.select({
       web: {
         maxWidth: 720,
       },
     }),
-    backgroundColor: AppColors.white,
   },
   header: {
     backgroundColor: AppColors.primary,
@@ -239,7 +245,7 @@ const styles = StyleSheet.create({
   },
   flexContainer: {
     flex: 1,
-    backgroundColor: AppColors.background.primary,
+    backgroundColor: AppColors.background.secondary,
   },
   messagesContainer: {
     flex: 1,

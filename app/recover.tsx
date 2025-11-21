@@ -621,7 +621,7 @@ function maskPhone(phone: string): string {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.white,
+    backgroundColor: AppColors.background.secondary,
   },
   scrollContent: {
     flexGrow: 1,

@@ -260,6 +260,7 @@ export default function LoginScreen() {
           error={errors.password}
           secureTextEntry
           editable={!loading}
+          style={styles.input}
         />
         <View style={styles.containerCheckbox}>
           <View style={styles.checkboxContainer}>
@@ -407,7 +408,6 @@ const styles = StyleSheet.create({
     width: 250,
   },
   input: {
-
   },
   linksContainer: {
     flexDirection: 'row',
