@@ -1,7 +1,7 @@
 import { OffersSection } from '@/components/OffersSection';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { AppColors } from '@/constants/theme';
+import { AppColors, Fonts } from '@/constants/theme';
 import React from 'react';
 import {
   Platform,
@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
   },
   offerCompany: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: Fonts.bold,
     color: AppColors.text.primary,
   },
   progressContainer: {

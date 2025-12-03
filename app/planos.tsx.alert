@@ -1,7 +1,6 @@
 import { PlanCard } from '@/components/cards/PlanCard';
 import { AppHeader } from '@/components/ui/AppHeader';
 import { Button } from '@/components/ui/Button';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import subscriptionService, { PLANS } from '@/services/subscription';
@@ -9,6 +8,7 @@ import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Platform,
   ScrollView,
   StatusBar,
@@ -23,7 +23,6 @@ export default function PlanosScreen() {
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [hasSubscription, setHasSubscription] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     checkSubscription();
@@ -42,37 +41,36 @@ export default function PlanosScreen() {
 
   const handleSubscribe = () => {
     if (!selectedPlanId) {
-      if (Platform.OS === 'web') {
-        alert('Selecione um plano para continuar');
-      }
+      Alert.alert('Atenção', 'Selecione um plano para continuar');
       return;
     }
 
-    setShowConfirmDialog(true);
-  };
+    const plan = PLANS.find(p => p.id === selectedPlanId);
+    if (!plan) return;
 
-  const handleConfirm = () => {
-    setShowConfirmDialog(false);
-    if (selectedPlanId) {
-      router.push({
-        pathname: '/checkout',
-        params: { planId: selectedPlanId },
-      });
-    }
-  };
-
-  const handleCancel = () => {
-    setShowConfirmDialog(false);
+    Alert.alert(
+      'Confirmar Assinatura',
+      `Você deseja assinar o plano ${plan.displayName} por ${subscriptionService.formatPrice(plan.price)}?`,
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Continuar',
+          onPress: () => {
+            router.push({
+              pathname: '/checkout',
+              params: { planId: selectedPlanId },
+            });
+          },
+        },
+      ]
+    );
   };
 
   const handleManageSubscription = () => {
     router.push('/minha-assinatura');
-  };
-
-  const getConfirmMessage = () => {
-    const plan = PLANS.find(p => p.id === selectedPlanId);
-    if (!plan) return '';
-    return `Você deseja assinar o plano ${plan.displayName} por ${subscriptionService.formatPrice(plan.price)}?`;
   };
 
   if (loading) {
@@ -142,17 +140,6 @@ export default function PlanosScreen() {
             </View>
           )}
         </ScrollView>
-
-        {/* Confirm Dialog */}
-        <ConfirmDialog
-          visible={showConfirmDialog}
-          title="Confirmar Assinatura"
-          message={getConfirmMessage()}
-          confirmText="Continuar"
-          cancelText="Cancelar"
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-        />
       </SafeAreaView>
     </View>
   );

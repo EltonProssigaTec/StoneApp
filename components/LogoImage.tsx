@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, Platform, StyleSheet, View } from 'react-native';
 
 interface LogoImageProps {
   size?: 'small' | 'medium' | 'large' | 'extra';
@@ -12,7 +12,10 @@ export function LogoImage({ size = 'medium' }: LogoImageProps) {
       case 'large':
         return { width: 200, height: 140 };
       case 'extra':
-        return { width: 300, height: 300 };
+        return Platform.select({
+          web: { width: 300, height: 300 },
+          default: { width: 160, height: 120 },
+        });
       default:
         return { width: 120, height: 120 };
     }

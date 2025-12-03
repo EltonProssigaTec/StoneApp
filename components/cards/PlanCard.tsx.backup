@@ -1,7 +1,7 @@
 import { Card } from '@/components/ui/Card';
 import { AppColors, Fonts } from '@/constants/theme';
 import React from 'react';
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface PlanCardProps {
   name: string;
@@ -13,10 +13,9 @@ interface PlanCardProps {
   };
   onPress?: () => void;
   autoRenewal?: boolean;
-  selected?: boolean;
 }
 
-export function PlanCard({ name, period, price, badge, onPress, autoRenewal = true, selected = false }: PlanCardProps) {
+export function PlanCard({ name, period, price, badge, onPress, autoRenewal = true }: PlanCardProps) {
   const CardWrapper = onPress ? TouchableOpacity : View;
 
   return (
@@ -25,7 +24,7 @@ export function PlanCard({ name, period, price, badge, onPress, autoRenewal = tr
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
     >
-      <Card style={[styles.container, selected && styles.selected]}>
+      <Card style={styles.container}>
         {/* Badge Diagonal */}
         {badge && (
           <View style={[styles.diagonalBadge, { backgroundColor: badge.color || '#FF9500' }]}>
@@ -65,24 +64,6 @@ const styles = StyleSheet.create({
     position: 'relative',
     paddingVertical: 24,
     paddingHorizontal: 20,
-  },
-  selected: {
-    borderWidth: 3,
-    borderColor: AppColors.primary,
-    ...Platform.select({
-      ios: {
-        shadowColor: AppColors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 8,
-      },
-      web: {
-        boxShadow: `0 4px 16px #1741a736`,
-      },
-    }),
   },
   diagonalBadge: {
     position: 'absolute',

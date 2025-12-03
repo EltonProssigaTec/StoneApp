@@ -91,23 +91,23 @@ const styles = StyleSheet.create({
     backgroundColor: AppColors.background.secondary,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden', // Previne scroll
   },
   waveTop: {
     position: 'absolute',
     top: -40,
     left: -10,
-    right: 0,
+    right: -10,
     height: 120,
-    width: "120%",
-    transform: "rotate(-6deg)"
+    transform: [{ rotate: '-6deg' }],
   },
   waveTopOrange: {
     position: 'absolute',
     top: 0,
-    right: -40,
-    width: '120%',
+    left: -10,
+    right: -10,
     height: 120,
-    transform: "rotate(10deg)"
+    transform: [{ rotate: '10deg' }],
   },
   waveBottom: {
     position: 'absolute',
@@ -115,6 +115,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 110,
-    transform: [{ scaleX: 2 }],
+    transform: [{ scaleX: 1.5 }],
   },
 });

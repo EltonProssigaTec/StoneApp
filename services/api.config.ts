@@ -34,6 +34,9 @@ api.interceptors.request.use(
         const token = await AsyncStorage.getItem('@Auth:token');
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
+          if (__DEV__) console.log('[API] Token encontrado:', token.substring(0, 20) + '...');
+        } else {
+          if (__DEV__) console.warn('[API] ⚠️ Nenhum token encontrado no AsyncStorage!');
         }
       } catch (error) {
         if (__DEV__) console.warn('[API] Erro ao buscar token:', error);
@@ -93,27 +96,21 @@ api.interceptors.response.use(
         error.userMessage = 'Email ou senha incorretos.';
       } else {
         // Se for erro 401 em outras rotas = sessão inválida/expirada
-        // Fazer logout automático apenas em produção
-        if (!__DEV__) {
-          if (__DEV__) console.warn('[API] Token inválido ou sessão expirada. Fazendo logout...');
+        // Fazer logout automático SEMPRE (DEV e PROD)
+        if (__DEV__) console.warn('[API] Token inválido ou sessão expirada. Fazendo logout...');
 
-          try {
-            const AsyncStorage = await import('@react-native-async-storage/async-storage').then(m => m.default);
-            await AsyncStorage.multiRemove(['@Auth:user', '@Auth:token', '@Auth:keepLoggedIn']);
+        try {
+          const AsyncStorage = await import('@react-native-async-storage/async-storage').then(m => m.default);
+          await AsyncStorage.multiRemove(['@Auth:user', '@Auth:token', '@Auth:keepLoggedIn']);
 
-            // Limpar header de autorização
-            delete api.defaults.headers.common['Authorization'];
+          // Limpar header de autorização
+          delete api.defaults.headers.common['Authorization'];
 
-            // Notificar sobre sessão expirada
-            error.sessionExpired = true;
-            error.userMessage = 'Sua sessão expirou ou você fez login em outro dispositivo. Por favor, faça login novamente.';
-          } catch (logoutError) {
-            if (__DEV__) console.error('[API] Erro ao fazer logout automático:', logoutError);
-          }
-        } else {
-          // Em modo dev, apenas avisa mas não desconecta
-          if (__DEV__) console.warn('[API] Token inválido (não desconectando pois está em DEV mode)');
-          error.userMessage = 'Sessão inválida. Em produção, você seria desconectado automaticamente.';
+          // Notificar sobre sessão expirada
+          error.sessionExpired = true;
+          error.userMessage = 'Sua sessão expirou. Por favor, faça login novamente.';
+        } catch (logoutError) {
+          if (__DEV__) console.error('[API] Erro ao fazer logout automático:', logoutError);
         }
       }
     } else if (error.response?.status === 403) {

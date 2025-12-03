@@ -1,16 +1,14 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Fonts } from "@/constants/theme";
-import { useNotifications } from "@/hooks/useNotifications";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const { unreadCount } = useNotifications();
+
 
   return (
     <Tabs
@@ -68,39 +66,10 @@ export default function TabLayout() {
         options={{
           title: "NOTIFICAÇÕES",
           tabBarIcon: ({ color }) => (
-            <View>
-              <IconSymbol size={28} name="bell.fill" color={color} />
-              {unreadCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Text>
-                </View>
-              )}
-            </View>
+            <IconSymbol size={28} name="bell.fill" color={color} />
           ),
         }}
       />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    backgroundColor: '#FF3B30',
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 4,
-  },
-  badgeText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-});
