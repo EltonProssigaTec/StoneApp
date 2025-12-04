@@ -172,9 +172,9 @@ export default function CheckoutScreen() {
     try {
       // Mapeia ID do plano para SKU do Google Play
       const skuMap: Record<string, string> = {
-        'monthly': 'monitora_mensal',
-        'quarterly': 'monitora_trimestral',
-        'annual': 'monitora_anual',
+        'monthly': 'br.com.stoneup.monitora.app.monitora',
+        'quarterly': 'br.com.stoneup.monitora.app.monitora',  // Usando o mensal temporariamente
+        'annual': 'br.com.stoneup.monitora.app.stoneupplus',
       };
 
       const sku = skuMap[plan.id];

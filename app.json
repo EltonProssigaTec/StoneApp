@@ -2,7 +2,7 @@
   "expo": {
     "name": "StoneUP",
     "slug": "StoneApp",
-    "version": "3.3.2",
+    "version": "3.3.3",
     "private": true,
     "orientation": "portrait",
     "splash": {
@@ -27,7 +27,7 @@
     },
     "android": {
       "package": "com.stoneativos.monitoraapp",
-      "versionCode": 66,
+      "versionCode": 67,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/ic_launcher.png",
         "backgroundColor": "#ffffff"

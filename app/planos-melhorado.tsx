@@ -45,7 +45,7 @@ export default function PlanosScreen() {
       id: '2',
       name: 'Monitora Trimestre',
       period: 'PLANO TRIMESTRAL',
-      price: 35.00,
+      price: 34.99,
       badge: {
         text: 'MAIS POPULAR',
         color: '#FF9500',
@@ -55,7 +55,7 @@ export default function PlanosScreen() {
       id: '3',
       name: 'Monitora Mês',
       period: 'PLANO MENSAL',
-      price: 15.00,
+      price: 14.99,
     },
   ];
 

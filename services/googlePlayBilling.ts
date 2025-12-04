@@ -49,9 +49,8 @@ try {
  */
 export const SUBSCRIPTION_SKUS = Platform.select({
   android: [
-    'monitora_mensal',      // Plano Mensal - R$ 9,90/mês
-    'monitora_trimestral',  // Plano Trimestral - R$ 24,90/3 meses
-    'monitora_anual',       // Plano Anual - R$ 59,90/ano
+    'br.com.stoneup.monitora.app.monitora',      // Plano Mensal - R$ 14,99/mês
+    'br.com.stoneup.monitora.app.stoneupplus',   // Plano Anual - R$ 59,99/ano
   ],
   default: [],
 }) as string[];
@@ -60,9 +59,8 @@ export const SUBSCRIPTION_SKUS = Platform.select({
  * Mapeia os SKUs do Google Play para os IDs dos planos internos
  */
 const SKU_TO_PLAN_ID: Record<string, string> = {
-  'monitora_mensal': 'monthly',
-  'monitora_trimestral': 'quarterly',
-  'monitora_anual': 'annual',
+  'br.com.stoneup.monitora.app.monitora': 'monthly',
+  'br.com.stoneup.monitora.app.stoneupplus': 'annual',
 };
 
 // Types para evitar erros de import

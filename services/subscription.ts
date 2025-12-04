@@ -4,7 +4,6 @@
  */
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import api from './api.config';
 
 export interface Plan {
   id: string;
@@ -53,7 +52,7 @@ export const PLANS: Plan[] = [
     name: 'Monitora Trimestre',
     displayName: 'Trimestral',
     period: 'PLANO TRIMESTRAL',
-    price: 35.00,
+    price: 34.99,
     durationDays: 90,
     badge: {
       text: 'MAIS POPULAR',
@@ -65,7 +64,7 @@ export const PLANS: Plan[] = [
     name: 'Monitora Mês',
     displayName: 'Mensal',
     period: 'PLANO MENSAL',
-    price: 15.00,
+    price: 14.99,
     durationDays: 30,
   },
 ];
