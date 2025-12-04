@@ -7,10 +7,10 @@ import * as InAppPurchases from 'react-native-iap';
 
 // IDs dos produtos de assinatura (correspondem aos criados no Google Play Console)
 export const SUBSCRIPTION_SKUS = {
-  MONITORA: 'com.stoneativos.monitoraapp.monitora',
+  MONITORA: 'br.com.stoneup.monitora.app.monitora',
   MONITORA_01: 'monitora-01',
   MONITORA_02: 'monitora-02',
-  MONITORA_ANUAL: 'com.stoneativos.monitoraapp.stoneupplus',
+  MONITORA_ANUAL: 'br.com.stoneup.monitora.app.stoneupplus',
   MONITORA_ANUAL_01: 'monitora-anual-01',
 } as const;
 
@@ -40,14 +40,15 @@ export const GooglePlayService = {
    */
   initialize: async (): Promise<boolean> => {
     try {
-      if (__DEV__) console.log('[GooglePlay] Inicializando...');
+      console.log('[GooglePlay] 🔵 Inicializando conexão com Google Play Billing...');
 
       const isConnected = await InAppPurchases.connectAsync();
 
-      if (__DEV__) console.log('[GooglePlay] Conectado:', isConnected);
+      console.log('[GooglePlay] 🔵 Status da conexão:', isConnected ? '✅ CONECTADO' : '❌ NÃO CONECTADO');
       return isConnected;
     } catch (error: any) {
-      if (__DEV__) console.error('[GooglePlay] Erro ao inicializar:', error);
+      console.error('[GooglePlay] ❌ Erro ao inicializar:', error);
+      console.error('[GooglePlay] ❌ Error message:', error.message);
       return false;
     }
   },
@@ -59,11 +60,12 @@ export const GooglePlayService = {
     try {
       const skus = Object.values(SUBSCRIPTION_SKUS);
 
-      if (__DEV__) console.log('[GooglePlay] Buscando produtos:', skus);
+      console.log('[GooglePlay] 🔵 Buscando produtos com SKUs:', skus);
 
       const { results } = await InAppPurchases.getProductsAsync(skus);
 
-      if (__DEV__) console.log('[GooglePlay] Produtos encontrados:', results.length);
+      console.log('[GooglePlay] 🔵 Produtos encontrados:', results.length);
+      console.log('[GooglePlay] 🔵 Detalhes dos produtos:', JSON.stringify(results, null, 2));
 
       return results.map(product => ({
         productId: product.productId,
@@ -75,7 +77,8 @@ export const GooglePlayService = {
         subscriptionPeriod: (product as any).subscriptionPeriod,
       }));
     } catch (error: any) {
-      if (__DEV__) console.error('[GooglePlay] Erro ao buscar produtos:', error);
+      console.error('[GooglePlay] ❌ Erro ao buscar produtos:', error);
+      console.error('[GooglePlay] ❌ Error message:', error.message);
       return [];
     }
   },
@@ -85,20 +88,24 @@ export const GooglePlayService = {
    */
   purchaseSubscription: async (productId: string): Promise<[PurchaseResult | null, string | null]> => {
     try {
-      if (__DEV__) console.log('[GooglePlay] Iniciando compra:', productId);
+      console.log('[GooglePlay] 🔵 Iniciando compra do produto:', productId);
 
       const result = await InAppPurchases.purchaseItemAsync(productId);
 
-      if (__DEV__) console.log('[GooglePlay] Resultado da compra:', result);
+      console.log('[GooglePlay] 🔵 Resultado completo da compra:', JSON.stringify(result, null, 2));
+      console.log('[GooglePlay] 🔵 Response Code:', result.responseCode);
 
       if (result.responseCode === InAppPurchases.IAPResponseCode.OK) {
         const purchase = result.results?.[0];
 
         if (purchase) {
+          console.log('[GooglePlay] ✅ Compra bem-sucedida:', purchase);
+
           // Validar compra no backend antes de finalizar
           const isValid = await GooglePlayService.validatePurchaseOnBackend(purchase);
 
           if (!isValid) {
+            console.log('[GooglePlay] ❌ Falha na validação do backend');
             return [null, 'Falha na validação da compra'];
           }
 
@@ -116,14 +123,20 @@ export const GooglePlayService = {
           }, null];
         }
 
+        console.log('[GooglePlay] ⚠️ Nenhuma compra retornada no resultado');
         return [null, 'Nenhuma compra retornada'];
       } else if (result.responseCode === InAppPurchases.IAPResponseCode.USER_CANCELED) {
+        console.log('[GooglePlay] ⚠️ Usuário cancelou a compra');
         return [null, 'Compra cancelada pelo usuário'];
       } else {
-        return [null, `Erro na compra: ${result.responseCode}`];
+        console.log('[GooglePlay] ❌ Erro no response code:', result.responseCode);
+        console.log('[GooglePlay] ❌ Detalhes do erro:', result);
+        return [null, `Erro na compra (código: ${result.responseCode})`];
       }
     } catch (error: any) {
-      if (__DEV__) console.error('[GooglePlay] Erro ao comprar:', error);
+      console.error('[GooglePlay] ❌ EXCEPTION ao comprar:', error);
+      console.error('[GooglePlay] ❌ Error message:', error.message);
+      console.error('[GooglePlay] ❌ Error stack:', error.stack);
       return [null, error.message || 'Erro ao processar compra'];
     }
   },

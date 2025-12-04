@@ -4,10 +4,10 @@
  */
 
 export const SUBSCRIPTION_SKUS = {
-  MONITORA: 'com.stoneativos.monitoraapp.monitora',
+  MONITORA: 'br.com.stoneup.monitora.app.monitora',
   MONITORA_01: 'monitora-01',
   MONITORA_02: 'monitora-02',
-  MONITORA_ANUAL: 'com.stoneativos.monitoraapp.stoneupplus',
+  MONITORA_ANUAL: 'br.com.stoneup.monitora.app.stoneupplus',
   MONITORA_ANUAL_01: 'monitora-anual-01',
 } as const;
 
