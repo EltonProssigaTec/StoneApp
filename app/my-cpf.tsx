@@ -3,10 +3,11 @@ import { AppHeader } from '@/components/ui/AppHeader';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors, Fonts } from '@/constants/theme';
+import { useAuth } from '@/contexts/AuthContext';
 import api from '@/services/api.config';
 import { Divida } from '@/services/dividas.service';
 import { cpfCnpjMask, dateMask, removeMask } from '@/utils/masks';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -32,6 +33,7 @@ interface UserData {
 }
 
 export default function MyCpfScreen() {
+  const { user } = useAuth();
   const { showAlert, AlertComponent } = useAlert();
   const [nomeCompleto, setNomeCompleto] = useState('');
   const [dataNascimento, setDataNascimento] = useState('');
@@ -40,6 +42,25 @@ export default function MyCpfScreen() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [dividas, setDividas] = useState<Divida[]>([]);
   const [searchPerformed, setSearchPerformed] = useState(false);
+
+  // Pre-fill form fields from authenticated user
+  useEffect(() => {
+    if (user) {
+      if (user.cpf_cnpj) {
+        setCpfCnpj(cpfCnpjMask(user.cpf_cnpj));
+      }
+      if (user.name) {
+        setNomeCompleto(user.name);
+      }
+      if (user.data_nascimento) {
+        // Convert from YYYY-MM-DD to DD/MM/YYYY format
+        const [year, month, day] = user.data_nascimento.split('-');
+        if (year && month && day) {
+          setDataNascimento(`${day}/${month}/${year}`);
+        }
+      }
+    }
+  }, [user]);
 
   const handlePesquisar = async () => {
     // Validação básica

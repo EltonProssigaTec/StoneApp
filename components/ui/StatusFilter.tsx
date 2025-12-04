@@ -8,6 +8,9 @@ interface StatusFilterProps {
 }
 
 export const StatusFilter: React.FC<StatusFilterProps> = ({ total }) => {
+  // Garante que total é um número válido
+  const totalValue = typeof total === 'number' && !isNaN(total) ? total : 0;
+
   return (
     <View style={styles.container}>
       <View style={styles.row}>
@@ -18,7 +21,7 @@ export const StatusFilter: React.FC<StatusFilterProps> = ({ total }) => {
         <MaterialIcons name="hourglass-empty" size={20} color="#FFA500" />
         <Text style={styles.text}> Pendente</Text>
       </View>
-      <Text style={styles.total}>Total: R$ {total.toFixed(2)}</Text>
+      <Text style={styles.total}>Total: R$ {totalValue.toFixed(2)}</Text>
     </View>
   );
 };

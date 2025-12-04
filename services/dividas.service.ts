@@ -50,17 +50,40 @@ export const DividasService = {
 
   /**
    * Lista todas as dívidas de um CPF
+   * Usa o endpoint de monitoramento para manter consistência com a tela "Meu CPF"
    */
   listar: async (cpf: string): Promise<Divida[]> => {
     console.log('\n\nListando dívidas:\n');
-    const url = `monitora/dividas/${cpf}`;
+    const periodDate = '2000-12-12 00:00:00'; // Todo o período
+    const url = `monitora/monitoramento/${cpf}/${periodDate}`;
     console.log('\n\nGET url =', url);
 
     try {
       const response = await api.get(url);
-      const dividas = response.data.data || [];
-      console.log('\nDividas, length =', dividas.length);
-      return dividas;
+
+      if (!response.data) {
+        return [];
+      }
+
+      // Processa a resposta do monitoramento
+      const { data: restricoes } = response.data;
+
+      if (!restricoes || !Array.isArray(restricoes)) {
+        return [];
+      }
+
+      // Filtra as restrições que devem ser exibidas (exibe_monitora === 1)
+      const dividasFiltradas = restricoes
+        .map((item: any) => ({
+          ...item,
+          exibe_monitora: item.exibe_monitora?.length ? item.exibe_monitora : 1,
+        }))
+        .filter((item: any) => parseInt(item.exibe_monitora, 10) === 1);
+
+      console.log('\nRestrições encontradas (total):', restricoes.length);
+      console.log('Dívidas após filtro exibe_monitora:', dividasFiltradas.length);
+
+      return dividasFiltradas;
     } catch (error: any) {
       console.log('\nErro ao buscar dívidas:', error.response?.data || error.message);
       return [];

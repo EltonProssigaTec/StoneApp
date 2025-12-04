@@ -2,8 +2,11 @@ import { OffersSection } from '@/components/OffersSection';
 import { Card } from '@/components/ui/Card';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { AppColors, Fonts } from '@/constants/theme';
-import React from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { DividasService, OfertasService } from '@/services';
+import React, { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Platform,
   ScrollView,
   StatusBar,
@@ -23,31 +26,59 @@ interface Offer {
 }
 
 export default function OfertasScreen() {
-  const offers: Offer[] = [
-    {
-      id: '1',
-      company: 'STONE TESTE',
-      discount: 67,
-      originalAmount: 8000,
-      discountedAmount: 2640,
-    },
-    {
-      id: '2',
-      company: 'STONE TESTE',
-      discount: 67,
-      originalAmount: 8000,
-      discountedAmount: 2640,
-    },
-    {
-      id: '3',
-      company: 'STONE TESTE',
-      discount: 67,
-      originalAmount: 8000,
-      discountedAmount: 2640,
-    },
-  ];
+  const { user } = useAuth();
+  const [offers, setOffers] = useState<Offer[]>([]);
+  const [totalDebt, setTotalDebt] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const totalDebt = 2500.00;
+  useEffect(() => {
+    loadData();
+  }, [user]);
+
+  const loadData = async () => {
+    if (!user?.cpf_cnpj || !user?.id) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // Carrega ofertas do plano
+      const ofertasPlano = await OfertasService.listarOfertas(user.id);
+
+      // Carrega ofertas de dívidas
+      const ofertasDividas = await OfertasService.listarOfertasDividas(user.cpf_cnpj);
+
+      // Converte ofertas para o formato da UI
+      const ofertasFormatadas: Offer[] = [
+        ...ofertasPlano.map(oferta => ({
+          id: oferta.id,
+          company: oferta.empresa,
+          discount: oferta.desconto_percentual,
+          originalAmount: oferta.valor_original || 0,
+          discountedAmount: oferta.valor_com_desconto || 0,
+        })),
+        ...ofertasDividas.map(oferta => ({
+          id: oferta.id,
+          company: oferta.credor,
+          discount: oferta.desconto_percentual,
+          originalAmount: oferta.valor_original,
+          discountedAmount: oferta.valor_desconto,
+        }))
+      ];
+
+      setOffers(ofertasFormatadas);
+
+      // Busca resumo de dívidas para o total
+      const resumo = await DividasService.resumo(user.cpf_cnpj);
+      setTotalDebt(resumo.total_dividas);
+    } catch (error: any) {
+      console.error('Erro ao carregar ofertas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.wrapper}>
@@ -61,48 +92,55 @@ export default function OfertasScreen() {
             onMenuPress={() => console.log('Menu pressionado')}
           />
         <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+          {loading && (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color={AppColors.primary} />
+              <Text style={styles.loadingText}>Carregando ofertas...</Text>
+            </View>
+          )}
 
-        {/* Offers List */}
-        <View style={styles.offersList}>
-          {offers.map((offer) => (
-            <Card key={offer.id} style={styles.offerCard}>
-              <View style={styles.offerHeader}>
-                <Text style={styles.offerCompany}>{offer.company}</Text>
-                <TouchableOpacity>
-                  <IconSymbol
-                    name="ellipsis"
-                    size={20}
-                    color={AppColors.gray[600]}
-                  />
-                </TouchableOpacity>
-              </View>
+          {!loading && offers.length === 0 && (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>Nenhuma oferta disponível no momento</Text>
+            </View>
+          )}
 
-              {/* Progress Bar */}
-              <View style={styles.progressContainer}>
-                {/* <View style={styles.progressBackground}>
-                  <View
-                    style={[
-                      styles.progressBar,
-                      { width: `${offer.discount}%` },
-                    ]}
-                  />
-                </View> */}
-                <Text style={styles.discountText}>{offer.discount}% de desconto</Text>
-              </View>
+          {!loading && offers.length > 0 && (
+            <View style={styles.offersList}>
+              {offers.map((offer) => (
+                <Card key={offer.id} style={styles.offerCard}>
+                  <View style={styles.offerHeader}>
+                    <Text style={styles.offerCompany}>{offer.company}</Text>
+                    <TouchableOpacity>
+                      <IconSymbol
+                        name="ellipsis"
+                        size={20}
+                        color={AppColors.gray[600]}
+                      />
+                    </TouchableOpacity>
+                  </View>
 
-              {/* Amount Info */}
-              <View style={styles.amountInfo}>
-                <Text style={styles.amountLabel}>
-                  De R$ {offer.originalAmount.toFixed(2)} por{' '}
-                  <Text style={styles.amountHighlight}>
-                    R$ {offer.discountedAmount.toFixed(2)}
-                  </Text>
-                </Text>
-              </View>
-            </Card>
-          ))}
-        </View>
-      </ScrollView>
+                  {/* Progress Bar */}
+                  <View style={styles.progressContainer}>
+                    <Text style={styles.discountText}>{offer.discount}% de desconto</Text>
+                  </View>
+
+                  {/* Amount Info */}
+                  {offer.originalAmount > 0 && (
+                    <View style={styles.amountInfo}>
+                      <Text style={styles.amountLabel}>
+                        De R$ {offer.originalAmount.toFixed(2)} por{' '}
+                        <Text style={styles.amountHighlight}>
+                          R$ {offer.discountedAmount.toFixed(2)}
+                        </Text>
+                      </Text>
+                    </View>
+                  )}
+                </Card>
+              ))}
+            </View>
+          )}
+        </ScrollView>
       </SafeAreaView>
     </View>
   );
@@ -182,5 +220,30 @@ const styles = StyleSheet.create({
   amountHighlight: {
     fontWeight: 'bold',
     color: AppColors.primary,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.secondary,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyText: {
+    fontSize: 16,
+    fontFamily: Fonts.medium,
+    color: AppColors.text.secondary,
+    textAlign: 'center',
   },
 });

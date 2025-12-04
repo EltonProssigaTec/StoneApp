@@ -33,7 +33,8 @@
       "Bash(npm start)",
       "Bash(npx expo export:*)",
       "Bash(where:*)",
-      "Bash(npx expo install:*)"
+      "Bash(npx expo install:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

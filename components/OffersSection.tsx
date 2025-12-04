@@ -60,7 +60,7 @@ export function OffersSection(props: OffersSectionProps) {
 
             <View style={styles.amountContainer}>
               <Text style={styles.amount}>
-                ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                R$ {amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </Text>
               {onPayPress && (
                 <Button
