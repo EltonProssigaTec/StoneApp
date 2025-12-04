@@ -40,3 +40,7 @@ export type { Titulo, CNPJTitulos, AcordoBody } from './acordos.service';
 // Ofertas/Promoções
 export { OfertasService } from './ofertas.service';
 export type { Oferta, OfertaDivida } from './ofertas.service';
+
+// Google Play Billing
+export { GooglePlayService, SUBSCRIPTION_SKUS } from './googleplay.service';
+export type { SubscriptionProduct, PurchaseResult } from './googleplay.service';
