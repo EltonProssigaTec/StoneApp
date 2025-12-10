@@ -10,7 +10,8 @@ import { AppColors } from '@/constants/theme';
 import { useAuth } from '@/contexts/AuthContext';
 import notificationService from '@/services/notifications';
 import subscriptionService, { Plan } from '@/services/subscription';
-import googlePlayBilling from '@/services/googlePlayBilling';
+// ✅ IMPORT DINÂMICO para evitar crash
+// import googlePlayBilling from '@/services/googlePlayBilling';
 import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -28,6 +29,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import QRCode from 'react-native-qrcode-svg';
 
 type PaymentMethod = 'pix' | 'credit_card' | 'boleto' | 'google_play';
+
+// ✅ Variável global para googlePlayBilling
+let googlePlayBilling: any = null;
 
 export default function CheckoutScreen() {
   const params = useLocalSearchParams<{ planId: string }>();
@@ -48,25 +52,60 @@ export default function CheckoutScreen() {
   const [cardCVV, setCardCVV] = useState('');
 
   useEffect(() => {
+    console.log('[Checkout] 🔵 Tela de checkout montada');
+    console.log('[Checkout] 🔵 Plan ID recebido:', params.planId);
+
     if (params.planId) {
       const foundPlan = subscriptionService.getPlanById(params.planId);
       if (foundPlan) {
+        console.log('[Checkout] ✅ Plano encontrado:', foundPlan);
         setPlan(foundPlan);
       } else {
+        console.error('[Checkout] ❌ Plano não encontrado para ID:', params.planId);
         showAlert('Erro', 'Plano não encontrado', [
           { text: 'OK', onPress: () => router.back() }
         ], 'error');
       }
     }
 
-    // Inicializa Google Play Billing se disponível
+    // ✅ IMPORT DINÂMICO do Google Play Billing
     if (Platform.OS === 'android') {
-      googlePlayBilling.initialize();
+      console.log('[Checkout] 🔵 Importando Google Play Billing...');
+
+      try {
+        // Import do wrapper SEGURO que nunca vai crashar
+        googlePlayBilling = require('@/services/googlePlayBilling.safe').default;
+
+        console.log('[Checkout] ✅ Google Play Billing importado (SAFE)');
+        console.log('[Checkout] 🔵 Disponível?', googlePlayBilling.available);
+
+        if (googlePlayBilling.available) {
+          console.log('[Checkout] 🔵 Inicializando...');
+
+          googlePlayBilling.initialize()
+            .then((success: boolean) => {
+              if (success) {
+                console.log('[Checkout] ✅ Google Play Billing inicializado com sucesso');
+              } else {
+                console.warn('[Checkout] ⚠️ Falha ao inicializar Google Play Billing');
+              }
+            })
+            .catch((error: any) => {
+              console.error('[Checkout] ❌ Erro ao inicializar:', error);
+            });
+        } else {
+          console.warn('[Checkout] ⚠️ Google Play Billing não disponível');
+        }
+      } catch (error: any) {
+        console.error('[Checkout] ❌ Erro ao importar Google Play Billing:', error);
+        googlePlayBilling = null;
+      }
     }
 
     // Cleanup ao desmontar
     return () => {
-      if (Platform.OS === 'android') {
+      console.log('[Checkout] 🔵 Desmontando tela de checkout');
+      if (Platform.OS === 'android' && googlePlayBilling) {
         googlePlayBilling.disconnect();
       }
     };
@@ -166,34 +205,45 @@ export default function CheckoutScreen() {
   };
 
   const handleGooglePlayPayment = async () => {
-    if (!plan) return;
+    console.log('[Checkout] 🔵 === INICIANDO PAGAMENTO GOOGLE PLAY ===');
+
+    if (!plan) {
+      console.error('[Checkout] ❌ Plano não selecionado');
+      return;
+    }
+
+    console.log('[Checkout] 🔵 Plano selecionado:', {
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+    });
 
     setLoading(true);
     try {
-      // Mapeia ID do plano para SKU do Google Play
-      const skuMap: Record<string, string> = {
-        'monthly': 'br.com.stoneup.monitora.app.monitora',
-        'quarterly': 'br.com.stoneup.monitora.app.monitora',  // Usando o mensal temporariamente
-        'annual': 'br.com.stoneup.monitora.app.stoneupplus',
-      };
-
-      const sku = skuMap[plan.id];
-      if (!sku) {
-        showAlert('Erro', 'Plano não disponível no Google Play', undefined, 'error');
-        return;
-      }
+      // Agora passamos o plan.id diretamente, o serviço faz o mapeamento interno
+      console.log('[Checkout] 🔵 Chamando purchaseSubscription com plan ID:', plan.id);
 
       // Inicia o fluxo de compra (abre dialog do Google Play)
-      const result = await googlePlayBilling.purchaseSubscription(sku);
+      const result = await googlePlayBilling.purchaseSubscription(plan.id);
+
+      console.log('[Checkout] 🔵 Resultado da compra:', result);
 
       if (!result.success) {
+        console.error('[Checkout] ❌ Compra falhou:', result.error);
         showAlert('Erro', result.error || 'Não foi possível processar a compra', undefined, 'error');
+      } else {
+        console.log('[Checkout] ✅ Fluxo de compra iniciado com sucesso');
+        console.log('[Checkout] 🔵 Aguardando callback do listener...');
       }
       // Se sucesso, o listener do googlePlayBilling vai processar automaticamente
-    } catch (error) {
+    } catch (error: any) {
+      console.error('[Checkout] ❌ Exceção ao iniciar compra:', error);
+      console.error('[Checkout] ❌ Error message:', error?.message);
+      console.error('[Checkout] ❌ Error stack:', error?.stack);
       showAlert('Erro', 'Não foi possível iniciar a compra', undefined, 'error');
     } finally {
       setLoading(false);
+      console.log('[Checkout] 🔵 Loading finalizado');
     }
   };
 
@@ -453,6 +503,27 @@ export default function CheckoutScreen() {
               }}
               disabled={loading}
             />
+
+            {/* Botão de Diagnóstico (apenas em dev e quando Google Play está selecionado) */}
+            {__DEV__ && selectedMethod === 'google_play' && Platform.OS === 'android' && (
+              <TouchableOpacity
+                style={styles.diagnosticButton}
+                onPress={async () => {
+                  console.log('[Checkout] 🔍 Executando diagnóstico completo...');
+                  await googlePlayBilling.runCompleteDiagnostics();
+                  showAlert(
+                    'Diagnóstico Completo',
+                    'Verifique os logs do ADB para ver o relatório completo.',
+                    undefined,
+                    'info'
+                  );
+                }}
+              >
+                <Text style={styles.diagnosticButtonText}>
+                  🔍 Executar Diagnóstico Completo
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -587,5 +658,17 @@ const styles = StyleSheet.create({
   buttonContainer: {
     paddingHorizontal: 20,
     paddingBottom: 40,
+  },
+  diagnosticButton: {
+    marginTop: 12,
+    backgroundColor: '#2196F3',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  diagnosticButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

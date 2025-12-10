@@ -1,3 +1,9 @@
+// ✅ IMPORTANTE: FIX GLOBAL DEVE SER O PRIMEIRO IMPORT!
+import { applyGlobalFix } from '@/src/fix/fixGlobals';
+
+// Aplica correção IMEDIATAMENTE antes de qualquer outra coisa
+applyGlobalFix();
+
 import { applyGlobalFontStyles } from '@/constants/global-styles';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, useFonts } from '@expo-google-fonts/montserrat';

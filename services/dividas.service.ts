@@ -75,7 +75,12 @@ export const DividasService = {
       // Filtra as restrições que devem ser exibidas (exibe_monitora === 1)
       const dividasFiltradas = restricoes
         .map((item: any) => ({
-          ...item,
+          id: item.id || `${item.cpf_cnpj}-${item.name}`,
+          credor: item.name || 'EMPRESA',
+          descricao: item.modalidade || item.tipo || 'Pendência Financeira',
+          valor: parseFloat(item.valor_vencido || item.valor_original || item.valor || '0'),
+          vencimento: item.created_at || item.data_ocorrencia || '',
+          status: item.status === '08' ? 'negativado' : item.status === '07' ? 'notificado' : 'pendente',
           exibe_monitora: item.exibe_monitora?.length ? item.exibe_monitora : 1,
         }))
         .filter((item: any) => parseInt(item.exibe_monitora, 10) === 1);

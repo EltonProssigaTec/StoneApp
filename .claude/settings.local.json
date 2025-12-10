@@ -35,7 +35,17 @@
       "Bash(where:*)",
       "Bash(npx expo install:*)",
       "Bash(ls:*)",
-      "Bash(adb logcat:*)"
+      "Bash(adb logcat:*)",
+      "Bash(.gradlew clean:*)",
+      "Bash(adb shell dumpsys:*)",
+      "Bash(tar:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(copy \"stone antigo.apk\" \"stone_antigo.zip\")",
+      "Bash(python extract_api.py:*)",
+      "Bash(adb shell pm list packages:*)",
+      "Bash(gradlew clean:*)",
+      "Bash(npm run android:clean:*)",
+      "Bash(.gradlew.bat clean)"
     ],
     "deny": [],
     "ask": []

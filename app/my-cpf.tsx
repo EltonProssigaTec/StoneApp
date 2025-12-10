@@ -93,15 +93,37 @@ export default function MyCpfScreen() {
       // Processa a resposta do monitoramento
       const { data: restricoes, consultas } = monitoramentoResponse.data;
 
+      if (!restricoes || !Array.isArray(restricoes)) {
+        console.log('Nenhuma restrição encontrada na resposta');
+        setUserData({
+          id: cleanCpf,
+          name: nomeCompleto || 'Usuário',
+          cpf_cnpj: cleanCpf,
+          data_nascimento: dataNascimento,
+        });
+        setDividas([]);
+        return;
+      }
+
+      // Log da estrutura dos dados recebidos
+      console.log('Estrutura dos dados recebidos:', JSON.stringify(restricoes[0], null, 2));
+
       // Filtra as restrições que devem ser exibidas
       const dividasFiltradas = restricoes
         .map((item: any) => ({
-          ...item,
+          id: item.id || `${item.cpf_cnpj}-${item.name}`,
+          credor: item.name || 'EMPRESA',
+          descricao: item.modalidade || item.tipo || 'Pendência Financeira',
+          valor: parseFloat(item.valor_vencido || item.valor_original || item.valor || '0'),
+          vencimento: item.created_at || item.data_ocorrencia || '',
+          status: item.status === '08' ? 'negativado' : item.status === '07' ? 'notificado' : 'pendente',
+          cpf_cnpj: item.cpf_cnpj,
           exibe_monitora: item.exibe_monitora?.length ? item.exibe_monitora : 1,
         }))
         .filter((item: any) => parseInt(item.exibe_monitora, 10) === 1);
 
       console.log('Restrições encontradas:', dividasFiltradas.length);
+      console.log('Primeira dívida formatada:', JSON.stringify(dividasFiltradas[0], null, 2));
       console.log('Consultas encontradas:', consultas?.length || 0);
 
       // Define os dados do usuário (usa os dados do form preenchido)
@@ -256,22 +278,29 @@ export default function MyCpfScreen() {
               {dividas.length > 0 ? (
                 <>
                   <Text style={styles.debtTitle}>Pendências Encontradas ({dividas.length})</Text>
-                  {dividas.map((divida) => (
-                    <Card key={divida.id} style={styles.debtCard}>
+                  {dividas.map((divida, index) => (
+                    <Card key={divida.id || `divida-${index}`} style={styles.debtCard}>
                       <View style={styles.debtCardContent}>
                         <View style={styles.debtCardInfo}>
-                          <Text style={styles.debtCardCredor}>{divida.credor}</Text>
-                          <Text style={styles.debtCardDescricao}>{divida.descricao}</Text>
+                          <Text style={styles.debtCardCredor}>{divida.credor || 'EMPRESA'}</Text>
+                          <Text style={styles.debtCardDescricao}>{divida.descricao || 'Pendência Financeira'}</Text>
                           <Text style={styles.debtCardValor}>
-                            R$ {divida.valor?.toFixed(2) || '0,00'}
+                            R$ {(divida.valor || 0).toFixed(2).replace('.', ',')}
                           </Text>
                         </View>
                         <View style={[
                           styles.debtCardStatus,
-                          divida.status === 'quitado' && styles.debtCardStatusPaid
+                          divida.status === 'negativado' && styles.debtCardStatusNegativado,
+                          divida.status === 'notificado' && styles.debtCardStatusNotificado
                         ]}>
-                          <Text style={styles.debtCardStatusText}>
-                            {divida.status || 'Pendente'}
+                          <Text style={[
+                            styles.debtCardStatusText,
+                            divida.status === 'negativado' && { color: AppColors.error },
+                            divida.status === 'notificado' && { color: AppColors.warning }
+                          ]}>
+                            {divida.status === 'negativado' ? 'Negativado' :
+                             divida.status === 'notificado' ? 'Notificado' :
+                             'Pendente'}
                           </Text>
                         </View>
                       </View>
@@ -280,7 +309,7 @@ export default function MyCpfScreen() {
                   <View style={styles.totalContainer}>
                     <Text style={styles.totalLabel}>Total:</Text>
                     <Text style={styles.totalValue}>
-                      R$ {dividas.reduce((sum, d) => sum + (d.valor || 0), 0).toFixed(2)}
+                      R$ {dividas.reduce((sum, d) => sum + (d.valor || 0), 0).toFixed(2).replace('.', ',')}
                     </Text>
                   </View>
                 </>
@@ -481,18 +510,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   debtCardStatus: {
-    backgroundColor: AppColors.error + '20',
+    backgroundColor: AppColors.gray[200],
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
   },
-  debtCardStatusPaid: {
-    backgroundColor: AppColors.success + '20',
+  debtCardStatusNegativado: {
+    backgroundColor: AppColors.error + '20',
+  },
+  debtCardStatusNotificado: {
+    backgroundColor: '#FFA500' + '20',
   },
   debtCardStatusText: {
     fontSize: 12,
     fontFamily: Fonts.medium,
-    color: AppColors.error,
+    color: AppColors.text.secondary,
     textTransform: 'capitalize',
   },
   totalContainer: {
